@@ -1,0 +1,7 @@
+{
+  "dependencies": {
+    "express": "^4.17.1",
+    "level": "^7.0.1",
+    "merkletreejs": "^0.2.27"
+  }
+}
