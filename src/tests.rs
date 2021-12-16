@@ -89,7 +89,8 @@ fn register_merkle_root() {
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
-        merkle_root: "634de21cde1044f41d90373733b0f0fb1c1c71f9652b905cdf159e73c4cf0d37".to_string(),
+        request_id: 1u64,
+        merkle_root: "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc".to_string(),
     };
 
     let res = handle(deps.as_mut(), env.clone(), info, msg).unwrap();
@@ -100,7 +101,7 @@ fn register_merkle_root() {
             attr("stage", "1"),
             attr(
                 "merkle_root",
-                "634de21cde1044f41d90373733b0f0fb1c1c71f9652b905cdf159e73c4cf0d37"
+                "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc"
             )
         ]
     );
@@ -119,56 +120,29 @@ fn register_merkle_root() {
     .unwrap();
     let merkle_root: MerkleRootResponse = from_binary(&res).unwrap();
     assert_eq!(
-        "634de21cde1044f41d90373733b0f0fb1c1c71f9652b905cdf159e73c4cf0d37".to_string(),
+        "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc".to_string(),
         merkle_root.merkle_root
     );
 }
 
-const TEST_DATA_1: &[u8] = include_bytes!("../testdata/airdrop_stage_1_test_data.json");
-const TEST_DATA_2: &[u8] = include_bytes!("../testdata/airdrop_stage_2_test_data.json");
+const TEST_DATA_1: &[u8] = include_bytes!("../testdata/report_list_1_test_data.json");
 
 #[derive(Deserialize, Debug)]
 struct Encoded {
-    address: HumanAddr,
+    request_id: u64,
     data: String,
     root: String,
     proofs: Vec<String>,
 }
 
 #[test]
-fn claim() {
+fn verify_data() {
     // Run test 1
     let mut deps = mock_dependencies(&coins(100000, DENOM));
     deps.api.canonical_length = 54;
     let test_data: Encoded = from_slice(TEST_DATA_1).unwrap();
 
-    let user_input = format!(
-        "{{\"address\":\"{}\",\"data\":{}}}",
-        test_data.address, test_data.data
-    );
-    let hash: [u8; 32] = sha2::Sha256::digest(user_input.as_bytes())
-        .as_slice()
-        .try_into()
-        .map_err(|_| ContractError::WrongLength {})
-        .unwrap();
-
-    let computed_hash = test_data
-        .proofs
-        .iter()
-        .try_fold(hash, |hash, p| {
-            let mut proof_buf = [0; 32];
-            hex::decode_to_slice(p, &mut proof_buf)?;
-            let mut hashes = [hash, proof_buf];
-            hashes.sort_unstable();
-            sha2::Sha256::digest(&hashes.concat())
-                .as_slice()
-                .try_into()
-                .map_err(|_| ContractError::WrongLength {})
-        })
-        .unwrap();
-
-    println!("hash {:?} {:?}", test_data.root, hex::encode(computed_hash));
-
+    // init merkle root
     let msg = InitMsg {
         owner: Some("owner0000".into()),
     };
@@ -180,81 +154,26 @@ fn claim() {
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
+        request_id: test_data.request_id,
         merkle_root: test_data.root,
     };
     let _res = handle(deps.as_mut(), env, info, msg).unwrap();
 
-    let msg = HandleMsg::Claim {
-        data: test_data.data.to_string(),
-        stage: 1u8,
-        proof: test_data.proofs,
-    };
-
-    let env = mock_env();
-    let info = mock_info(test_data.address.as_str(), &[]);
-    let res = handle(deps.as_mut(), env.clone(), info.clone(), msg.clone()).unwrap();
-
-    assert_eq!(
-        res.attributes,
-        vec![
-            attr("action", "claim"),
-            attr("stage", "1"),
-            attr("address", test_data.address.clone()),
-            attr("data", test_data.data)
-        ]
-    );
-
-    assert!(
-        from_binary::<IsClaimedResponse>(
-            &query(
-                deps.as_ref(),
-                env.clone(),
-                QueryMsg::IsClaimed {
-                    stage: 1,
-                    address: test_data.address
-                }
-            )
-            .unwrap()
+    let verified: bool = from_binary(
+        &query(
+            deps.as_ref(),
+            mock_env(),
+            QueryMsg::VerifyData {
+                stage: test_data.request_id as u8,
+                data: test_data.data,
+                proof: test_data.proofs,
+            },
         )
-        .unwrap()
-        .is_claimed
-    );
+        .unwrap(),
+    )
+    .unwrap();
 
-    // Second test
-
-    let test_data: Encoded = from_slice(TEST_DATA_2).unwrap();
-    // check claimed
-    let res = handle(deps.as_mut(), env, info, msg).unwrap_err();
-    assert_eq!(res, ContractError::Claimed {});
-
-    // register new drop
-    let env = mock_env();
-    let info = mock_info("owner0000", &[]);
-    let msg = HandleMsg::RegisterMerkleRoot {
-        merkle_root: test_data.root,
-    };
-    let _res = handle(deps.as_mut(), env, info, msg).unwrap();
-
-    // Claim next airdrop
-    let msg = HandleMsg::Claim {
-        data: test_data.data.to_string(),
-        stage: 2u8,
-        proof: test_data.proofs,
-    };
-
-    let env = mock_env();
-    let info = mock_info(test_data.address.as_str(), &[]);
-    let res = handle(deps.as_mut(), env, info, msg).unwrap();
-
-    assert_eq!(
-        res.attributes,
-        vec![
-            attr("action", "claim"),
-            attr("stage", "2"),
-            attr("address", test_data.address),
-            attr("data", test_data.data)
-        ]
-    );
+    assert_eq!(verified, true);
 }
 
 #[test]
@@ -273,6 +192,7 @@ fn owner_freeze() {
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
+        request_id: 1u64,
         merkle_root: "5d4f48f147cb6cb742b376dce5626b2a036f69faec10cd73631c791780e150fc".to_string(),
     };
     let _res = handle(deps.as_mut(), env, info, msg).unwrap();
@@ -299,6 +219,7 @@ fn owner_freeze() {
     let env = mock_env();
     let info = mock_info("owner0001", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
+        request_id: 1u64,
         merkle_root: "ebaa83c7eaf7467c378d2f37b5e46752d904d2d17acd380b24b02e3b398b3e5a".to_string(),
     };
     let res = handle(deps.as_mut(), env, info, msg).unwrap_err();
@@ -308,6 +229,7 @@ fn owner_freeze() {
     let env = mock_env();
     let info = mock_info("owner0001", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
+        request_id: 1u64,
         merkle_root: "ebaa83c7eaf7467c378d2f37b5e46752d904d2d17acd380b24b02e3b398b3e5a".to_string(),
     };
     let res = handle(deps.as_mut(), env, info, msg).unwrap_err();

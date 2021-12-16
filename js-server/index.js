@@ -11,7 +11,7 @@ app.use(express.json()); // built-in middleware for express
 
 // root: 5cb7c54b6004e75cc859c4c0c33b1f8fee63c15ba0c5cf3556a5e3d5bbd69455
 
-app.get('/get_proof', getProof);
+app.post('/get_proof', getProof);
 
 app.post('/submit_report', submitReport)
 

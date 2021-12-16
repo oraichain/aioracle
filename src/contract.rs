@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     attr, to_binary, Binary, Deps, DepsMut, Env, HandleResponse, HumanAddr, InitResponse,
-    MessageInfo, StdResult,
+    MessageInfo, StdError, StdResult,
 };
 
 use cw_storage_plus::U8Key;
@@ -34,12 +34,10 @@ pub fn handle(
 ) -> Result<HandleResponse, ContractError> {
     match msg {
         HandleMsg::UpdateConfig { new_owner } => execute_update_config(deps, env, info, new_owner),
-        HandleMsg::RegisterMerkleRoot { merkle_root } => {
-            execute_register_merkle_root(deps, env, info, merkle_root)
-        }
-        HandleMsg::Claim { stage, data, proof } => {
-            execute_claim(deps, env, info, stage, data, proof)
-        }
+        HandleMsg::RegisterMerkleRoot {
+            merkle_root,
+            request_id,
+        } => execute_register_merkle_root(deps, env, info, merkle_root, request_id),
     }
 }
 
@@ -74,6 +72,7 @@ pub fn execute_register_merkle_root(
     _env: Env,
     info: MessageInfo,
     merkle_root: String,
+    request_id: u64,
 ) -> Result<HandleResponse, ContractError> {
     let cfg = CONFIG.load(deps.storage)?;
 
@@ -86,6 +85,11 @@ pub fn execute_register_merkle_root(
     // check merkle root length
     let mut root_buf: [u8; 32] = [0; 32];
     hex::decode_to_slice(merkle_root.to_string(), &mut root_buf)?;
+
+    let stage = LATEST_STAGE.load(deps.storage)?;
+    if stage.eq(&(request_id as u8)) {
+        return Err(ContractError::AlreadyFinished {});
+    }
 
     let stage = LATEST_STAGE.update(deps.storage, |stage| -> StdResult<_> { Ok(stage + 1) })?;
 
@@ -102,63 +106,6 @@ pub fn execute_register_merkle_root(
     })
 }
 
-pub fn execute_claim(
-    deps: DepsMut,
-    _env: Env,
-    info: MessageInfo,
-    stage: u8,
-    data: String,
-    proof: Vec<String>,
-) -> Result<HandleResponse, ContractError> {
-    // verify not claimed
-    let mut key = deps.api.canonical_address(&info.sender)?.to_vec();
-    key.push(stage);
-    let claimed = CLAIM.may_load(deps.storage, &key)?;
-    if claimed.is_some() {
-        return Err(ContractError::Claimed {});
-    }
-
-    let merkle_root = MERKLE_ROOT.load(deps.storage, stage.into())?;
-
-    let user_input = format!("{{\"address\":\"{}\",\"data\":{}}}", info.sender, data);
-    let hash = sha2::Sha256::digest(user_input.as_bytes())
-        .as_slice()
-        .try_into()
-        .map_err(|_| ContractError::WrongLength {})?;
-
-    let hash = proof.into_iter().try_fold(hash, |hash, p| {
-        let mut proof_buf = [0; 32];
-        hex::decode_to_slice(p, &mut proof_buf)?;
-        let mut hashes = [hash, proof_buf];
-        hashes.sort_unstable();
-        sha2::Sha256::digest(&hashes.concat())
-            .as_slice()
-            .try_into()
-            .map_err(|_| ContractError::WrongLength {})
-    })?;
-
-    let mut root_buf: [u8; 32] = [0; 32];
-    hex::decode_to_slice(merkle_root, &mut root_buf)?;
-    if root_buf != hash {
-        return Err(ContractError::VerificationFailed {});
-    }
-
-    // Update claim index to the current stage
-    CLAIM.save(deps.storage, &key, &true)?;
-
-    let res = HandleResponse {
-        data: None,
-        messages: vec![],
-        attributes: vec![
-            attr("action", "claim"),
-            attr("stage", stage.to_string()),
-            attr("address", info.sender),
-            attr("data", data),
-        ],
-    };
-    Ok(res)
-}
-
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
@@ -167,7 +114,40 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::IsClaimed { stage, address } => {
             to_binary(&query_is_claimed(deps, stage, address)?)
         }
+        QueryMsg::VerifyData { stage, data, proof } => {
+            to_binary(&verify_data(deps, stage, data, proof)?)
+        }
     }
+}
+
+pub fn verify_data(deps: Deps, stage: u8, data: String, proof: Vec<String>) -> StdResult<bool> {
+    let merkle_root = MERKLE_ROOT.load(deps.storage, stage.into())?;
+
+    let hash = sha2::Sha256::digest(data.as_bytes())
+        .as_slice()
+        .try_into()
+        .map_err(|_| StdError::generic_err("wrong length"))?;
+
+    let hash = proof.into_iter().try_fold(hash, |hash, p| {
+        let mut proof_buf = [0; 32];
+        hex::decode_to_slice(p, &mut proof_buf)
+            .map_err(|_| StdError::generic_err("error decoding"))?;
+        let mut hashes = [hash, proof_buf];
+        hashes.sort_unstable();
+        sha2::Sha256::digest(&hashes.concat())
+            .as_slice()
+            .try_into()
+            .map_err(|_| StdError::generic_err("wrong length"))
+    })?;
+
+    let mut root_buf: [u8; 32] = [0; 32];
+    hex::decode_to_slice(merkle_root, &mut root_buf)
+        .map_err(|_| StdError::generic_err("error decoding"))?;
+    let mut verified = false;
+    if root_buf == hash {
+        verified = true;
+    }
+    Ok(verified)
 }
 
 pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {

@@ -20,13 +20,7 @@ pub enum HandleMsg {
     RegisterMerkleRoot {
         /// MerkleRoot is hex-encoded merkle root.
         merkle_root: String,
-    },
-    /// Claim check the data is valid for a sender, each stage related to a merkle root.
-    Claim {
-        stage: u8,
-        data: String, // json-encoded
-        /// Proof is hex-encoded merkle proof.
-        proof: Vec<String>,
+        request_id: u64,
     },
 }
 
@@ -34,9 +28,19 @@ pub enum HandleMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Config {},
-    MerkleRoot { stage: u8 },
+    MerkleRoot {
+        stage: u8,
+    },
     LatestStage {},
-    IsClaimed { stage: u8, address: HumanAddr },
+    IsClaimed {
+        stage: u8,
+        address: HumanAddr,
+    },
+    VerifyData {
+        stage: u8,
+        data: String,
+        proof: Vec<String>,
+    },
 }
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]

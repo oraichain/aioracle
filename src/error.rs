@@ -19,6 +19,9 @@ pub enum ContractError {
     #[error("Already claimed")]
     Claimed {},
 
+    #[error("Request already finished")]
+    AlreadyFinished {},
+
     #[error("Wrong length")]
     WrongLength {},
 
