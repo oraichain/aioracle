@@ -3,8 +3,8 @@ use std::convert::TryInto;
 use crate::contract::{handle, init, query};
 use crate::error::ContractError;
 use crate::msg::{
-    ConfigResponse, HandleMsg, InitMsg, IsClaimedResponse, LatestStageResponse, MerkleRootResponse,
-    QueryMsg,
+    ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
+    LatestStageResponse, MerkleRootResponse, QueryMsg,
 };
 
 use sha2::Digest;
@@ -74,6 +74,58 @@ fn update_config() {
 }
 
 #[test]
+fn test_request() {
+    let mut deps = mock_dependencies(&coins(100000, DENOM));
+
+    let msg = InitMsg { owner: None };
+
+    let env = mock_env();
+    let info = mock_info("owner0000", &[]);
+    let _res = init(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // query current handling now will return error
+    // current handling should be 1, latest should be 3
+    let current_stage = query(deps.as_ref(), mock_env(), QueryMsg::CurrentStage {});
+    assert_eq!(current_stage.is_err(), true);
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
+
+    // current handling should be 1, latest should be 3
+    let current_stage: CurrentStageResponse =
+        from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::CurrentStage {}).unwrap()).unwrap();
+    assert_eq!(current_stage.current_stage, 1u8);
+
+    let latest_stage: LatestStageResponse =
+        from_binary(&query(deps.as_ref(), mock_env(), QueryMsg::LatestStage {}).unwrap()).unwrap();
+    assert_eq!(latest_stage.latest_stage, 3u8);
+}
+
+#[test]
 fn register_merkle_root() {
     let mut deps = mock_dependencies(&coins(100000, DENOM));
 
@@ -83,13 +135,21 @@ fn register_merkle_root() {
 
     let env = mock_env();
     let info = mock_info("addr0000", &[]);
-    let _res = init(deps.as_mut(), env, info, msg).unwrap();
+    let _res = init(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
 
     // register new merkle root
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
-        request_id: 1u64,
         merkle_root: "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc".to_string(),
     };
 
@@ -98,7 +158,7 @@ fn register_merkle_root() {
         res.attributes,
         vec![
             attr("action", "register_merkle_root"),
-            attr("stage", "1"),
+            attr("current_stage", "1"),
             attr(
                 "merkle_root",
                 "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc"
@@ -149,12 +209,20 @@ fn verify_data() {
 
     let env = mock_env();
     let info = mock_info("addr0000", &[]);
-    let _res = init(deps.as_mut(), env, info, msg).unwrap();
+    let _res = init(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
 
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
-        request_id: test_data.request_id,
         merkle_root: test_data.root,
     };
     let _res = handle(deps.as_mut(), env, info, msg).unwrap();
@@ -186,13 +254,21 @@ fn owner_freeze() {
 
     let env = mock_env();
     let info = mock_info("addr0000", &[]);
-    let _res = init(deps.as_mut(), env, info, msg).unwrap();
+    let _res = init(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
 
     // can register merkle root
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
-        request_id: 1u64,
         merkle_root: "5d4f48f147cb6cb742b376dce5626b2a036f69faec10cd73631c791780e150fc".to_string(),
     };
     let _res = handle(deps.as_mut(), env, info, msg).unwrap();
@@ -219,7 +295,6 @@ fn owner_freeze() {
     let env = mock_env();
     let info = mock_info("owner0001", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
-        request_id: 1u64,
         merkle_root: "ebaa83c7eaf7467c378d2f37b5e46752d904d2d17acd380b24b02e3b398b3e5a".to_string(),
     };
     let res = handle(deps.as_mut(), env, info, msg).unwrap_err();
@@ -229,7 +304,6 @@ fn owner_freeze() {
     let env = mock_env();
     let info = mock_info("owner0001", &[]);
     let msg = HandleMsg::RegisterMerkleRoot {
-        request_id: 1u64,
         merkle_root: "ebaa83c7eaf7467c378d2f37b5e46752d904d2d17acd380b24b02e3b398b3e5a".to_string(),
     };
     let res = handle(deps.as_mut(), env, info, msg).unwrap_err();

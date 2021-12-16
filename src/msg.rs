@@ -20,7 +20,9 @@ pub enum HandleMsg {
     RegisterMerkleRoot {
         /// MerkleRoot is hex-encoded merkle root.
         merkle_root: String,
-        request_id: u64,
+    },
+    Request {
+        threshold: u64,
     },
 }
 
@@ -32,6 +34,7 @@ pub enum QueryMsg {
         stage: u8,
     },
     LatestStage {},
+    CurrentStage {},
     IsClaimed {
         stage: u8,
         address: HumanAddr,
@@ -59,6 +62,11 @@ pub struct MerkleRootResponse {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
 pub struct LatestStageResponse {
     pub latest_stage: u8,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct CurrentStageResponse {
+    pub current_stage: u8,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

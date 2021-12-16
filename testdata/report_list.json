@@ -1,7 +1,6 @@
 [
   {
     "executor": "orai10dzr3yks2jrtgqjnpt6hdgf73mnset024k2lzy",
-    "request_id": 10,
     "data": {
       "block_height": 4168942,
       "dsources_results": [
@@ -36,7 +35,6 @@
   },
   {
     "executor": "orai16e6cpk6ycddk6208fpaya7tmmardhvr77l5dtr",
-    "request_id": 10,
     "data": {
       "block_height": 4168943,
       "dsources_results": [
@@ -71,7 +69,6 @@
   },
   {
     "executor": "orai1uhcwtfntsvk8gpwfxltesyl4e28aalmqvx7typ",
-    "request_id": 10,
     "data": {
       "block_height": 4168943,
       "dsources_results": [
@@ -106,7 +103,6 @@
   },
   {
     "executor": "orai1f6q9wjn8qp3ll8y8ztd8290vtec2yxyx0wnd0d",
-    "request_id": 10,
     "data": {
       "block_height": 4168943,
       "dsources_results": [
@@ -141,7 +137,6 @@
   },
   {
     "executor": "orai18tf4uwrkcd4qk87jz3n0ruhsdzeg3fmde8x8yj",
-    "request_id": 10,
     "data": {
       "block_height": 4168943,
       "dsources_results": [

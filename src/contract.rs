@@ -9,10 +9,10 @@ use std::convert::TryInto;
 
 use crate::error::ContractError;
 use crate::msg::{
-    ConfigResponse, HandleMsg, InitMsg, IsClaimedResponse, LatestStageResponse, MerkleRootResponse,
-    QueryMsg,
+    ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
+    LatestStageResponse, MerkleRootResponse, QueryMsg,
 };
-use crate::state::{Config, CLAIM, CONFIG, LATEST_STAGE, MERKLE_ROOT};
+use crate::state::{Config, Request, CLAIM, CONFIG, CURRENT_STAGE, LATEST_STAGE, REQUEST};
 
 pub fn init(deps: DepsMut, _env: Env, info: MessageInfo, msg: InitMsg) -> StdResult<InitResponse> {
     let owner = msg.owner.unwrap_or(info.sender);
@@ -22,6 +22,7 @@ pub fn init(deps: DepsMut, _env: Env, info: MessageInfo, msg: InitMsg) -> StdRes
 
     let stage = 0;
     LATEST_STAGE.save(deps.storage, &stage)?;
+    CURRENT_STAGE.save(deps.storage, &1)?;
 
     Ok(InitResponse::default())
 }
@@ -34,10 +35,10 @@ pub fn handle(
 ) -> Result<HandleResponse, ContractError> {
     match msg {
         HandleMsg::UpdateConfig { new_owner } => execute_update_config(deps, env, info, new_owner),
-        HandleMsg::RegisterMerkleRoot {
-            merkle_root,
-            request_id,
-        } => execute_register_merkle_root(deps, env, info, merkle_root, request_id),
+        HandleMsg::RegisterMerkleRoot { merkle_root } => {
+            execute_register_merkle_root(deps, env, info, merkle_root)
+        }
+        HandleMsg::Request { threshold } => handle_request(deps, env, threshold),
     }
 }
 
@@ -67,12 +68,37 @@ pub fn execute_update_config(
     })
 }
 
+pub fn handle_request(
+    deps: DepsMut,
+    _env: Env,
+    threshold: u64,
+) -> Result<HandleResponse, ContractError> {
+    let stage = LATEST_STAGE.update(deps.storage, |stage| -> StdResult<_> { Ok(stage + 1) })?;
+    REQUEST.save(
+        deps.storage,
+        U8Key::from(stage),
+        &crate::state::Request {
+            merkle_root: String::from(""),
+            threshold,
+        },
+    )?;
+
+    Ok(HandleResponse {
+        data: None,
+        messages: vec![],
+        attributes: vec![
+            attr("action", "handle_request"),
+            attr("stage", stage.to_string()),
+            attr("threshold", threshold),
+        ],
+    })
+}
+
 pub fn execute_register_merkle_root(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    merkle_root: String,
-    request_id: u64,
+    mroot: String,
 ) -> Result<HandleResponse, ContractError> {
     let cfg = CONFIG.load(deps.storage)?;
 
@@ -84,24 +110,35 @@ pub fn execute_register_merkle_root(
 
     // check merkle root length
     let mut root_buf: [u8; 32] = [0; 32];
-    hex::decode_to_slice(merkle_root.to_string(), &mut root_buf)?;
+    hex::decode_to_slice(mroot.to_string(), &mut root_buf)?;
 
-    let stage = LATEST_STAGE.load(deps.storage)?;
-    if stage.eq(&(request_id as u8)) {
+    let current_stage = CURRENT_STAGE.load(deps.storage)?;
+    let Request { merkle_root, .. } = REQUEST.load(deps.storage, current_stage.into())?;
+    if merkle_root.ne("") {
         return Err(ContractError::AlreadyFinished {});
     }
 
-    let stage = LATEST_STAGE.update(deps.storage, |stage| -> StdResult<_> { Ok(stage + 1) })?;
+    // if merkle root empty then update new
+    REQUEST.update(deps.storage, U8Key::from(current_stage), |request| {
+        if let Some(mut request) = request {
+            request.merkle_root = mroot.clone();
+            {
+                return Ok(request);
+            }
+        }
+        Err(StdError::generic_err("Invalid request empty"))
+    })?;
 
-    MERKLE_ROOT.save(deps.storage, U8Key::from(stage), &merkle_root)?;
+    // move to a new stage
+    CURRENT_STAGE.save(deps.storage, &(current_stage + 1))?;
 
     Ok(HandleResponse {
         data: None,
         messages: vec![],
         attributes: vec![
             attr("action", "register_merkle_root"),
-            attr("stage", stage.to_string()),
-            attr("merkle_root", merkle_root),
+            attr("current_stage", current_stage.to_string()),
+            attr("merkle_root", mroot),
         ],
     })
 }
@@ -111,6 +148,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
         QueryMsg::MerkleRoot { stage } => to_binary(&query_merkle_root(deps, stage)?),
         QueryMsg::LatestStage {} => to_binary(&query_latest_stage(deps)?),
+        QueryMsg::CurrentStage {} => to_binary(&query_current_stage(deps)?),
         QueryMsg::IsClaimed { stage, address } => {
             to_binary(&query_is_claimed(deps, stage, address)?)
         }
@@ -121,7 +159,7 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
 }
 
 pub fn verify_data(deps: Deps, stage: u8, data: String, proof: Vec<String>) -> StdResult<bool> {
-    let merkle_root = MERKLE_ROOT.load(deps.storage, stage.into())?;
+    let Request { merkle_root, .. } = REQUEST.load(deps.storage, stage.into())?;
 
     let hash = sha2::Sha256::digest(data.as_bytes())
         .as_slice()
@@ -158,7 +196,7 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
 }
 
 pub fn query_merkle_root(deps: Deps, stage: u8) -> StdResult<MerkleRootResponse> {
-    let merkle_root = MERKLE_ROOT.load(deps.storage, U8Key::from(stage))?;
+    let Request { merkle_root, .. } = REQUEST.load(deps.storage, U8Key::from(stage))?;
     let resp = MerkleRootResponse { stage, merkle_root };
 
     Ok(resp)
@@ -167,6 +205,17 @@ pub fn query_merkle_root(deps: Deps, stage: u8) -> StdResult<MerkleRootResponse>
 pub fn query_latest_stage(deps: Deps) -> StdResult<LatestStageResponse> {
     let latest_stage = LATEST_STAGE.load(deps.storage)?;
     let resp = LatestStageResponse { latest_stage };
+
+    Ok(resp)
+}
+
+pub fn query_current_stage(deps: Deps) -> StdResult<CurrentStageResponse> {
+    let current_stage = CURRENT_STAGE.load(deps.storage)?;
+    let latest_stage = LATEST_STAGE.load(deps.storage)?;
+    if current_stage.eq(&(latest_stage + 1)) {
+        return Err(StdError::generic_err("No request to handle"));
+    }
+    let resp = CurrentStageResponse { current_stage };
 
     Ok(resp)
 }

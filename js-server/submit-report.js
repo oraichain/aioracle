@@ -6,7 +6,7 @@ const {
 } = require('./merkle-proof-tree');
 const { execute } = require('./cosmjs');
 const http = require('http');
-const { getRoot } = require('./utils');
+const { getRoot, getCurrentStage } = require('./utils');
 
 const threshold = 4;
 const whiteList = ["orai10dzr3yks2jrtgqjnpt6hdgf73mnset024k2lzy", "orai16e6cpk6ycddk6208fpaya7tmmardhvr77l5dtr", "orai1uhcwtfntsvk8gpwfxltesyl4e28aalmqvx7typ", "orai1f6q9wjn8qp3ll8y8ztd8290vtec2yxyx0wnd0d", "orai18tf4uwrkcd4qk87jz3n0ruhsdzeg3fmde8x8yj"];
@@ -14,11 +14,20 @@ const whiteList = ["orai10dzr3yks2jrtgqjnpt6hdgf73mnset024k2lzy", "orai16e6cpk6y
 const submitReport = async (req, res) => {
     let report = req.body;
     // invalid data format
-    if (!report.executor || !report.request_id || !report.data) return res.status(403).send({ code: http.STATUS_CODES['403'] })
+    if (!report.executor || !report.data) return res.status(403).send({ code: http.STATUS_CODES['403'], message: "wrong input format" })
     // not in list
     if (!whiteList.includes(report.executor)) return res.status(401).send({ code: http.STATUS_CODES['401'] })
-    let countKey = `${report.request_id}_report_count`;
-    let requestIdString = report.request_id.toString();
+
+    // collect current request id that we need to handle
+    let requestId = 0;
+    try {
+        requestId = await getCurrentStage();
+    } catch (error) {
+        return res.status(500).send({ code: http.STATUS_CODES['500'] })
+    }
+
+    let countKey = `${requestId}_report_count`;
+    let requestIdString = requestId.toString();
     let reports = [];
     try {
         const data = await db.get(requestIdString);
@@ -49,7 +58,7 @@ const submitReport = async (req, res) => {
     }
     if (count === threshold) {
         // if root already exists return
-        let root = await getRoot(report.request_id);
+        let root = await getRoot(requestId);
         console.log("root: ", root);
         if (root.data) return res.status(403).send({ code: http.STATUS_CODES['403'], message: "merkle root already exists for this request id" });
 
@@ -66,7 +75,7 @@ const submitReport = async (req, res) => {
         console.log('save data in', tree.getHexRoot());
 
         // store the merkle root on-chain
-        const executeResult = await execute({ mnemonic: process.env.MNEMONIC, address: process.env.CONTRACT_ADDRESS, handleMsg: JSON.stringify({ register_merkle_root: { merkle_root: tree.getHexRoot(), request_id: parseInt(report.request_id) } }), gasData: { gasAmount: "0", denom: "orai" } });
+        const executeResult = await execute({ mnemonic: process.env.MNEMONIC, address: process.env.CONTRACT_ADDRESS, handleMsg: JSON.stringify({ register_merkle_root: { merkle_root: tree.getHexRoot() } }), gasData: { gasAmount: "0", denom: "orai" } });
 
         console.log("execute result: ", executeResult);
         return res.send({ code: http.STATUS_CODES['200'] });
