@@ -30,11 +30,11 @@ const submitReport = async (req, res) => {
         return res.status(500).send({ code: http.STATUS_CODES['500'], error })
     }
 
-    let countKey = `${requestId}_report_count`;
-    let requestIdString = requestId.toString();
+    let key = `${contractAddr}${requestId.toString()}`;
+    let countKey = `${key}_report_count`;
     let reports = [];
     try {
-        const data = await db.get(requestIdString);
+        const data = await db.get(key);
         reports = JSON.parse(data);
         // filter report.if already submitted => reject
         if (reports.filter(rep => rep.executor === report.executor).length > 0) {
@@ -56,7 +56,7 @@ const submitReport = async (req, res) => {
     }
     console.log("count value: ", count);
     if (count <= threshold) {
-        await db.put(requestIdString, JSON.stringify(reports));
+        await db.put(key, JSON.stringify(reports));
         await db.put(countKey, count.toString());
     }
     if (count === threshold) {

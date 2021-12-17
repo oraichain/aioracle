@@ -2,9 +2,10 @@ const db = require('./db');
 
 const checkSubmit = async (req, res) => {
     let data = req.query;
-    if (!data.request_id || !data.executor) return res.status(403).send({ code: 403 });
+    if (!data.request_id || !data.executor || !data.contract_addr) return res.status(403).send({ code: 403 });
+    let key = `${data.contract_addr}${data.request_id}`;
     try {
-        const reportsStr = await db.get(data.request_id);
+        const reportsStr = await db.get(key);
         const reports = JSON.parse(reportsStr);
         console.log("reports string: ", reports);
         const report = reports.filter(rep => rep.executor === data.executor);
