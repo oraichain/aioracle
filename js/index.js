@@ -45,7 +45,17 @@ const submitSignature = async (contractAddr, stage, signature) => {
     return execute({ mnemonic: process.env.MNEMONIC, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
 }
 
-const verifyLeaf = async (requestId, leaf, proofs) => {
+const isSubmitted = async (contractAddr, requestId, executor) => {
+    const input = JSON.stringify({
+        is_submitted: {
+            stage: parseInt(requestId),
+            executor,
+        }
+    })
+    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+}
+
+const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {
     const input = JSON.stringify({
         verify_data: {
             stage: parseInt(requestId),
@@ -53,7 +63,7 @@ const verifyLeaf = async (requestId, leaf, proofs) => {
             proof: proofs
         }
     })
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${process.env.CONTRACT_ADDRESS}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 }
 
 // run interval to ping, default is 5000ms block confirmed
@@ -79,7 +89,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                     redirect: 'follow'
                 };
                 // if have not submitted => retry
-                let checkSubmit = await fetch(`http://localhost:3000/check_submit?request_id=${request}&executor=${executor}`, requestOptions).then(data => data.json());
+                let checkSubmit = await fetch(`http://localhost:3000/check_submit?contract_addr=${contractAddr}&request_id=${request}&executor=${executor}`, requestOptions).then(data => data.json());
                 console.log("check submit: ", checkSubmit);
                 if (!checkSubmit.submitted) {
                     await submitReport(leaf);
@@ -88,11 +98,13 @@ const handleCurrentRequest = async (interval = 5000) => {
                 const proofs = await getProofs(leaf);
                 // no need to verify if there is no proof for this leaf
                 if (proofs.length === 0) continue;
-                const isVerified = await verifyLeaf(request, leaf, proofs);
+                const isVerified = await verifyLeaf(contractAddr, request, leaf, proofs);
                 console.log("is verified with leaf: ", isVerified);
                 // only submit signature when verified & when not submit signature
-                // TODO: add check if already submit signature
-                if (isVerified && isVerified.data) {
+                // check if already submit signature
+                const submitted = await isSubmitted(contractAddr, request, executor);
+                console.log("is signature submitted: ", submitted);
+                if (isVerified && isVerified.data && submitted && !submitted.data) {
                     // submit signature
                     const result = await submitSignature(contractAddr, request, "something");
                     console.log("update signature result: ", result);
@@ -108,7 +120,7 @@ const handleCurrentRequest = async (interval = 5000) => {
             }
 
         } catch (error) {
-            console.log('error while handling current request: ', error);
+            console.log(error);
         }
         await new Promise(r => setTimeout(r, interval));
     }
@@ -132,4 +144,4 @@ const start = async () => {
 
 // start();
 
-handleCurrentRequest(5000);
+handleCurrentRequest(1000);

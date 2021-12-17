@@ -18,7 +18,6 @@ pub enum HandleMsg {
         new_owner: Option<HumanAddr>,
     },
     UpdateSignature {
-        stage: u8,
         /// NewOwner if non sent, contract gets locked. Recipients can receive airdrops
         /// but owner cannot register new stages.
         signature: String,
@@ -44,6 +43,10 @@ pub enum QueryMsg {
     IsClaimed {
         stage: u8,
         address: HumanAddr,
+    },
+    IsSubmitted {
+        stage: u8,
+        executor: HumanAddr,
     },
     VerifyData {
         stage: u8,

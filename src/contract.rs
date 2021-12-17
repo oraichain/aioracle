@@ -1,6 +1,6 @@
 use cosmwasm_std::{
     attr, to_binary, Binary, Deps, DepsMut, Env, HandleResponse, HumanAddr, InitResponse,
-    MessageInfo, StdError, StdResult,
+    MessageInfo, StdError, StdResult, Storage,
 };
 
 use cw_storage_plus::U8Key;
@@ -37,8 +37,8 @@ pub fn handle(
 ) -> Result<HandleResponse, ContractError> {
     match msg {
         HandleMsg::UpdateConfig { new_owner } => execute_update_config(deps, env, info, new_owner),
-        HandleMsg::UpdateSignature { stage, signature } => {
-            execute_update_signature(deps, env, info, stage, signature)
+        HandleMsg::UpdateSignature { signature } => {
+            execute_update_signature(deps, env, info, signature)
         }
         HandleMsg::RegisterMerkleRoot { merkle_root } => {
             execute_register_merkle_root(deps, env, info, merkle_root)
@@ -51,21 +51,14 @@ pub fn execute_update_signature(
     deps: DepsMut,
     _env: Env,
     info: MessageInfo,
-    stage: u8,
     signature: String,
 ) -> Result<HandleResponse, ContractError> {
+    let stage = get_current_stage(deps.storage)?;
     // if submitted already => wont allow to submit again
     let request = REQUEST.load(deps.storage, stage.into())?;
     let mut is_finished = false;
-    if let Some(_) = request
-        .signatures
-        .iter()
-        .find(|sig| sig.executor.eq(&info.sender.to_string()))
-    {
+    if is_submitted(&request, info.sender.clone()) {
         return Err(ContractError::AlreadySubmitted {});
-    }
-    if request.signatures.len().eq(&(request.threshold as usize)) {
-        return Err(ContractError::AlreadyFinished {});
     }
 
     // add executor in the signature list
@@ -166,7 +159,7 @@ pub fn execute_register_merkle_root(
     let mut root_buf: [u8; 32] = [0; 32];
     hex::decode_to_slice(mroot.to_string(), &mut root_buf)?;
 
-    let current_stage = CURRENT_STAGE.load(deps.storage)?;
+    let current_stage = get_current_stage(deps.storage)?;
     let Request { merkle_root, .. } = REQUEST.load(deps.storage, current_stage.into())?;
     if merkle_root.ne("") {
         return Err(ContractError::AlreadyFinished {});
@@ -197,6 +190,16 @@ pub fn execute_register_merkle_root(
     })
 }
 
+fn get_current_stage(storage: &dyn Storage) -> Result<u8, ContractError> {
+    let current_stage = CURRENT_STAGE.load(storage)?;
+    let latest_stage = LATEST_STAGE.load(storage)?;
+    // there is no round to process, return error
+    if current_stage.eq(&(latest_stage + 1)) {
+        return Err(ContractError::NoRequest {});
+    }
+    Ok(current_stage)
+}
+
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
@@ -206,10 +209,24 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::IsClaimed { stage, address } => {
             to_binary(&query_is_claimed(deps, stage, address)?)
         }
+        QueryMsg::IsSubmitted { stage, executor } => {
+            to_binary(&query_is_submitted(deps, stage, executor)?)
+        }
         QueryMsg::VerifyData { stage, data, proof } => {
             to_binary(&verify_data(deps, stage, data, proof)?)
         }
     }
+}
+
+fn is_submitted(request: &Request, executor: HumanAddr) -> bool {
+    if let Some(_) = request
+        .signatures
+        .iter()
+        .find(|sig| sig.executor.eq(&executor.to_string()))
+    {
+        return true;
+    }
+    false
 }
 
 pub fn verify_data(deps: Deps, stage: u8, data: String, proof: Vec<String>) -> StdResult<bool> {
@@ -247,6 +264,11 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     Ok(ConfigResponse {
         owner: cfg.owner.map(|o| o.to_string()),
     })
+}
+
+pub fn query_is_submitted(deps: Deps, stage: u8, executor: HumanAddr) -> StdResult<bool> {
+    let request = REQUEST.load(deps.storage, stage.into())?;
+    Ok(is_submitted(&request, executor))
 }
 
 pub fn query_request(deps: Deps, stage: u8) -> StdResult<Request> {

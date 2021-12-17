@@ -6,6 +6,7 @@ use crate::msg::{
     ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
     LatestStageResponse, QueryMsg, RequestResponse,
 };
+use crate::state::Request;
 
 use sha2::Digest;
 
@@ -178,7 +179,7 @@ fn register_merkle_root() {
         },
     )
     .unwrap();
-    let merkle_root: RequestResponse = from_binary(&res).unwrap();
+    let merkle_root: Request = from_binary(&res).unwrap();
     assert_eq!(
         "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc".to_string(),
         merkle_root.merkle_root
@@ -265,7 +266,7 @@ fn update_signature() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request { threshold: 2 },
     )
     .unwrap();
 
@@ -282,7 +283,6 @@ fn update_signature() {
         mock_env(),
         info.clone(),
         HandleMsg::UpdateSignature {
-            stage: 1u8,
             signature: "kjkljkljlk".to_string(),
         },
     )
@@ -295,26 +295,11 @@ fn update_signature() {
             mock_env(),
             info.clone(),
             HandleMsg::UpdateSignature {
-                stage: 1u8,
                 signature: "kjkljkljlk".to_string(),
             }
         ),
         Err(ContractError::AlreadySubmitted {})
     ));
-
-    // 2nd submit will give error
-    assert!(matches!(
-        handle(
-            deps.as_mut(),
-            mock_env(),
-            mock_info("owner0002", &[]),
-            HandleMsg::UpdateSignature {
-                stage: 1u8,
-                signature: "kjkljkljlk".to_string(),
-            }
-        ),
-        Err(ContractError::AlreadyFinished {})
-    ))
 }
 
 #[test]

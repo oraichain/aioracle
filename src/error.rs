@@ -15,6 +15,9 @@ pub enum ContractError {
     #[error("Already submitted")]
     AlreadySubmitted {},
 
+    #[error("No request to process")]
+    NoRequest {},
+
     #[error("Invalid input")]
     InvalidInput {},
 
