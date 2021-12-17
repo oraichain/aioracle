@@ -17,6 +17,12 @@ pub enum HandleMsg {
         /// but owner cannot register new stages.
         new_owner: Option<HumanAddr>,
     },
+    UpdateSignature {
+        stage: u8,
+        /// NewOwner if non sent, contract gets locked. Recipients can receive airdrops
+        /// but owner cannot register new stages.
+        signature: String,
+    },
     RegisterMerkleRoot {
         /// MerkleRoot is hex-encoded merkle root.
         merkle_root: String,
@@ -30,7 +36,7 @@ pub enum HandleMsg {
 #[serde(rename_all = "snake_case")]
 pub enum QueryMsg {
     Config {},
-    MerkleRoot {
+    Request {
         stage: u8,
     },
     LatestStage {},
@@ -53,10 +59,11 @@ pub struct ConfigResponse {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
-pub struct MerkleRootResponse {
+pub struct RequestResponse {
     pub stage: u8,
     /// MerkleRoot is hex-encoded merkle root.
     pub merkle_root: String,
+    pub threshold: u64,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

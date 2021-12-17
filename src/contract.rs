@@ -10,9 +10,11 @@ use std::convert::TryInto;
 use crate::error::ContractError;
 use crate::msg::{
     ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
-    LatestStageResponse, MerkleRootResponse, QueryMsg,
+    LatestStageResponse, QueryMsg,
 };
-use crate::state::{Config, Request, CLAIM, CONFIG, CURRENT_STAGE, LATEST_STAGE, REQUEST};
+use crate::state::{
+    Config, Request, Signature, CLAIM, CONFIG, CURRENT_STAGE, LATEST_STAGE, REQUEST,
+};
 
 pub fn init(deps: DepsMut, _env: Env, info: MessageInfo, msg: InitMsg) -> StdResult<InitResponse> {
     let owner = msg.owner.unwrap_or(info.sender);
@@ -35,11 +37,62 @@ pub fn handle(
 ) -> Result<HandleResponse, ContractError> {
     match msg {
         HandleMsg::UpdateConfig { new_owner } => execute_update_config(deps, env, info, new_owner),
+        HandleMsg::UpdateSignature { stage, signature } => {
+            execute_update_signature(deps, env, info, stage, signature)
+        }
         HandleMsg::RegisterMerkleRoot { merkle_root } => {
             execute_register_merkle_root(deps, env, info, merkle_root)
         }
         HandleMsg::Request { threshold } => handle_request(deps, env, threshold),
     }
+}
+
+pub fn execute_update_signature(
+    deps: DepsMut,
+    _env: Env,
+    info: MessageInfo,
+    stage: u8,
+    signature: String,
+) -> Result<HandleResponse, ContractError> {
+    // if submitted already => wont allow to submit again
+    let request = REQUEST.load(deps.storage, stage.into())?;
+    let mut is_finished = false;
+    if let Some(_) = request
+        .signatures
+        .iter()
+        .find(|sig| sig.executor.eq(&info.sender.to_string()))
+    {
+        return Err(ContractError::AlreadySubmitted {});
+    }
+    if request.signatures.len().eq(&(request.threshold as usize)) {
+        return Err(ContractError::AlreadyFinished {});
+    }
+
+    // add executor in the signature list
+    REQUEST.update(deps.storage, U8Key::from(stage), |request| {
+        if let Some(mut request) = request {
+            request.signatures.push(Signature {
+                signature,
+                executor: info.sender.to_string(),
+            });
+            if request.signatures.len().eq(&(request.threshold as usize)) {
+                is_finished = true;
+            }
+            {
+                return Ok(request);
+            }
+        }
+        Err(StdError::generic_err("Invalid request empty"))
+    })?;
+    if is_finished {
+        CURRENT_STAGE.save(deps.storage, &(stage + 1))?;
+    }
+
+    Ok(HandleResponse {
+        attributes: vec![attr("action", "update_signature")],
+        messages: vec![],
+        data: None,
+    })
 }
 
 pub fn execute_update_config(
@@ -80,6 +133,7 @@ pub fn handle_request(
         &crate::state::Request {
             merkle_root: String::from(""),
             threshold,
+            signatures: vec![],
         },
     )?;
 
@@ -129,8 +183,8 @@ pub fn execute_register_merkle_root(
         Err(StdError::generic_err("Invalid request empty"))
     })?;
 
-    // move to a new stage
-    CURRENT_STAGE.save(deps.storage, &(current_stage + 1))?;
+    // // move to a new stage
+    // CURRENT_STAGE.save(deps.storage, &(current_stage + 1))?;
 
     Ok(HandleResponse {
         data: None,
@@ -146,7 +200,7 @@ pub fn execute_register_merkle_root(
 pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
     match msg {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
-        QueryMsg::MerkleRoot { stage } => to_binary(&query_merkle_root(deps, stage)?),
+        QueryMsg::Request { stage } => to_binary(&query_request(deps, stage)?),
         QueryMsg::LatestStage {} => to_binary(&query_latest_stage(deps)?),
         QueryMsg::CurrentStage {} => to_binary(&query_current_stage(deps)?),
         QueryMsg::IsClaimed { stage, address } => {
@@ -195,11 +249,9 @@ pub fn query_config(deps: Deps) -> StdResult<ConfigResponse> {
     })
 }
 
-pub fn query_merkle_root(deps: Deps, stage: u8) -> StdResult<MerkleRootResponse> {
-    let Request { merkle_root, .. } = REQUEST.load(deps.storage, U8Key::from(stage))?;
-    let resp = MerkleRootResponse { stage, merkle_root };
-
-    Ok(resp)
+pub fn query_request(deps: Deps, stage: u8) -> StdResult<Request> {
+    let request = REQUEST.load(deps.storage, U8Key::from(stage))?;
+    Ok(request)
 }
 
 pub fn query_latest_stage(deps: Deps) -> StdResult<LatestStageResponse> {

@@ -15,6 +15,13 @@ pub struct Request {
     /// Owner If None set, contract is frozen.
     pub merkle_root: String,
     pub threshold: u64,
+    pub signatures: Vec<Signature>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+pub struct Signature {
+    pub signature: String,
+    pub executor: String,
 }
 
 pub const CONFIG_KEY: &str = "config";

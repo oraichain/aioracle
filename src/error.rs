@@ -12,6 +12,8 @@ pub enum ContractError {
 
     #[error("Unauthorized")]
     Unauthorized {},
+    #[error("Already submitted")]
+    AlreadySubmitted {},
 
     #[error("Invalid input")]
     InvalidInput {},

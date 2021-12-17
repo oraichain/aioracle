@@ -1,8 +1,9 @@
 const fetch = require('isomorphic-fetch');
 const path = require('path');
 const { getCurrentStage } = require('../js-server/utils');
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') })
+require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : "../.env") })
 const data = require('../testdata/report_list.json');
+const { execute } = require('./cosmjs');
 
 const submitReport = async (leaf) => {
     const requestOptions = {
@@ -40,10 +41,14 @@ const getProofs = async (leaf) => {
     return result.proofs;
 }
 
-const verifyLeaf = async (leaf, proofs) => {
+const submitSignature = async (contractAddr, stage, signature) => {
+    return execute({ mnemonic: process.env.MNEMONIC, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
+}
+
+const verifyLeaf = async (requestId, leaf, proofs) => {
     const input = JSON.stringify({
         verify_data: {
-            stage: parseInt(data[0].request_id),
+            stage: parseInt(requestId),
             data: JSON.stringify(leaf),
             proof: proofs
         }
@@ -56,26 +61,49 @@ const handleCurrentRequest = async (interval = 5000) => {
     let isNew = false;
     let currentRequest = 0;
     let leaf = {};
+    const executor = process.env.EXECUTOR;
+    const contractAddr = process.env.CONTRACT_ADDRESS;
     while (true) {
         try {
-            let request = await getCurrentStage();
+            let request = await getCurrentStage(contractAddr);
             console.log("request id: ", request);
             // if current request is the same, we check if already submitted successfully. If yes then verify proof & sign
             if (currentRequest === request) {
                 isNew = false;
-                // TODO: query submitted report
-
+                const requestOptions = {
+                    method: 'GET',
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': "application/json"
+                    },
+                    redirect: 'follow'
+                };
+                // if have not submitted => retry
+                let checkSubmit = await fetch(`http://localhost:3000/check_submit?request_id=${request}&executor=${executor}`, requestOptions).then(data => data.json());
+                console.log("check submit: ", checkSubmit);
+                if (!checkSubmit.submitted) {
+                    await submitReport(leaf);
+                }
                 // verify proof
                 const proofs = await getProofs(leaf);
-                const isVerified = await verifyLeaf(leaf, proofs);
+                // no need to verify if there is no proof for this leaf
+                if (proofs.length === 0) continue;
+                const isVerified = await verifyLeaf(request, leaf, proofs);
                 console.log("is verified with leaf: ", isVerified);
-                // sign merkle root if not already signed
+                // only submit signature when verified & when not submit signature
+                // TODO: add check if already submit signature
+                if (isVerified && isVerified.data) {
+                    // submit signature
+                    const result = await submitSignature(contractAddr, request, "something");
+                    console.log("update signature result: ", result);
+                }
             } else {
                 // otherwise we submit report
                 isNew = true;
                 currentRequest = request;
                 // TODO: use correct input format
-                leaf = { "something": "abc" };
+                leaf = data[0];
+                leaf.executor = executor;
                 await submitReport(leaf);
             }
 

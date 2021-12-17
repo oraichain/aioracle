@@ -1,22 +1,22 @@
 const fetch = require('isomorphic-fetch');
-const getRoot = async (requestId) => {
+const getRoot = async (contractAddr, requestId) => {
 
     const input = JSON.stringify({
-        merkle_root: {
+        request: {
             stage: requestId
         }
     })
 
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${process.env.CONTRACT_ADDRESS}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
 }
 
-const getCurrentStage = async () => {
+const getCurrentStage = async (contractAddr) => {
 
     const input = JSON.stringify({
         current_stage: {}
     })
 
-    const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${process.env.CONTRACT_ADDRESS}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
     if (!data.data) {
         throw "No request to handle";
     }

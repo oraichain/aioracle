@@ -4,7 +4,7 @@ use crate::contract::{handle, init, query};
 use crate::error::ContractError;
 use crate::msg::{
     ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
-    LatestStageResponse, MerkleRootResponse, QueryMsg,
+    LatestStageResponse, QueryMsg, RequestResponse,
 };
 
 use sha2::Digest;
@@ -173,12 +173,12 @@ fn register_merkle_root() {
     let res = query(
         deps.as_ref(),
         env,
-        QueryMsg::MerkleRoot {
+        QueryMsg::Request {
             stage: latest_stage.latest_stage,
         },
     )
     .unwrap();
-    let merkle_root: MerkleRootResponse = from_binary(&res).unwrap();
+    let merkle_root: RequestResponse = from_binary(&res).unwrap();
     assert_eq!(
         "4a2e27a2befb41a0655b8fe98d9c1a9f18ece280dc78b442734ead617e6bf3fc".to_string(),
         merkle_root.merkle_root
@@ -242,6 +242,79 @@ fn verify_data() {
     .unwrap();
 
     assert_eq!(verified, true);
+}
+
+#[test]
+fn update_signature() {
+    // Run test 1
+    let mut deps = mock_dependencies(&coins(100000, DENOM));
+    deps.api.canonical_length = 54;
+    let test_data: Encoded = from_slice(TEST_DATA_1).unwrap();
+
+    // init merkle root
+    let msg = InitMsg {
+        owner: Some("owner0000".into()),
+    };
+
+    let env = mock_env();
+    let info = mock_info("addr0000", &[]);
+    let _res = init(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request { threshold: 1 },
+    )
+    .unwrap();
+
+    let env = mock_env();
+    let info = mock_info("owner0000", &[]);
+    let msg = HandleMsg::RegisterMerkleRoot {
+        merkle_root: test_data.root,
+    };
+    let _res = handle(deps.as_mut(), env, info.clone(), msg).unwrap();
+
+    // submit signature
+    handle(
+        deps.as_mut(),
+        mock_env(),
+        info.clone(),
+        HandleMsg::UpdateSignature {
+            stage: 1u8,
+            signature: "kjkljkljlk".to_string(),
+        },
+    )
+    .unwrap();
+
+    // 2nd submit will give error
+    assert!(matches!(
+        handle(
+            deps.as_mut(),
+            mock_env(),
+            info.clone(),
+            HandleMsg::UpdateSignature {
+                stage: 1u8,
+                signature: "kjkljkljlk".to_string(),
+            }
+        ),
+        Err(ContractError::AlreadySubmitted {})
+    ));
+
+    // 2nd submit will give error
+    assert!(matches!(
+        handle(
+            deps.as_mut(),
+            mock_env(),
+            mock_info("owner0002", &[]),
+            HandleMsg::UpdateSignature {
+                stage: 1u8,
+                signature: "kjkljkljlk".to_string(),
+            }
+        ),
+        Err(ContractError::AlreadyFinished {})
+    ))
 }
 
 #[test]
