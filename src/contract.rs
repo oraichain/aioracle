@@ -47,6 +47,7 @@ pub fn handle(
     }
 }
 
+// TODO: the signature must match the round's merkle root
 pub fn execute_update_signature(
     deps: DepsMut,
     _env: Env,
