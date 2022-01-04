@@ -9,11 +9,12 @@ const http = require('http');
 const { getRoot, getCurrentStage } = require('./utils');
 
 // const threshold = 4;
-const whiteList = ["orai10dzr3yks2jrtgqjnpt6hdgf73mnset024k2lzy", "orai16e6cpk6ycddk6208fpaya7tmmardhvr77l5dtr", "orai1uhcwtfntsvk8gpwfxltesyl4e28aalmqvx7typ", "orai1f6q9wjn8qp3ll8y8ztd8290vtec2yxyx0wnd0d", "orai18tf4uwrkcd4qk87jz3n0ruhsdzeg3fmde8x8yj"];
+const whiteList = ["orai10dzr3yks2jrtgqjnpt6hdgf73mnset024k2lzy", "orai16e6cpk6ycddk6208fpaya7tmmardhvr77l5dtr", "orai1uhcwtfntsvk8gpwfxltesyl4e28aalmqvx7typ", "orai1f6q9wjn8qp3ll8y8ztd8290vtec2yxyx0wnd0d", "orai18tf4uwrkcd4qk87jz3n0ruhsdzeg3fmde8x8yj", "orai1602dkqjvh4s7ryajnz2uwhr8vetrwr8nekpxv5", "orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573"];
 
 const submitReport = async (req, res) => {
     let report = req.body;
     const contractAddr = process.env.CONTRACT_ADDRESS;
+    const wallet = process.env.MNEMONIC;
     // invalid data format
     if (!report.executor || !report.data) return res.status(403).send({ code: http.STATUS_CODES['403'], message: "wrong input format" })
     // not in list
@@ -78,7 +79,7 @@ const submitReport = async (req, res) => {
         console.log('save data in', tree.getHexRoot());
 
         // store the merkle root on-chain
-        const executeResult = await execute({ mnemonic: process.env.MNEMONIC, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { merkle_root: tree.getHexRoot() } }), gasData: { gasAmount: "0", denom: "orai" } });
+        const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { merkle_root: tree.getHexRoot() } }), gasData: { gasAmount: "0", denom: "orai" } });
 
         return res.send({ code: http.STATUS_CODES['200'] });
     }

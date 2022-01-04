@@ -1,9 +1,9 @@
 const fetch = require('isomorphic-fetch');
 const path = require('path');
-const { getCurrentStage } = require('../js-server/utils');
+const { getCurrentStage } = require('./utils');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : "../.env") })
 const data = require('../testdata/report_list.json');
-const { execute } = require('./cosmjs');
+const { execute, getFirstWalletAddr } = require('./cosmjs');
 
 const submitReport = async (leaf) => {
     const requestOptions = {
@@ -41,8 +41,8 @@ const getProofs = async (leaf) => {
     return result.proofs;
 }
 
-const submitSignature = async (contractAddr, stage, signature) => {
-    return execute({ mnemonic: process.env.MNEMONIC, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
+const submitSignature = async (mnemonic, contractAddr, stage, signature) => {
+    return execute({ mnemonic, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
 }
 
 const isSubmitted = async (contractAddr, requestId, executor) => {
@@ -71,8 +71,11 @@ const handleCurrentRequest = async (interval = 5000) => {
     let isNew = false;
     let currentRequest = 0;
     let leaf = {};
-    const executor = process.env.EXECUTOR;
+    const mnemonic = process.env.MNEMONIC;
+    const executor = await getFirstWalletAddr(mnemonic);
     const contractAddr = process.env.CONTRACT_ADDRESS;
+    console.log("executor: ", executor);
+
     while (true) {
         try {
             let request = await getCurrentStage(contractAddr);
@@ -106,7 +109,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                 console.log("is signature submitted: ", submitted);
                 if (isVerified && isVerified.data && submitted && !submitted.data) {
                     // submit signature
-                    const result = await submitSignature(contractAddr, request, "something");
+                    const result = await submitSignature(mnemonic, contractAddr, request, "something");
                     console.log("update signature result: ", result);
                 }
             } else {
@@ -125,23 +128,5 @@ const handleCurrentRequest = async (interval = 5000) => {
         await new Promise(r => setTimeout(r, interval));
     }
 };
-
-const start = async () => {
-    await submitReport();
-    // setInterval(queryReportVerify, 5000);
-    try {
-        const proofs = await getProofs();
-        const leaf = data[0];
-        console.log("proofs: ", proofs);
-
-        // verify leaf
-        const isVerified = await verifyLeaf(leaf, proofs);
-        console.log("is verified with leaf: ", isVerified);
-    } catch (error) {
-        console.log("error when start: ", error);
-    }
-}
-
-// start();
 
 handleCurrentRequest(1000);
