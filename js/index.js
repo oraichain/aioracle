@@ -1,70 +1,9 @@
 const fetch = require('isomorphic-fetch');
 const path = require('path');
-const { getCurrentStage } = require('./utils');
+const { getCurrentStage, submitReport } = require('./utils');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : "../.env") })
-const data = require('../testdata/report_list.json');
-const { execute, getFirstWalletAddr } = require('./cosmjs');
-
-const submitReport = async (leaf) => {
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': "application/json"
-        },
-        body: JSON.stringify(leaf),
-        redirect: 'follow'
-    };
-    const result = await fetch("http://localhost:3000/submit_report", requestOptions).then(data => data.json());
-    console.log("result: ", result);
-}
-
-const getProofs = async (leaf) => {
-    let result = {};
-    let count = 0;
-    do {
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': "application/json"
-            },
-            body: JSON.stringify(leaf),
-            redirect: 'follow'
-        };
-        result = await fetch("http://localhost:3000/get_proof", requestOptions).then(data => data.json());
-        // sleep for 5 seconds then repeat. Break after 10 tries
-        await new Promise(r => setTimeout(r, 5000));
-        count++;
-        if (count > 10) break;
-    } while (!result.proofs);
-    return result.proofs;
-}
-
-const submitSignature = async (mnemonic, contractAddr, stage, signature) => {
-    return execute({ mnemonic, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
-}
-
-const isSubmitted = async (contractAddr, requestId, executor) => {
-    const input = JSON.stringify({
-        is_submitted: {
-            stage: parseInt(requestId),
-            executor,
-        }
-    })
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
-}
-
-const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {
-    const input = JSON.stringify({
-        verify_data: {
-            stage: parseInt(requestId),
-            data: JSON.stringify(leaf),
-            proof: proofs
-        }
-    })
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
-}
+const { getFirstWalletAddr, submitSignature, isSubmitted, getData } = require('./cosmjs');
+const { getProofs, verifyLeaf } = require('./merkle-tree');
 
 // run interval to ping, default is 5000ms block confirmed
 const handleCurrentRequest = async (interval = 5000) => {
@@ -117,7 +56,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                 isNew = true;
                 currentRequest = request;
                 // TODO: use correct input format
-                leaf = data[0];
+                leaf = await getData();
                 leaf.executor = executor;
                 await submitReport(leaf);
             }

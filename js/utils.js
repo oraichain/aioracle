@@ -23,4 +23,18 @@ const getCurrentStage = async (contractAddr) => {
     return data.data.current_stage;
 }
 
-module.exports = { getRoot, getCurrentStage };
+const submitReport = async (leaf) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': "application/json"
+        },
+        body: JSON.stringify(leaf),
+        redirect: 'follow'
+    };
+    const result = await fetch("http://localhost:3000/submit_report", requestOptions).then(data => data.json());
+    console.log("result: ", result);
+}
+
+module.exports = { getRoot, getCurrentStage, submitReport };

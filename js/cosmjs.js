@@ -2,6 +2,7 @@ const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const { stringToPath } = require("@cosmjs/crypto");
 const cosmwasm = require('@cosmjs/cosmwasm-stargate');
 const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
+const data = require('../testdata/report_list.json');
 
 const network = {
     rpc: process.env.NETWORK_RPC || "https://testnet-rpc.orai.io",
@@ -39,4 +40,23 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     }
 }
 
-module.exports = { execute, getFirstWalletAddr };
+const submitSignature = async (mnemonic, contractAddr, stage, signature) => {
+    return execute({ mnemonic, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
+}
+
+const isSubmitted = async (contractAddr, requestId, executor) => {
+    const input = JSON.stringify({
+        is_submitted: {
+            stage: parseInt(requestId),
+            executor,
+        }
+    })
+    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+}
+
+// TODO: use correct input format
+const getData = async () => {
+    return data[0];
+}
+
+module.exports = { execute, getFirstWalletAddr, isSubmitted, submitSignature, getData };
