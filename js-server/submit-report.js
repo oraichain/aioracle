@@ -39,7 +39,7 @@ const submitReport = async (req, res) => {
         reports = JSON.parse(data);
         // filter report.if already submitted => reject
         if (reports.filter(rep => rep.executor === report.executor).length > 0) {
-            return res.status(403).send({ code: http.STATUS_CODES['403'] })
+            return res.status(403).send({ code: http.STATUS_CODES['403'], message: 'Already submitted' })
         }
         // otherwise we append into the existing value
         reports.push(report);
@@ -74,7 +74,7 @@ const submitReport = async (req, res) => {
 
         // store the leaves to retrieve later. Can possibly store this on contract (but could be expensive)
         await db.put(tree.getRoot(), JSON.stringify(leaves));
-        await Promise.all(values.map((value, i) => db.put(leaves[i], value)));
+        // await Promise.all(values.map((value, i) => db.put(leaves[i], value)));
 
         console.log('save data in', tree.getHexRoot());
 

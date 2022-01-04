@@ -1,6 +1,6 @@
 const fetch = require('isomorphic-fetch');
 const path = require('path');
-const { getCurrentStage, submitReport, getRoot } = require('./utils');
+const { getCurrentStage, submitReport, getRoot, getServiceContracts } = require('./utils');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : "../.env") })
 const { getFirstWalletAddr, submitSignature, isSubmitted, getData } = require('./cosmjs');
 const { getProofs, verifyLeaf } = require('./merkle-tree');
@@ -37,6 +37,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                     await submitReport(leaf);
                 }
                 // verify proof
+                console.log("leaf: ", leaf);
                 const proofs = await getProofs(leaf);
                 // no need to verify if there is no proof for this leaf
                 if (proofs.length === 0) continue;
@@ -49,7 +50,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                 if (isVerified && isVerified.data && submitted && !submitted.data) {
                     // submit signature
                     // TODO: use real signature, need to get merkle proof
-                    const merkleRoot = await getRoot(contractAddr, requestId);
+                    // const merkleRoot = await getRoot(contractAddr, requestId);
                     const result = await submitSignature(mnemonic, contractAddr, requestId, "something");
                     console.log("update signature result: ", result);
                 }
@@ -57,9 +58,13 @@ const handleCurrentRequest = async (interval = 5000) => {
                 // otherwise we submit report
                 isNew = true;
                 currentRequest = requestId;
-                // TODO: use correct input format
-                leaf = await getData();
-                leaf.executor = executor;
+                // get service contracts to get data
+                let serviceContracts = await getServiceContracts(contractAddr, requestId);
+                let { data } = await getData(serviceContracts.oscript);
+                leaf = {
+                    data,
+                    executor
+                }
                 await submitReport(leaf);
             }
 

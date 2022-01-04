@@ -55,8 +55,11 @@ const isSubmitted = async (contractAddr, requestId, executor) => {
 }
 
 // TODO: use correct input format
-const getData = async () => {
-    return data[0];
+const getData = async (oscript) => {
+    const input = JSON.stringify({
+        test: {}
+    });
+    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 }
 
 module.exports = { execute, getFirstWalletAddr, isSubmitted, submitSignature, getData };

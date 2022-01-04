@@ -4,6 +4,8 @@ Deploy:
 
 ```bash
 RUSTFLAGS='-C link-arg=-s' cargo build -q --release --target wasm32-unknown-unknown && wasm-opt -Os target/wasm32-unknown-unknown/release/merkle_proof_tree.wasm -o target/merkle_proof_tree.wasm
+
+yarn oraicli wasm deploy ../new-aioracle-demo/target/merkle_proof_tree.wasm --input '{"service_addr":"orai14mxup548ltdha4xpt8uum37q59w85phx20nkdh"}' --label 'test new aioracle demo' --gas 3000000
 ```
 
 Run test:

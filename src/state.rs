@@ -8,6 +8,15 @@ use cw_storage_plus::{Item, Map, U8Key};
 pub struct Config {
     /// Owner If None set, contract is frozen.
     pub owner: Option<HumanAddr>,
+    pub service_addr: HumanAddr,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
+#[serde(rename_all = "snake_case")]
+pub struct Contracts {
+    pub dsources: Vec<HumanAddr>,
+    pub tcases: Vec<HumanAddr>,
+    pub oscript: HumanAddr,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -15,6 +24,7 @@ pub struct Request {
     /// Owner If None set, contract is frozen.
     pub merkle_root: String,
     pub threshold: u64,
+    pub service: String,
     pub signatures: Vec<Signature>,
 }
 

@@ -23,6 +23,19 @@ const getCurrentStage = async (contractAddr) => {
     return data.data.current_stage;
 }
 
+const getServiceContracts = async (contractAddr, requestId) => {
+
+    const input = JSON.stringify({
+        get_service_contracts: { stage: parseInt(requestId) }
+    })
+
+    const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    if (!data.data) {
+        throw "No service contracts to execute";
+    }
+    return data.data;
+}
+
 const submitReport = async (leaf) => {
     const requestOptions = {
         method: 'POST',
@@ -37,4 +50,4 @@ const submitReport = async (leaf) => {
     console.log("result: ", result);
 }
 
-module.exports = { getRoot, getCurrentStage, submitReport };
+module.exports = { getRoot, getCurrentStage, submitReport, getServiceContracts };

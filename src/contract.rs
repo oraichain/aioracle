@@ -9,17 +9,20 @@ use std::convert::TryInto;
 
 use crate::error::ContractError;
 use crate::msg::{
-    ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
-    LatestStageResponse, QueryMsg,
+    ConfigResponse, CurrentStageResponse, GetServiceContracts, HandleMsg, InitMsg,
+    IsClaimedResponse, LatestStageResponse, QueryMsg, ServiceContractsMsg,
 };
 use crate::state::{
-    Config, Request, Signature, CLAIM, CONFIG, CURRENT_STAGE, LATEST_STAGE, REQUEST,
+    Config, Contracts, Request, Signature, CLAIM, CONFIG, CURRENT_STAGE, LATEST_STAGE, REQUEST,
 };
 
 pub fn init(deps: DepsMut, _env: Env, info: MessageInfo, msg: InitMsg) -> StdResult<InitResponse> {
     let owner = msg.owner.unwrap_or(info.sender);
 
-    let config = Config { owner: Some(owner) };
+    let config = Config {
+        owner: Some(owner),
+        service_addr: msg.service_addr,
+    };
     CONFIG.save(deps.storage, &config)?;
 
     let stage = 0;
@@ -43,7 +46,7 @@ pub fn handle(
         HandleMsg::RegisterMerkleRoot { merkle_root } => {
             execute_register_merkle_root(deps, env, info, merkle_root)
         }
-        HandleMsg::Request { threshold } => handle_request(deps, env, threshold),
+        HandleMsg::Request { service, threshold } => handle_request(deps, env, service, threshold),
     }
 }
 
@@ -118,6 +121,7 @@ pub fn execute_update_config(
 pub fn handle_request(
     deps: DepsMut,
     _env: Env,
+    service: String,
     threshold: u64,
 ) -> Result<HandleResponse, ContractError> {
     let stage = LATEST_STAGE.update(deps.storage, |stage| -> StdResult<_> { Ok(stage + 1) })?;
@@ -127,6 +131,7 @@ pub fn handle_request(
         &crate::state::Request {
             merkle_root: String::from(""),
             threshold,
+            service: service.clone(),
             signatures: vec![],
         },
     )?;
@@ -138,6 +143,7 @@ pub fn handle_request(
             attr("action", "handle_request"),
             attr("stage", stage.to_string()),
             attr("threshold", threshold),
+            attr("service", service),
         ],
     })
 }
@@ -206,6 +212,9 @@ pub fn query(deps: Deps, _env: Env, msg: QueryMsg) -> StdResult<Binary> {
         QueryMsg::Config {} => to_binary(&query_config(deps)?),
         QueryMsg::Request { stage } => to_binary(&query_request(deps, stage)?),
         QueryMsg::LatestStage {} => to_binary(&query_latest_stage(deps)?),
+        QueryMsg::GetServiceContracts { stage } => {
+            to_binary(&query_service_contracts(deps, stage)?)
+        }
         QueryMsg::CurrentStage {} => to_binary(&query_current_stage(deps)?),
         QueryMsg::IsClaimed { stage, address } => {
             to_binary(&query_is_claimed(deps, stage, address)?)
@@ -275,6 +284,20 @@ pub fn query_is_submitted(deps: Deps, stage: u8, executor: HumanAddr) -> StdResu
 pub fn query_request(deps: Deps, stage: u8) -> StdResult<Request> {
     let request = REQUEST.load(deps.storage, U8Key::from(stage))?;
     Ok(request)
+}
+
+pub fn query_service_contracts(deps: Deps, stage: u8) -> StdResult<Contracts> {
+    let Config { service_addr, .. } = CONFIG.load(deps.storage)?;
+    let request = REQUEST.load(deps.storage, U8Key::from(stage))?;
+    let contracts: Contracts = deps.querier.query_wasm_smart(
+        service_addr,
+        &GetServiceContracts {
+            service_contracts_msg: ServiceContractsMsg {
+                service: request.service,
+            },
+        },
+    )?;
+    Ok(contracts)
 }
 
 pub fn query_latest_stage(deps: Deps) -> StdResult<LatestStageResponse> {

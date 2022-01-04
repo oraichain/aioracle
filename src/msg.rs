@@ -7,6 +7,7 @@ use cosmwasm_std::HumanAddr;
 pub struct InitMsg {
     /// Owner if none set to info.sender.
     pub owner: Option<HumanAddr>,
+    pub service_addr: HumanAddr,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
@@ -27,6 +28,7 @@ pub enum HandleMsg {
         merkle_root: String,
     },
     Request {
+        service: String,
         threshold: u64,
     },
 }
@@ -40,6 +42,9 @@ pub enum QueryMsg {
     },
     LatestStage {},
     CurrentStage {},
+    GetServiceContracts {
+        stage: u8,
+    },
     IsClaimed {
         stage: u8,
         address: HumanAddr,
@@ -59,6 +64,18 @@ pub enum QueryMsg {
 #[serde(rename_all = "snake_case")]
 pub struct ConfigResponse {
     pub owner: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct GetServiceContracts {
+    pub service_contracts_msg: ServiceContractsMsg,
+}
+
+#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
+#[serde(rename_all = "snake_case")]
+pub struct ServiceContractsMsg {
+    pub service: String,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]
