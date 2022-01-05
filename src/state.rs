@@ -1,4 +1,4 @@
-use cosmwasm_std::HumanAddr;
+use cosmwasm_std::{Coin, HumanAddr};
 use schemars::JsonSchema;
 use serde::{Deserialize, Serialize};
 
@@ -9,6 +9,7 @@ pub struct Config {
     /// Owner If None set, contract is frozen.
     pub owner: Option<HumanAddr>,
     pub service_addr: HumanAddr,
+    pub contract_fee: Coin,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, JsonSchema)]

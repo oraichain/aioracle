@@ -1,17 +1,12 @@
-use std::convert::TryInto;
-
 use crate::contract::{handle, init, query};
 use crate::error::ContractError;
 use crate::msg::{
-    ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, IsClaimedResponse,
-    LatestStageResponse, QueryMsg, RequestResponse,
+    ConfigResponse, CurrentStageResponse, HandleMsg, InitMsg, LatestStageResponse, QueryMsg,
 };
 use crate::state::Request;
 
-use sha2::Digest;
-
 use cosmwasm_std::testing::{mock_dependencies, mock_env, mock_info};
-use cosmwasm_std::{attr, coins, from_binary, from_slice, HumanAddr};
+use cosmwasm_std::{attr, coin, coins, from_binary, from_slice, Binary, HumanAddr};
 use serde::Deserialize;
 
 const DENOM: &str = "ORAI";
@@ -22,6 +17,8 @@ fn proper_instantiation() {
 
     let msg = InitMsg {
         owner: Some("owner0000".into()),
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
     };
 
     let env = mock_env();
@@ -44,7 +41,11 @@ fn proper_instantiation() {
 fn update_config() {
     let mut deps = mock_dependencies(&coins(100000, DENOM));
 
-    let msg = InitMsg { owner: None };
+    let msg = InitMsg {
+        owner: None,
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
+    };
 
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
@@ -78,7 +79,11 @@ fn update_config() {
 fn test_request() {
     let mut deps = mock_dependencies(&coins(100000, DENOM));
 
-    let msg = InitMsg { owner: None };
+    let msg = InitMsg {
+        owner: None,
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
+    };
 
     let env = mock_env();
     let info = mock_info("owner0000", &[]);
@@ -94,7 +99,10 @@ fn test_request() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -103,7 +111,10 @@ fn test_request() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -112,7 +123,10 @@ fn test_request() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -132,6 +146,8 @@ fn register_merkle_root() {
 
     let msg = InitMsg {
         owner: Some("owner0000".into()),
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
     };
 
     let env = mock_env();
@@ -143,7 +159,10 @@ fn register_merkle_root() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -187,11 +206,12 @@ fn register_merkle_root() {
 }
 
 const TEST_DATA_1: &[u8] = include_bytes!("../testdata/report_list_1_test_data.json");
+const TEST_DATA_2: &[u8] = include_bytes!("../testdata/report_list_with_rewards.json");
 
 #[derive(Deserialize, Debug)]
 struct Encoded {
     request_id: u64,
-    data: String,
+    data: Binary,
     root: String,
     proofs: Vec<String>,
 }
@@ -206,6 +226,8 @@ fn verify_data() {
     // init merkle root
     let msg = InitMsg {
         owner: Some("owner0000".into()),
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
     };
 
     let env = mock_env();
@@ -217,7 +239,10 @@ fn verify_data() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -255,6 +280,8 @@ fn update_signature() {
     // init merkle root
     let msg = InitMsg {
         owner: Some("owner0000".into()),
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
     };
 
     let env = mock_env();
@@ -266,7 +293,10 @@ fn update_signature() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 2 },
+        HandleMsg::Request {
+            threshold: 2,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -308,6 +338,8 @@ fn owner_freeze() {
 
     let msg = InitMsg {
         owner: Some("owner0000".into()),
+        service_addr: HumanAddr::from("asomething"),
+        contract_fee: coin(1u128, "orai"),
     };
 
     let env = mock_env();
@@ -319,7 +351,10 @@ fn owner_freeze() {
         deps.as_mut(),
         env.clone(),
         info.clone(),
-        HandleMsg::Request { threshold: 1 },
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
     )
     .unwrap();
 
@@ -366,4 +401,56 @@ fn owner_freeze() {
     };
     let res = handle(deps.as_mut(), env, info, msg).unwrap_err();
     assert_eq!(res, ContractError::Unauthorized {});
+}
+
+#[test]
+fn send_reward() {
+    // Run test 1
+    let mut deps = mock_dependencies(&coins(100000, DENOM));
+    deps.api.canonical_length = 54;
+    let test_data: Encoded = from_slice(TEST_DATA_2).unwrap();
+
+    // init merkle root
+    let msg = InitMsg {
+        owner: Some("owner0000".into()),
+        service_addr: HumanAddr::from("something"),
+        contract_fee: coin(1u128, "orai"),
+    };
+
+    let env = mock_env();
+    let info = mock_info("addr0000", &[]);
+    let _res = init(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    // create new request
+    handle(
+        deps.as_mut(),
+        env.clone(),
+        info.clone(),
+        HandleMsg::Request {
+            threshold: 1,
+            service: String::from("something"),
+        },
+    )
+    .unwrap();
+
+    let env = mock_env();
+    let info = mock_info("owner0000", &[]);
+    let msg = HandleMsg::RegisterMerkleRoot {
+        merkle_root: test_data.root,
+    };
+    let _res = handle(deps.as_mut(), env.clone(), info.clone(), msg).unwrap();
+
+    let res = handle(
+        deps.as_mut(),
+        env,
+        info,
+        HandleMsg::ClaimReward {
+            stage: 1,
+            report: test_data.data,
+            proof: test_data.proofs,
+        },
+    )
+    .unwrap();
+
+    println!("res: {:?}", res);
 }

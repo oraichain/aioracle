@@ -20,6 +20,8 @@ const getProof = async (req, res) => {
         // special case, tree with only root
         if (hexLeaf.toString('hex') === tree.getHexRoot()) return res.send({ code: 200, proofs: [] })
         const proofs = tree.getHexProof(hexLeaf);
+        console.log("root: ", tree.getHexRoot());
+        console.log("proofs: ", proofs);
         if (proofs.length === 0) return res.send({ code: 404 });
         return res.send({ code: 200, proofs })
     } catch (error) {

@@ -24,7 +24,7 @@ const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {
     const input = JSON.stringify({
         verify_data: {
             stage: parseInt(requestId),
-            data: JSON.stringify(leaf),
+            data: Buffer.from(JSON.stringify(leaf)).toString('base64'),
             proof: proofs
         }
     })

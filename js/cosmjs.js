@@ -59,7 +59,21 @@ const getData = async (oscript) => {
     const input = JSON.stringify({
         test: {}
     });
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    let data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    let result = {
+        data: Buffer.from(JSON.stringify(data)).toString('base64'),
+        // TODO: how to add this reward
+        rewards: [
+            {
+                recipient: "orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt",
+                coin: {
+                    denom: "orai",
+                    amount: "5",
+                }
+            }
+        ],
+    }
+    return result;
 }
 
 module.exports = { execute, getFirstWalletAddr, isSubmitted, submitSignature, getData };

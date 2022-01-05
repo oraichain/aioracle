@@ -59,11 +59,13 @@ const handleCurrentRequest = async (interval = 5000) => {
                 currentRequest = requestId;
                 // get service contracts to get data
                 let serviceContracts = await getServiceContracts(contractAddr, requestId);
-                let { data } = await getData(serviceContracts.oscript);
+                let { data, rewards } = await getData(serviceContracts.oscript);
                 leaf = {
                     executor,
-                    data
+                    data,
+                    rewards
                 }
+                console.log("leaf base64: ", Buffer.from(JSON.stringify(leaf)).toString('base64'));
                 await submitReport(leaf);
             }
 

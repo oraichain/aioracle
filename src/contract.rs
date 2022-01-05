@@ -1,6 +1,6 @@
 use cosmwasm_std::{
-    attr, to_binary, Binary, Deps, DepsMut, Env, HandleResponse, HumanAddr, InitResponse,
-    MessageInfo, StdError, StdResult, Storage,
+    attr, from_slice, to_binary, BankMsg, Binary, CosmosMsg, Deps, DepsMut, Env, HandleResponse,
+    HumanAddr, InitResponse, MessageInfo, StdError, StdResult, Storage,
 };
 
 use cw_storage_plus::U8Key;
@@ -10,7 +10,7 @@ use std::convert::TryInto;
 use crate::error::ContractError;
 use crate::msg::{
     ConfigResponse, CurrentStageResponse, GetServiceContracts, HandleMsg, InitMsg,
-    IsClaimedResponse, LatestStageResponse, QueryMsg, ServiceContractsMsg,
+    IsClaimedResponse, LatestStageResponse, QueryMsg, Report, ServiceContractsMsg,
 };
 use crate::state::{
     Config, Contracts, Request, Signature, CLAIM, CONFIG, CURRENT_STAGE, LATEST_STAGE, REQUEST,
@@ -22,6 +22,7 @@ pub fn init(deps: DepsMut, _env: Env, info: MessageInfo, msg: InitMsg) -> StdRes
     let config = Config {
         owner: Some(owner),
         service_addr: msg.service_addr,
+        contract_fee: msg.contract_fee,
     };
     CONFIG.save(deps.storage, &config)?;
 
@@ -46,7 +47,14 @@ pub fn handle(
         HandleMsg::RegisterMerkleRoot { merkle_root } => {
             execute_register_merkle_root(deps, env, info, merkle_root)
         }
-        HandleMsg::Request { service, threshold } => handle_request(deps, env, service, threshold),
+        HandleMsg::Request { service, threshold } => {
+            handle_request(deps, info, env, service, threshold)
+        }
+        HandleMsg::ClaimReward {
+            stage,
+            report,
+            proof,
+        } => handle_claim(deps, env, stage, report, proof),
     }
 }
 
@@ -120,11 +128,22 @@ pub fn execute_update_config(
 
 pub fn handle_request(
     deps: DepsMut,
+    info: MessageInfo,
     _env: Env,
     service: String,
     threshold: u64,
 ) -> Result<HandleResponse, ContractError> {
     let stage = LATEST_STAGE.update(deps.storage, |stage| -> StdResult<_> { Ok(stage + 1) })?;
+    let Config { contract_fee, .. } = CONFIG.load(deps.storage)?;
+    if let Some(sent_fund) = info
+        .sent_funds
+        .iter()
+        .find(|fund| fund.denom.eq(&contract_fee.denom))
+    {
+        if sent_fund.amount.ne(&contract_fee.amount) {
+            return Err(ContractError::InsufficientFunds {});
+        }
+    }
     REQUEST.save(
         deps.storage,
         U8Key::from(stage),
@@ -144,6 +163,55 @@ pub fn handle_request(
             attr("stage", stage.to_string()),
             attr("threshold", threshold),
             attr("service", service),
+        ],
+    })
+}
+
+pub fn handle_claim(
+    deps: DepsMut,
+    env: Env,
+    stage: u8,
+    report: Binary,
+    proofs: Vec<String>,
+) -> Result<HandleResponse, ContractError> {
+    // check report legitimacy
+    let is_verified = verify_data(deps.as_ref(), stage, report.clone(), proofs)?;
+    if !is_verified {
+        return Err(ContractError::Unauthorized {});
+    }
+
+    let report_struct: Report = from_slice(report.as_slice())
+        .map_err(|err| ContractError::Std(StdError::generic_err(err.to_string())))?;
+
+    let mut claim_key = report_struct.executor.clone();
+    claim_key.push_str(&stage.to_string());
+    let is_claimed = CLAIM.may_load(deps.storage, claim_key.as_bytes())?;
+
+    if let Some(is_claimed) = is_claimed {
+        if is_claimed {
+            return Err(ContractError::Claimed {});
+        }
+    }
+    let mut cosmos_msgs: Vec<CosmosMsg> = vec![];
+
+    for reward in report_struct.rewards {
+        // send rewards to participants
+        let send_msg = BankMsg::Send {
+            from_address: env.contract.address.clone(),
+            to_address: reward.recipient,
+            amount: vec![reward.coin],
+        };
+        cosmos_msgs.push(send_msg.into());
+    }
+
+    CLAIM.save(deps.storage, claim_key.as_bytes(), &true)?;
+
+    Ok(HandleResponse {
+        data: None,
+        messages: cosmos_msgs,
+        attributes: vec![
+            attr("action", "handle_claim"),
+            attr("stage", stage.to_string()),
         ],
     })
 }
@@ -239,10 +307,10 @@ fn is_submitted(request: &Request, executor: HumanAddr) -> bool {
     false
 }
 
-pub fn verify_data(deps: Deps, stage: u8, data: String, proof: Vec<String>) -> StdResult<bool> {
+pub fn verify_data(deps: Deps, stage: u8, data: Binary, proof: Vec<String>) -> StdResult<bool> {
     let Request { merkle_root, .. } = REQUEST.load(deps.storage, stage.into())?;
 
-    let hash = sha2::Sha256::digest(data.as_bytes())
+    let hash = sha2::Sha256::digest(data.as_slice())
         .as_slice()
         .try_into()
         .map_err(|_| StdError::generic_err("wrong length"))?;
