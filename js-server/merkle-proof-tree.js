@@ -1,5 +1,6 @@
 const { MerkleTree } = require('merkletreejs');
 const crypto = require('crypto');
+const db = require('./db');
 
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
 const verifyHexProof = (hexLeaf, hexProof, hexRoot) => {
@@ -13,6 +14,15 @@ const verifyHexProof = (hexLeaf, hexProof, hexRoot) => {
 
   return hexRoot === hashBuf.toString('hex');
 };
+
+const formTree = async (reports) => {
+  const values = reports.map(JSON.stringify);
+  const leaves = values.map((value) => sha256(value).toString('hex'));
+  // store the leaves to retrieve later. Can possibly store this on contract (but could be expensive)
+  const tree = new MerkleProofTree(leaves);
+  await db.put(tree.getRoot(), JSON.stringify(leaves));
+  return tree.getHexRoot();
+}
 
 class MerkleProofTree extends MerkleTree {
   constructor(leaves) {
@@ -32,4 +42,4 @@ class MerkleProofTree extends MerkleTree {
   }
 }
 
-module.exports = { sha256, verifyHexProof, MerkleProofTree };
+module.exports = { sha256, verifyHexProof, formTree, MerkleProofTree };

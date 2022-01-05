@@ -23,4 +23,8 @@ const getCurrentStage = async (contractAddr) => {
     return data.data.current_stage;
 }
 
-module.exports = { getRoot, getCurrentStage };
+const handleResponse = (res, status, message) => {
+    return res.status(status).send({ message })
+}
+
+module.exports = { getRoot, getCurrentStage, handleResponse };

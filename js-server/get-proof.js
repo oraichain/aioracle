@@ -13,13 +13,12 @@ const getProof = async (req, res) => {
         const requestId = await getCurrentStage(contractAddr);
         let { data } = await getRoot(contractAddr, requestId);
         if (!data.merkle_root) return res.status(200).send({ code: 200, message: "Waiting for the merkle root" })
-        const keys = JSON.parse((await db.get(Buffer.from(data.merkle_root, 'hex'))));
-        const leaves = [];
-        for (let i = 0; i < keys.length; i++) {
-            leaves.push(Buffer.from(keys[i], 'hex'));
-        }
+        const leaves = JSON.parse((await db.get(Buffer.from(data.merkle_root, 'hex'))));
         const tree = new MerkleProofTree(leaves);
-        const hexLeaf = sha256(JSON.stringify(leaf)).toString('hex');
+        const hexLeaf = sha256(JSON.stringify(leaf));
+
+        // special case, tree with only root
+        if (hexLeaf.toString('hex') === tree.getHexRoot()) return res.send({ code: 200, proofs: [] })
         const proofs = tree.getHexProof(hexLeaf);
         if (proofs.length === 0) return res.send({ code: 404 });
         return res.send({ code: 200, proofs })
@@ -28,5 +27,4 @@ const getProof = async (req, res) => {
         return res.status(404).send({ code: 404, error })
     }
 }
-
 module.exports = { getProof };

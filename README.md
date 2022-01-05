@@ -26,5 +26,5 @@ cd js && NODE_ENV=dev2 node index.js
 ### 3. Create a new request
 
 ```bash
-yarn oraicli wasm execute orai1ars73g86y4kzajsgam5ee38npgmkq54dlzuz6w --input '{"request":{"threshold":2}}'
+yarn oraicli wasm execute orai1ars73g86y4kzajsgam5ee38npgmkq54dlzuz6w --input '{"request":{"threshold":2},"service":"price"}'
 ```
