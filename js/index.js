@@ -37,10 +37,9 @@ const handleCurrentRequest = async (interval = 5000) => {
                     await submitReport(leaf);
                 }
                 // verify proof
-                console.log("leaf: ", leaf);
                 const proofs = await getProofs(leaf);
                 // no need to verify if there is no proof for this leaf
-                if (proofs.length === 0) continue;
+                if (!proofs) continue;
                 const isVerified = await verifyLeaf(contractAddr, requestId, leaf, proofs);
                 console.log("is verified with leaf: ", isVerified);
                 // only submit signature when verified & when not submit signature
@@ -62,8 +61,8 @@ const handleCurrentRequest = async (interval = 5000) => {
                 let serviceContracts = await getServiceContracts(contractAddr, requestId);
                 let { data } = await getData(serviceContracts.oscript);
                 leaf = {
-                    data,
-                    executor
+                    executor,
+                    data
                 }
                 await submitReport(leaf);
             }
