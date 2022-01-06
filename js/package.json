@@ -5,8 +5,11 @@
     "@cosmjs/math": "^0.26.5",
     "@cosmjs/proto-signing": "^0.26.5",
     "@cosmjs/stargate": "^0.26.5",
+    "@oraichain/cosmosjs": "../../cosmosjs",
     "dotenv": "^10.0.0",
     "isomorphic-fetch": "^3.0.0",
-    "node-fetch": "^3.1.0"
+    "js-sha256": "^0.9.0",
+    "node-fetch": "^3.1.0",
+    "secp256k1": "^4.0.2"
   }
 }

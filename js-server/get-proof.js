@@ -18,12 +18,12 @@ const getProof = async (req, res) => {
         const hexLeaf = sha256(JSON.stringify(leaf));
 
         // special case, tree with only root
-        if (hexLeaf.toString('hex') === tree.getHexRoot()) return res.send({ code: 200, proofs: [] })
+        if (hexLeaf.toString('hex') === tree.getHexRoot()) return res.send({ code: 200, proofs: [], root: tree.getHexRoot() })
         const proofs = tree.getHexProof(hexLeaf);
         console.log("root: ", tree.getHexRoot());
         console.log("proofs: ", proofs);
         if (proofs.length === 0) return res.send({ code: 404 });
-        return res.send({ code: 200, proofs })
+        return res.send({ code: 200, proofs, root: tree.getHexRoot() })
     } catch (error) {
         console.log("error: ", error);
         return res.status(404).send({ code: 404, error })

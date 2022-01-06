@@ -17,7 +17,7 @@ const getProofs = async (leaf) => {
         count++;
         if (count > 10) break;
     } while (!result.proofs);
-    return result.proofs;
+    return result;
 }
 
 const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {

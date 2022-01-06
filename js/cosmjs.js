@@ -3,17 +3,20 @@ const { stringToPath } = require("@cosmjs/crypto");
 const cosmwasm = require('@cosmjs/cosmwasm-stargate');
 const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
 const data = require('../testdata/report_list.json');
+const Cosmos = require('@oraichain/cosmosjs').default;
+const { signSignature } = require("./crypto");
 
 const network = {
     rpc: process.env.NETWORK_RPC || "https://testnet-rpc.orai.io",
     prefix: "orai",
+    path: "m/44'/118'/0'/0/0",
 }
 
 const collectWallet = async (mnemonic) => {
     const wallet = await DirectSecp256k1HdWallet.fromMnemonic(
         mnemonic,
         {
-            hdPaths: [stringToPath("m/44'/118'/0'/0/0")],
+            hdPaths: [stringToPath(network.path)],
             prefix: network.prefix,
         }
     );
@@ -24,6 +27,12 @@ const getFirstWalletAddr = async (mnemonic) => {
     let wallet = await collectWallet(mnemonic);
     let accounts = await wallet.getAccounts();
     return accounts[0].address;
+}
+
+const getFirstWalletPubkey = async (mnemonic) => {
+    let wallet = await collectWallet(mnemonic);
+    let accounts = await wallet.getAccounts();
+    return Buffer.from(accounts[0].pubkey).toString('base64');
 }
 
 const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = undefined }) => {
@@ -40,8 +49,13 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     }
 }
 
-const submitSignature = async (mnemonic, contractAddr, stage, signature) => {
-    return execute({ mnemonic, address: contractAddr, handleMsg: JSON.stringify({ update_signature: { stage, signature } }), gasData: { gasAmount: "0", denom: "orai" } });
+const signSubmitSignature = async (mnemonic, contractAddr, stage, message) => {
+    // sign the message
+    const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
+    const pubKey = childKey.publicKey;
+    const signature = signSignature(message, childKey.privateKey, pubKey);
+    const input = JSON.stringify({ update_signature: { stage, pubkey: Buffer.from(pubKey).toString('base64'), signature } });
+    return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" } });
 }
 
 const isSubmitted = async (contractAddr, requestId, executor) => {
@@ -68,10 +82,10 @@ const getData = async (contractAddr, requestId, oscript) => {
     let request = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
     let result = {
         data: Buffer.from(JSON.stringify(data)).toString('base64'),
-        // TODO: how to add this reward
+        // TODO: need to filter the rewards, only allow successful results from providers receive rewards
         rewards: request.data.rewards,
     }
     return result;
 }
 
-module.exports = { execute, getFirstWalletAddr, isSubmitted, submitSignature, getData };
+module.exports = { execute, getFirstWalletAddr, isSubmitted, signSubmitSignature, getData, getFirstWalletPubkey };

@@ -7,7 +7,7 @@ const { execute } = require('./cosmjs');
 const { getRoot, getCurrentStage, handleResponse } = require('./utils');
 
 // const threshold = 4;
-const whiteList = ["orai10dzr3yks2jrtgqjnpt6hdgf73mnset024k2lzy", "orai16e6cpk6ycddk6208fpaya7tmmardhvr77l5dtr", "orai1uhcwtfntsvk8gpwfxltesyl4e28aalmqvx7typ", "orai1f6q9wjn8qp3ll8y8ztd8290vtec2yxyx0wnd0d", "orai18tf4uwrkcd4qk87jz3n0ruhsdzeg3fmde8x8yj", "orai1602dkqjvh4s7ryajnz2uwhr8vetrwr8nekpxv5", "orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573"];
+const whiteList = ["AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn", "AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX"];
 
 const submitReport = async (req, res) => {
     let report = req.body;

@@ -7,8 +7,7 @@ const checkSubmit = async (req, res) => {
     try {
         const reportsStr = await db.get(key);
         const reports = JSON.parse(reportsStr);
-        console.log("reports string: ", reports);
-        const report = reports.filter(rep => rep.executor === data.executor);
+        const report = reports.filter(rep => rep.executor === Buffer.from(data.executor, 'hex').toString('base64')); // convert executor pubkey to hex to put in query string parameter. decode to base64
         if (report.length > 0) return res.send({ code: 200, submitted: true })
         else return res.status(404).send({ submitted: false, code: 404 });
     } catch (error) {
