@@ -1,8 +1,8 @@
 const fetch = require('isomorphic-fetch');
 const path = require('path');
-const { getCurrentStage, submitReport, getRoot, getServiceContracts } = require('./utils');
+const { getCurrentStage, submitReport, getRoot, getServiceContracts, checkSubmit } = require('./utils');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : "../.env") })
-const { getFirstWalletAddr, submitSignature, isSubmitted, getData, getFirstWalletPubkey, signSubmitSignature } = require('./cosmjs');
+const { getFirstWalletAddr, isSignatureSubmitted, getData, getFirstWalletPubkey, signSubmitSignature } = require('./cosmjs');
 const { getProofs, verifyLeaf } = require('./merkle-tree');
 
 // run interval to ping, default is 5000ms block confirmed
@@ -22,18 +22,10 @@ const handleCurrentRequest = async (interval = 5000) => {
             // if current requestId is the same, we check if already submitted successfully. If yes then verify proof & sign
             if (currentRequest === requestId) {
                 isNew = false;
-                const requestOptions = {
-                    method: 'GET',
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': "application/json"
-                    },
-                    redirect: 'follow'
-                };
                 // if have not submitted => retry
-                let checkSubmit = await fetch(`http://localhost:3000/check_submit?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`, requestOptions).then(data => data.json());
-                console.log("check submit: ", checkSubmit);
-                if (!checkSubmit.submitted) {
+                let { submitted } = await checkSubmit(contractAddr, requestId, executor);
+                console.log("check submit: ", submitted);
+                if (!submitted) {
                     await submitReport(leaf);
                 }
                 // verify proof
@@ -44,12 +36,10 @@ const handleCurrentRequest = async (interval = 5000) => {
                 console.log("is verified with leaf: ", isVerified);
                 // only submit signature when verified & when not submit signature
                 // check if already submit signature
-                const submitted = await isSubmitted(contractAddr, requestId, executor);
-                console.log("is signature submitted: ", submitted);
-                if (isVerified && isVerified.data && submitted && !submitted.data) {
+                const isSubmittedSignature = await isSignatureSubmitted(contractAddr, requestId, executor);
+                console.log("is signature submitted: ", isSubmittedSignature);
+                if (isVerified && isVerified.data && isSubmittedSignature && !isSubmittedSignature.data) {
                     // submit signature
-                    // TODO: use real signature, need to get merkle proof
-                    // const merkleRoot = await getRoot(contractAddr, requestId);
                     const result = await signSubmitSignature(mnemonic, contractAddr, requestId, root);
                     console.log("update signature result: ", result);
                 }

@@ -58,7 +58,7 @@ const signSubmitSignature = async (mnemonic, contractAddr, stage, message) => {
     return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" } });
 }
 
-const isSubmitted = async (contractAddr, requestId, executor) => {
+const isSignatureSubmitted = async (contractAddr, requestId, executor) => {
     const input = JSON.stringify({
         is_submitted: {
             stage: parseInt(requestId),
@@ -88,4 +88,4 @@ const getData = async (contractAddr, requestId, oscript) => {
     return result;
 }
 
-module.exports = { execute, getFirstWalletAddr, isSubmitted, signSubmitSignature, getData, getFirstWalletPubkey };
+module.exports = { execute, getFirstWalletAddr, isSignatureSubmitted, signSubmitSignature, getData, getFirstWalletPubkey };

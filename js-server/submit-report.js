@@ -7,6 +7,8 @@ const { execute } = require('./cosmjs');
 const { getRoot, getCurrentStage, handleResponse } = require('./utils');
 
 // const threshold = 4;
+
+// TODO: query whitelist from contract instead.
 const whiteList = ["AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn", "AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX"];
 
 const submitReport = async (req, res) => {

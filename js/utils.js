@@ -1,6 +1,5 @@
 const fetch = require('isomorphic-fetch');
 const getRoot = async (contractAddr, requestId) => {
-
     const input = JSON.stringify({
         request: {
             stage: requestId
@@ -11,7 +10,6 @@ const getRoot = async (contractAddr, requestId) => {
 }
 
 const getCurrentStage = async (contractAddr) => {
-
     const input = JSON.stringify({
         current_stage: {}
     })
@@ -23,8 +21,11 @@ const getCurrentStage = async (contractAddr) => {
     return data.data.current_stage;
 }
 
-const getServiceContracts = async (contractAddr, requestId) => {
+const checkSubmit = async (contractAddr, requestId, executor) => {
+    return fetch(`http://localhost:3000/check_submit?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => data.json());
+}
 
+const getServiceContracts = async (contractAddr, requestId) => {
     const input = JSON.stringify({
         get_service_contracts: { stage: parseInt(requestId) }
     })
@@ -50,4 +51,4 @@ const submitReport = async (leaf) => {
     console.log("result: ", result);
 }
 
-module.exports = { getRoot, getCurrentStage, submitReport, getServiceContracts };
+module.exports = { getRoot, getCurrentStage, submitReport, getServiceContracts, checkSubmit };
