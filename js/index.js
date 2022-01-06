@@ -59,7 +59,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                 currentRequest = requestId;
                 // get service contracts to get data
                 let serviceContracts = await getServiceContracts(contractAddr, requestId);
-                let { data, rewards } = await getData(serviceContracts.oscript);
+                let { data, rewards } = await getData(contractAddr, requestId, serviceContracts.oscript);
                 leaf = {
                     executor,
                     data,

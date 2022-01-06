@@ -82,12 +82,6 @@ pub struct Report {
 
 #[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
 #[serde(rename_all = "snake_case")]
-pub struct Reward {
-    pub recipient: HumanAddr,
-    pub coin: Coin,
-}
-#[derive(Serialize, Deserialize, Clone, PartialEq, JsonSchema, Debug)]
-#[serde(rename_all = "snake_case")]
 pub struct GetServiceContracts {
     pub service_contracts_msg: ServiceContractsMsg,
 }

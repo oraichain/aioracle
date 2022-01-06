@@ -55,23 +55,21 @@ const isSubmitted = async (contractAddr, requestId, executor) => {
 }
 
 // TODO: use correct input format
-const getData = async (oscript) => {
-    const input = JSON.stringify({
+const getData = async (contractAddr, requestId, oscript) => {
+    let input = JSON.stringify({
         test: {}
     });
     let data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    input = JSON.stringify({
+        request: {
+            stage: requestId
+        }
+    });
+    let request = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
     let result = {
         data: Buffer.from(JSON.stringify(data)).toString('base64'),
         // TODO: how to add this reward
-        rewards: [
-            {
-                recipient: "orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt",
-                coin: {
-                    denom: "orai",
-                    amount: "5",
-                }
-            }
-        ],
+        rewards: request.data.rewards,
     }
     return result;
 }
