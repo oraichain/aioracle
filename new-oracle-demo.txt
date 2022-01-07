@@ -1,0 +1,5 @@
+oscript_demo: orai104uxtfqmnw6x473k8kydrx2f3ukzua8apm6fg6
+
+service provider demo: orai1ugq8erz3hz323yatueze5ageg2jywpfq3le794
+
+ai oracle contract demo: orai1jvsd788d8auk98nay367cujpnu2raaupyvlgz6

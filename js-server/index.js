@@ -7,6 +7,7 @@ const { getProof } = require('./get-proof');
 const { submitReport } = require('./submit-report');
 const { checkSubmit } = require('./get-report');
 const db = require('./db');
+const { isWhiteListed } = require('./utils');
 const app = express()
 const port = 3000
 app.use(express.json()); // built-in middleware for express

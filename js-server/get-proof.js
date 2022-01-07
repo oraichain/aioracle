@@ -3,7 +3,7 @@ const {
     MerkleProofTree,
     sha256,
 } = require('./merkle-proof-tree');
-const { getRoot, getCurrentStage } = require('./utils');
+const { getRequest, getCurrentStage } = require('./utils');
 
 const getProof = async (req, res) => {
     let leaf = req.body;
@@ -11,7 +11,7 @@ const getProof = async (req, res) => {
     try {
         // collect the root hex based on the request id to form a tree
         const requestId = await getCurrentStage(contractAddr);
-        let { data } = await getRoot(contractAddr, requestId);
+        let { data } = await getRequest(contractAddr, requestId);
         if (!data.merkle_root) return res.status(200).send({ code: 200, message: "Waiting for the merkle root" })
         const leaves = JSON.parse((await db.get(Buffer.from(data.merkle_root, 'hex'))));
         const tree = new MerkleProofTree(leaves);

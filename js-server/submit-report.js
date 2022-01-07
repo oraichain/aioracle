@@ -4,12 +4,7 @@ const {
     formTree,
 } = require('./merkle-proof-tree');
 const { execute } = require('./cosmjs');
-const { getRoot, getCurrentStage, handleResponse } = require('./utils');
-
-// const threshold = 4;
-
-// TODO: query whitelist from contract instead.
-const whiteList = ["AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn", "AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX"];
+const { getRequest, getCurrentStage, handleResponse, isWhiteListed } = require('./utils');
 
 const submitReport = async (req, res) => {
     let report = req.body;
@@ -17,15 +12,15 @@ const submitReport = async (req, res) => {
     const wallet = process.env.MNEMONIC;
     // invalid data format
     if (!report.executor || !report.data) return handleResponse(res, 403, "wrong input format");
-    // not in list
-    if (!whiteList.includes(report.executor)) return handleResponse(res, 401, "not in list");
 
     // collect current request id that we need to handle
     let requestId = 0;
     let threshold = 0;
     try {
         requestId = await getCurrentStage(contractAddr);
-        let data = await getRoot(contractAddr, requestId);
+        let data = await getRequest(contractAddr, requestId);
+        // verify executor not in list
+        if (!(await isWhiteListed(contractAddr, report.executor, data.data.executors_key))) return handleResponse(res, 401, "not in list");
         threshold = data.data.threshold;
     } catch (error) {
         return handleResponse(res, 500, error.toString());
@@ -52,7 +47,7 @@ const submitReport = async (req, res) => {
         await db.put(key, JSON.stringify(reports));
 
         // if root already exists return
-        let root = await getRoot(contractAddr, requestId);
+        let root = await getRequest(contractAddr, requestId);
         if (root.data && root.data.merkle_root) {
             return handleResponse(res, 403, "merkle root already exists for this request id");
         }
