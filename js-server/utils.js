@@ -33,7 +33,6 @@ const isWhiteListed = async (contractAddr, executor, executorsKey) => {
     })
 
     const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
-    console.log("data: ", data);
     if (!data.data) {
         throw "Cannot collect list executors";
     }

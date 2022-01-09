@@ -5,6 +5,7 @@ const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/sta
 const data = require('../testdata/report_list.json');
 const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require("./crypto");
+const { handleScript } = require("./script-execute");
 
 const network = {
     rpc: process.env.NETWORK_RPC || "https://testnet-rpc.orai.io",
@@ -68,12 +69,8 @@ const isSignatureSubmitted = async (contractAddr, requestId, executor) => {
     return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 }
 
-// TODO: use correct input format
 const getData = async (contractAddr, requestId, oscript) => {
-    let input = JSON.stringify({
-        test: {}
-    });
-    let data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    let data = await handleScript(oscript);
     input = JSON.stringify({
         request: {
             stage: requestId
@@ -81,7 +78,7 @@ const getData = async (contractAddr, requestId, oscript) => {
     });
     let request = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
     let result = {
-        data: Buffer.from(JSON.stringify(data)).toString('base64'),
+        data: Buffer.from(data).toString('base64'),
         // TODO: need to filter the rewards, only allow successful results from providers receive rewards
         rewards: request.data.rewards,
     }
