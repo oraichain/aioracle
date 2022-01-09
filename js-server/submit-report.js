@@ -4,24 +4,24 @@ const {
     formTree,
 } = require('./merkle-proof-tree');
 const { execute } = require('./cosmjs');
-const { getRequest, getCurrentStage, handleResponse, isWhiteListed } = require('./utils');
+const { getRequest, handleResponse, isWhiteListed } = require('./utils');
 
 const submitReport = async (req, res) => {
-    let report = req.body;
+    let { requestId, report } = req.body;
     const contractAddr = process.env.CONTRACT_ADDRESS;
     const wallet = process.env.MNEMONIC;
     // invalid data format
     if (!report.executor || !report.data) return handleResponse(res, 403, "wrong input format");
 
     // collect current request id that we need to handle
-    let requestId = 0;
     let threshold = 0;
     try {
-        requestId = await getCurrentStage(contractAddr);
         let data = await getRequest(contractAddr, requestId);
         // verify executor not in list
         if (!(await isWhiteListed(contractAddr, report.executor, data.data.executors_key))) return handleResponse(res, 401, "not in list");
         threshold = data.data.threshold;
+        console.log("request id: ", requestId);
+        console.log("threshold: ", threshold);
     } catch (error) {
         return handleResponse(res, 500, error.toString());
     }
@@ -56,7 +56,7 @@ const submitReport = async (req, res) => {
         root = await formTree(reports);
 
         // store the merkle root on-chain
-        const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { merkle_root: root } }), gasData: { gasAmount: "0", denom: "orai" } });
+        const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), gasData: { gasAmount: "0", denom: "orai" } });
 
         console.log("execute result: ", executeResult);
 

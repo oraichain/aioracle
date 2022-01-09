@@ -1,4 +1,4 @@
-const getProofs = async (leaf) => {
+const getProofs = async (requestId, leaf) => {
     let result = {};
     let count = 0;
     do {
@@ -8,7 +8,7 @@ const getProofs = async (leaf) => {
                 'Accept': 'application/json',
                 'Content-Type': "application/json"
             },
-            body: JSON.stringify(leaf),
+            body: JSON.stringify({ requestId, leaf }),
             redirect: 'follow'
         };
         result = await fetch("http://localhost:3000/get_proof", requestOptions).then(data => data.json());

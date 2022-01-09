@@ -55,7 +55,7 @@ const signSubmitSignature = async (mnemonic, contractAddr, stage, message) => {
     const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
     const pubKey = childKey.publicKey;
     const signature = signSignature(message, childKey.privateKey, pubKey);
-    const input = JSON.stringify({ update_signature: { stage, pubkey: Buffer.from(pubKey).toString('base64'), signature } });
+    const input = JSON.stringify({ update_signature: { stage: parseInt(stage), pubkey: Buffer.from(pubKey).toString('base64'), signature } });
     return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" } });
 }
 
