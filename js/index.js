@@ -43,6 +43,16 @@ const handleCurrentRequest = async (interval = 5000) => {
                 if (requestId > latestStage) throw "No request to handle";
             }
             console.log("request id: ", requestId);
+
+            // check if already submit signature. If yes then skip to next round
+            const isSubmittedSignature = await isSignatureSubmitted(contractAddr, requestId, executor);
+            console.log("is signature submitted: ", isSubmittedSignature);
+            if (isSubmittedSignature && isSubmittedSignature.data) {
+                requestId++;
+                continue;
+            }
+
+            // only submit data to backend if not already done so
             let { submitted, report } = await checkSubmit(contractAddr, requestId, executor);
             if (!submitted) {
                 // if the request already has merkle root stored => skip this round
@@ -75,15 +85,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                 else leaf = data.leaf;
             }
 
-            // check if already submit signature. If yes then skip to next round
-            const isSubmittedSignature = await isSignatureSubmitted(contractAddr, requestId, executor);
-            console.log("is signature submitted: ", isSubmittedSignature);
-            if (isSubmittedSignature && isSubmittedSignature.data) {
-                requestId++;
-                continue;
-            }
-
-            // verify proof
+            // final case, when have not submitted signature. Need to verify leaf before signing
             const { proofs, root } = await getProofs(requestId, leaf);
             // no need to verify if there is no proof for this leaf
             if (!proofs) continue;
