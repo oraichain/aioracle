@@ -1,6 +1,6 @@
 const fetch = require('isomorphic-fetch');
 const fs = require('fs');
-const getRoot = async (contractAddr, requestId) => {
+const getRequest = async (contractAddr, requestId) => {
     const input = JSON.stringify({
         request: {
             stage: requestId
@@ -58,6 +58,7 @@ const initStage = async (path, contractAddr) => {
     // let checkpointThreshold = 5;
     if (!fs.existsSync(path)) {
         let data = await getStageInfo(contractAddr);
+        console.log("data: ", data);
         requestId = data.checkpoint;
         latestStage = data.latest_stage;
         // checkpointThreshold = data.checkpoint_threshold;
@@ -80,4 +81,4 @@ const initStage = async (path, contractAddr) => {
     return { requestId, latestStage };
 }
 
-module.exports = { getRoot, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage };
+module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage };

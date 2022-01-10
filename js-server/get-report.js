@@ -4,11 +4,17 @@ const checkSubmit = async (req, res) => {
     let data = req.query;
     if (!data.request_id || !data.executor || !data.contract_addr) return res.status(403).send({ code: 403 });
     let key = `${data.contract_addr}${data.request_id}`;
+    let reportsStr = "";
     try {
-        const reportsStr = await db.get(key);
+        reportsStr = await db.get(key);
+    } catch (error) {
+        // cannot find key case
+        return res.status(404).send({ submitted: false, code: 404 });
+    }
+    try {
         const reports = JSON.parse(reportsStr);
         const report = reports.filter(rep => rep.executor === Buffer.from(data.executor, 'hex').toString('base64')); // convert executor pubkey to hex to put in query string parameter. decode to base64
-        if (report.length > 0) return res.send({ code: 200, submitted: true })
+        if (report.length > 0) return res.send({ code: 200, submitted: true, report: report[0] })
         else return res.status(404).send({ submitted: false, code: 404 });
     } catch (error) {
         console.log("error in checking submit: ", error);
