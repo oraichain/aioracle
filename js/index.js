@@ -17,8 +17,6 @@ const handleCurrentRequest = async (interval = 5000) => {
     const stageInfoPath = path.join(__dirname, stageInfoFile);
     const leafPath = path.join(__dirname, leafFile);
 
-    let isNew = false;
-    let currentRequest = 0;
     let leaf = {};
     let { requestId, latestStage } = await initStage(stageInfoPath, contractAddr);
 

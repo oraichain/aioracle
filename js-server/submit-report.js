@@ -39,30 +39,36 @@ const submitReport = async (req, res) => {
         // if we cant find the request id, we init new
         reports = [report];
     }
-    if (reports.length < threshold) {
-        await db.put(key, JSON.stringify(reports));
-        return handleResponse(res, 200, "success");
-    }
-    else if (reports.length === threshold) {
-        await db.put(key, JSON.stringify(reports));
 
-        // if root already exists return
-        let root = await getRequest(contractAddr, requestId);
-        if (root.data && root.data.merkle_root) {
-            return handleResponse(res, 403, "merkle root already exists for this request id");
+    try {
+        if (reports.length < threshold) {
+            await db.put(key, JSON.stringify(reports));
+            return handleResponse(res, 200, "success");
         }
+        else if (reports.length === threshold) {
+            // if root already exists return
+            let root = await getRequest(contractAddr, requestId);
+            if (root.data && root.data.merkle_root) {
+                return handleResponse(res, 403, "merkle root already exists for this request id");
+            }
 
-        // form a merkle root based on the value
-        root = await formTree(reports);
+            // form a merkle root based on the value
+            root = await formTree(reports);
 
-        // store the merkle root on-chain
-        const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), gasData: { gasAmount: "0", denom: "orai" } });
+            // store the merkle root on-chain
+            const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), gasData: { gasAmount: "0", denom: "orai" } });
 
-        console.log("execute result: ", executeResult);
+            console.log("execute result: ", executeResult);
 
-        return handleResponse(res, 200, "success");
+            // only store reports when the merkle root is successfully stored on-chain.
+            await db.put(key, JSON.stringify(reports));
+
+            return handleResponse(res, 200, "success");
+        }
+        else return handleResponse(res, 403, "request has already finished");
+    } catch (error) {
+        return handleResponse(res, 500, String(error));
     }
-    else return handleResponse(res, 403, "request has already finished");
 }
 
 module.exports = { submitReport };
