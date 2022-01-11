@@ -6,6 +6,7 @@ const data = require('../testdata/report_list.json');
 const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require("./crypto");
 const { handleScript } = require("./script-execute");
+const { getServiceContracts } = require("./utils");
 
 const network = {
     rpc: process.env.NETWORK_RPC || "https://testnet-rpc.orai.io",
@@ -69,8 +70,9 @@ const isSignatureSubmitted = async (contractAddr, requestId, executor) => {
     return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 }
 
-const getData = async (contractAddr, requestId, oscript) => {
-    let data = await handleScript(oscript);
+const getData = async (contractAddr, requestId, contracts) => {
+    const tempContracts = await getServiceContracts(contractAddr, requestId);
+    let data = await handleScript(tempContracts);
     input = JSON.stringify({
         request: {
             stage: requestId

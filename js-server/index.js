@@ -5,7 +5,7 @@ require('./db');
 const express = require('express');
 const { getProof } = require('./get-proof');
 const { submitReport } = require('./submit-report');
-const { checkSubmit } = require('./get-report');
+const { checkSubmit, getReports } = require('./get-report');
 const db = require('./db');
 const { isWhiteListed } = require('./utils');
 const app = express()
@@ -19,6 +19,8 @@ app.post('/get_proof', getProof);
 app.post('/submit_report', submitReport)
 
 app.get('/check_submit', checkSubmit)
+
+app.get('/get_reports', getReports)
 
 app.listen(port, async () => {
   console.log(`Example app listening at http://localhost:${port}`)

@@ -20,6 +20,10 @@ const handleCurrentRequest = async (interval = 5000) => {
     let leaf = {};
     let { requestId, latestStage } = await initStage(stageInfoPath, contractAddr);
 
+    // request error count. If reach above a certain value => skip to next request
+    let canSkip = 0;
+    let errorRequestId = 0;
+
     while (true) {
         try {
             // old latest stage, need to get updated
@@ -61,7 +65,7 @@ const handleCurrentRequest = async (interval = 5000) => {
                 }
                 // get service contracts to get data from the scripts, then submit report
                 let serviceContracts = await getServiceContracts(contractAddr, requestId);
-                let { data, rewards } = await getData(contractAddr, requestId, serviceContracts.oscript);
+                let { data, rewards } = await getData(contractAddr, requestId, serviceContracts);
                 leaf = {
                     executor,
                     data,
@@ -101,6 +105,16 @@ const handleCurrentRequest = async (interval = 5000) => {
 
         } catch (error) {
             console.log(error);
+            if (requestId === errorRequestId) {
+                canSkip++;
+                if (canSkip > 5) requestId++;
+            }
+            else {
+                // reset error check when new request id
+                errorRequestId = requestId;
+                canSkip = 0;
+            }
+
         }
         await new Promise(r => setTimeout(r, interval));
     }

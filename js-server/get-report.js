@@ -1,4 +1,5 @@
 const db = require('./db');
+const { handleResponse } = require('./utils');
 
 const checkSubmit = async (req, res) => {
     let data = req.query;
@@ -22,4 +23,34 @@ const checkSubmit = async (req, res) => {
     }
 }
 
-module.exports = { checkSubmit };
+const getReports = async (req, res) => {
+    let data = req.query;
+    if (!data.request_id || !data.contract_addr) return res.status(403).send({ code: 403 });
+    let key = `${data.contract_addr}${data.request_id}`;
+    let reportsStr = "";
+    try {
+        reportsStr = await db.get(key);
+    } catch (error) {
+        // cannot find key case
+        return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
+    }
+    if (reportsStr === "") {
+        return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
+    }
+    const [err, result] = safeJsonParse(reportsStr);
+    if (err) {
+        console.log('Failed to parse JSON: ' + err.message);
+        return handleResponse(res, 200, "successfully retrieved the reports", reportsStr);
+    }
+    return handleResponse(res, 200, "successfully retrieved the reports", result);
+}
+
+const safeJsonParse = (str) => {
+    try {
+        return [null, JSON.parse(str)];
+    } catch (err) {
+        return [err];
+    }
+}
+
+module.exports = { checkSubmit, getReports };
