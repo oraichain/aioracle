@@ -106,3 +106,6 @@ dist
 
 js-server/merkle-proof
 target
+
+js/leaf-*.json
+js/stage-info-*.json

@@ -10,19 +10,6 @@ const getRequest = async (contractAddr, requestId) => {
     return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
 }
 
-const getCurrentStage = async (contractAddr) => {
-
-    const input = JSON.stringify({
-        current_stage: {}
-    })
-
-    const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
-    if (!data.data) {
-        throw "No request to handle";
-    }
-    return data.data.current_stage;
-}
-
 // TODO: need to collect full list of executors using paging
 const isWhiteListed = async (contractAddr, executor, executorsKey) => {
 
@@ -42,8 +29,9 @@ const isWhiteListed = async (contractAddr, executor, executorsKey) => {
     return false;
 }
 
-const handleResponse = (res, status, message) => {
+const handleResponse = (res, status, message, data = undefined) => {
+    if (data) return res.status(status).send({ message, data })
     return res.status(status).send({ message })
 }
 
-module.exports = { getRequest, getCurrentStage, handleResponse, isWhiteListed };
+module.exports = { getRequest, handleResponse, isWhiteListed };
