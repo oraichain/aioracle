@@ -4,6 +4,6 @@ dsources: binance: orai1hmwh6rwtlyqd3pqnkze7y6hwpxsccq3ya7exez, coinbase: orai19
 
 service provider demo: orai1grgmdqmsusnd3hle536s83yyq4dh678vprkale
 
-ai oracle contract demo: orai15vjakfu32q27cvyq7hx32nqylsy7kzf96f7j8t
+ai oracle contract demo: orai10ds3trm2hmttemd8uu7ecwjm76d2yaa534pvxs
 
 executors: AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn, AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX

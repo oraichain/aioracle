@@ -27,6 +27,7 @@ const handleCurrentRequest = async (interval = 5000) => {
     while (true) {
         try {
             // old latest stage, need to get updated
+            console.log("request id: ", requestId);
             if (requestId > latestStage) {
                 let { checkpoint, latest_stage } = await getStageInfo(contractAddr);
                 requestId = checkpoint;
@@ -42,9 +43,12 @@ const handleCurrentRequest = async (interval = 5000) => {
                         }
                     });
                 }
-                if (requestId > latestStage) throw "No request to handle";
+                if (requestId > latestStage) {
+                    console.log("No request to handle");
+                    await new Promise(r => setTimeout(r, interval));
+                    continue;
+                }
             }
-            console.log("request id: ", requestId);
 
             // check if already submit signature. If yes then skip to next round
             const isSubmittedSignature = await isSignatureSubmitted(contractAddr, requestId, executor);
@@ -104,7 +108,6 @@ const handleCurrentRequest = async (interval = 5000) => {
             }
 
         } catch (error) {
-            console.log(error);
             if (requestId === errorRequestId) {
                 canSkip++;
                 if (canSkip > 5) requestId++;

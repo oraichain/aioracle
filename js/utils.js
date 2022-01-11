@@ -56,27 +56,31 @@ const initStage = async (path, contractAddr) => {
     let requestId = 1;
     let latestStage = 1;
     // let checkpointThreshold = 5;
-    if (!fs.existsSync(path)) {
-        let data = await getStageInfo(contractAddr);
-        console.log("data: ", data);
-        requestId = data.checkpoint;
-        latestStage = data.latest_stage;
-        // checkpointThreshold = data.checkpoint_threshold;
-        // write file to dir
-        fs.writeFile(path, JSON.stringify(data), 'utf8', (err, data) => {
-            if (err) {
-                console.log("error writing file: ", error);
-                return;
-            }
-            console.log("finish writing file")
-        });
-    } else {
-        // read from file
-        const buffer = fs.readFileSync(path, 'utf-8');
-        const data = JSON.parse(buffer);
-        requestId = data.checkpoint;
-        latestStage = data.latest_stage;
-        // checkpointThreshold = data.checkpoint_threshold;
+    try {
+        if (!fs.existsSync(path)) {
+            let data = await getStageInfo(contractAddr);
+            requestId = data.checkpoint;
+            latestStage = data.latest_stage;
+            // checkpointThreshold = data.checkpoint_threshold;
+            // write file to dir
+            fs.writeFile(path, JSON.stringify(data), 'utf8', (err, data) => {
+                if (err) {
+                    console.log("error writing file: ", error);
+                    return;
+                }
+                console.log("finish writing file")
+            });
+        } else {
+            // read from file
+            const buffer = fs.readFileSync(path, 'utf-8');
+            const data = JSON.parse(buffer);
+            requestId = data.checkpoint;
+            latestStage = data.latest_stage;
+            // checkpointThreshold = data.checkpoint_threshold;
+        }
+    } catch (error) {
+        console.log("error init stage: ", error);
+        return { requestId, latestStage };
     }
     return { requestId, latestStage };
 }
