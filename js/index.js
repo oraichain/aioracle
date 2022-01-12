@@ -27,7 +27,6 @@ const handleCurrentRequest = async (interval = 5000) => {
     while (true) {
         try {
             // old latest stage, need to get updated
-            console.log("request id: ", requestId);
             if (requestId > latestStage) {
                 let { checkpoint, latest_stage } = await getStageInfo(contractAddr);
                 requestId = checkpoint;
@@ -49,6 +48,8 @@ const handleCurrentRequest = async (interval = 5000) => {
                     continue;
                 }
             }
+            console.log("Current checkpoint: ", requestId);
+            console.log("latest stage: ", latestStage);
 
             // check if already submit signature. If yes then skip to next round
             const isSubmittedSignature = await isSignatureSubmitted(contractAddr, requestId, executor);
