@@ -3,7 +3,6 @@ const fetch = require('isomorphic-fetch');
 
 // TODO: make sure that this function calls enough data sources & test cases. This one is just a demo to run deno only.
 const handleScript = async (contracts) => {
-    console.log("contracts: ", contracts);
     const { oscript, dsources, tcases } = contracts;
     // execute the data sources
     let results = [];
