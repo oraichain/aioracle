@@ -4,6 +4,7 @@ const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
 const getProofs = async (requestId, leaf) => {
     let result = {};
     let count = 0;
+    let finalLeaf = { ...leaf, data: sha256(leaf.data).toString('hex') };
     do {
         const requestOptions = {
             method: 'POST',
@@ -11,7 +12,7 @@ const getProofs = async (requestId, leaf) => {
                 'Accept': 'application/json',
                 'Content-Type': "application/json"
             },
-            body: JSON.stringify({ requestId, leaf }),
+            body: JSON.stringify({ requestId, finalLeaf }),
             redirect: 'follow'
         };
         result = await fetch("http://localhost:3000/get_proof", requestOptions).then(data => data.json());
