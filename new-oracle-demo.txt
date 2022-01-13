@@ -2,8 +2,8 @@ oscript_demo: orai1svngf2re7ze3259h2lqt98jatsma2kpjpw4ldl
 
 dsources: binance: orai1hmwh6rwtlyqd3pqnkze7y6hwpxsccq3ya7exez, coinbase: orai19j4c20352peuvvdgwswymf9jaud8pzjyezzzkt, coincap: orai19r36yr4v30ug7zl9rcgx2txdyyr357xc9rmpw9, coingecko: orai1nc6eqvnczmtqq8keplyrha9z7vnd5v9vvsxxgj,orai16usahha827ushfxrt26q27nshsxq6qd0xycwfn
 
-service provider demo: orai1grgmdqmsusnd3hle536s83yyq4dh678vprkale
+service provider demo: orai1zwhaqh4cjaxxzr0sfkvnckxkyy7kppvsyta7vj
 
-ai oracle contract demo: orai10ds3trm2hmttemd8uu7ecwjm76d2yaa534pvxs
+ai oracle contract demo: orai184qcs523u3h5a9klzjfza84hj4gfru6kgx4la9
 
 executors: AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn, AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX

@@ -12,7 +12,7 @@ const getProofs = async (requestId, leaf) => {
                 'Accept': 'application/json',
                 'Content-Type': "application/json"
             },
-            body: JSON.stringify({ requestId, finalLeaf }),
+            body: JSON.stringify({ requestId, leaf: finalLeaf }),
             redirect: 'follow'
         };
         result = await fetch("http://localhost:3000/get_proof", requestOptions).then(data => data.json());

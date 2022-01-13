@@ -7,6 +7,7 @@ const { getRequest, getCurrentStage } = require('./utils');
 
 const getProof = async (req, res) => {
     let { requestId, leaf } = req.body;
+    console.log("leaf: ", leaf);
     let contractAddr = process.env.CONTRACT_ADDRESS;
     try {
         // collect the root hex based on the request id to form a tree
