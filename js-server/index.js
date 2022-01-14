@@ -1,5 +1,6 @@
 const path = require('path');
-require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : ".env") })
+const { config } = require('./config');
+require('dotenv').config(config)
 require('./db');
 
 const express = require('express');

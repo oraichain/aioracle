@@ -1,21 +1,23 @@
 const path = require('path');
 const fs = require('fs');
 const { getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage, getRequest } = require('./utils');
-require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `../.env.${process.env.NODE_ENV}` : "../.env") })
+// set node env config
+const { config } = require('./config');
+require('dotenv').config(config)
 const { isSignatureSubmitted, getData, getFirstWalletPubkey, signSubmitSignature } = require('./cosmjs');
 const { getProofs, verifyLeaf } = require('./merkle-tree');
 
 // run interval to ping, default is 5000ms block confirmed
 const handleCurrentRequest = async (interval = 5000) => {
-
     const mnemonic = process.env.MNEMONIC;
+    console.log("env: ", process.env.MNEMONIC);
     const executor = await getFirstWalletPubkey(mnemonic);
     const contractAddr = process.env.CONTRACT_ADDRESS;
     console.log("executor: ", executor);
     const stageInfoFile = `stage-info-${executor}.json`;
     const leafFile = `leaf-${executor}.json`
-    const stageInfoPath = path.join(__dirname, stageInfoFile);
-    const leafPath = path.join(__dirname, leafFile);
+    const stageInfoPath = path.join(process.cwd(), stageInfoFile); // use process pwd instead of __dirname due to config of vercel pkg: https://github.com/vercel/pkg#snapshot-filesystem
+    const leafPath = path.join(process.cwd(), leafFile);
 
     let leaf = {};
     let { requestId, latestStage } = await initStage(stageInfoPath, contractAddr);
@@ -109,6 +111,7 @@ const handleCurrentRequest = async (interval = 5000) => {
             }
 
         } catch (error) {
+            console.log("error: ", error);
             if (requestId === errorRequestId) {
                 canSkip++;
                 if (canSkip > 5) requestId++;

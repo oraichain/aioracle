@@ -2,7 +2,6 @@ const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const { stringToPath } = require("@cosmjs/crypto");
 const cosmwasm = require('@cosmjs/cosmwasm-stargate');
 const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
-const data = require('../testdata/report_list.json');
 const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require("./crypto");
 const { handleScript } = require("./script-execute");

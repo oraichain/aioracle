@@ -1,13 +1,18 @@
 const fetch = require('isomorphic-fetch');
 const fs = require('fs');
+const { config } = require('./config');
+require('dotenv').config(config)
+
+const lcdUrl = process.env.LCD_URL;
+const backendUrl = process.env.BACKEND_URL;
+
 const getRequest = async (contractAddr, requestId) => {
     const input = JSON.stringify({
         request: {
             stage: requestId
         }
     })
-
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    return fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
 }
 
 const getStageInfo = async (contractAddr) => {
@@ -15,7 +20,7 @@ const getStageInfo = async (contractAddr) => {
         stage_info: {}
     })
 
-    const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    const data = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
     if (!data.data) {
         throw "No request to handle";
     }
@@ -23,7 +28,7 @@ const getStageInfo = async (contractAddr) => {
 }
 
 const checkSubmit = async (contractAddr, requestId, executor) => {
-    return fetch(`http://localhost:3000/check_submit?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => data.json());
+    return fetch(`${backendUrl}/check_submit?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => data.json());
 }
 
 const getServiceContracts = async (contractAddr, requestId) => {
@@ -31,7 +36,7 @@ const getServiceContracts = async (contractAddr, requestId) => {
         get_service_contracts: { stage: parseInt(requestId) }
     })
 
-    const data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    const data = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
     if (!data.data) {
         throw "No service contracts to execute";
     }
@@ -48,7 +53,7 @@ const submitReport = async (requestId, leaf) => {
         body: JSON.stringify({ requestId, report: leaf }),
         redirect: 'follow'
     };
-    const result = await fetch("http://localhost:3000/submit_report", requestOptions).then(data => data.json());
+    const result = await fetch(`${backendUrl}/submit_report`, requestOptions).then(data => data.json());
     console.log("result: ", result);
 }
 
@@ -63,8 +68,8 @@ const initStage = async (path, contractAddr) => {
             latestStage = data.latest_stage;
             // checkpointThreshold = data.checkpoint_threshold;
             // write file to dir
-            fs.writeFile(path, JSON.stringify(data), 'utf8', (err, data) => {
-                if (err) {
+            fs.writeFile(path, JSON.stringify(data), 'utf8', (error, data) => {
+                if (error) {
                     console.log("error writing file: ", error);
                     return;
                 }

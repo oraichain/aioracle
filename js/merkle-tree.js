@@ -1,5 +1,10 @@
 const crypto = require('crypto');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
+const { config } = require('./config');
+require('dotenv').config(config)
+
+const lcdUrl = process.env.LCD_URL || "https://testnet-lcd.orai.io";
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
 
 const getProofs = async (requestId, leaf) => {
     let result = {};
@@ -15,7 +20,7 @@ const getProofs = async (requestId, leaf) => {
             body: JSON.stringify({ requestId, leaf: finalLeaf }),
             redirect: 'follow'
         };
-        result = await fetch("http://localhost:3000/get_proof", requestOptions).then(data => data.json());
+        result = await fetch(`${backendUrl}/get_proof`, requestOptions).then(data => data.json());
         // sleep for 5 seconds then repeat. Break after 10 tries
         await new Promise(r => setTimeout(r, 5000));
         count++;
@@ -34,7 +39,7 @@ const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {
             proof: proofs
         }
     })
-    return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    return fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 }
 
 module.exports = { getProofs, verifyLeaf }

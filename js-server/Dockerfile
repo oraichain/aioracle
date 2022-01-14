@@ -10,9 +10,9 @@ COPY yarn.lock ./
 
 RUN yarn
 
+EXPOSE 8080
+
 # Bundle app source
 COPY . /workspace
-
-EXPOSE 8080
 
 CMD [ "node", "index.js" ]
