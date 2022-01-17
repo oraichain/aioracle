@@ -1,17 +1,14 @@
 {
-  "name": "aioracle-executor-process",
+  "name": "aioracle-executor-process-test",
   "license": "MIT",
   "author": {
     "name": "Oraichain"
   },
   "scripts": {
-    "start": "node index.js",
-    "prepackage": "mkdir -p dist && cp package.json -r *.js dist",
-    "package": "pkg dist",
-    "package-test": "mkdir -p dist-test && cp package.test.json -r *.js dist-test && mv dist-test/package.test.json dist-test/package.json && pkg dist-test"
+    "start": "node index-testnet.js"
   },
-  "bin": "index.js",
-  "main": "index.js",
+  "bin": "index-testnet.js",
+  "main": "index-testnet.js",
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "0.25.0",
     "@cosmjs/crypto": "^0.26.5",

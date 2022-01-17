@@ -1,10 +1,10 @@
-const { spawn } = require('child_process');
+const exec = require('child_process').execFile;
 
 let env = 'testnet';
 
-for (let i = 0; i < parseInt(process.env.NUM_ACCS) || 2; i++) {
-    let fileName = 'index-testnet.js';
-    const ls = spawn('node', [fileName], {
+for (let i = 0; i < 2; i++) {
+    let fileName = './aioracle-executor-process-test-linux';
+    const ls = exec(fileName, {
         env: Object.assign(process.env, { NODE_ENV: env, MNEMONIC_NUM: i }),
         cwd: process.cwd()
     });
