@@ -1,15 +1,17 @@
 
-const db = require('./db');
+const db = require('../db');
 const {
     formTree,
-} = require('./merkle-proof-tree');
-const { execute } = require('./cosmjs');
-const { getRequest, handleResponse, isWhiteListed } = require('./utils');
+} = require('../models/merkle-proof-tree');
+const { execute } = require('../models/cosmjs');
+const { getRequest, handleResponse, isWhiteListed } = require('../utils');
+const { env } = require('../config');
 
 const submitReport = async (req, res) => {
     let { requestId, report } = req.body;
-    const contractAddr = process.env.CONTRACT_ADDRESS;
-    const wallet = process.env.MNEMONIC;
+    const contractAddr = env.CONTRACT_ADDRESS;
+    const wallet = env.MNEMONIC;
+
     // invalid data format
     if (!report.executor || !report.data) return handleResponse(res, 403, "wrong input format");
 

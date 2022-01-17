@@ -1,13 +1,9 @@
-const path = require('path');
-const { config } = require('./config');
-require('dotenv').config(config)
 require('./db');
 
 const express = require('express');
-const { getProof } = require('./get-proof');
-const { submitReport } = require('./submit-report');
-const { checkSubmit, getReports } = require('./get-report');
-const db = require('./db');
+const { getProof } = require('./controllers/get-proof');
+const { submitReport } = require('./controllers/submit-report');
+const { checkSubmit, getReports } = require('./controllers/get-report');
 const app = express()
 const port = 8080
 const host = '0.0.0.0'

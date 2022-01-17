@@ -2,9 +2,10 @@ const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const { stringToPath } = require("@cosmjs/crypto");
 const cosmwasm = require('@cosmjs/cosmwasm-stargate');
 const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
+const { env } = require("../config");
 
 const network = {
-    rpc: process.env.NETWORK_RPC || "https://testnet-rpc.orai.io",
+    rpc: env.NETWORK_RPC || "https://testnet-rpc.orai.io",
     prefix: "orai",
 }
 

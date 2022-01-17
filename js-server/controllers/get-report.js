@@ -1,5 +1,5 @@
-const db = require('./db');
-const { handleResponse } = require('./utils');
+const db = require('../db');
+const { handleResponse } = require('../utils');
 
 const checkSubmit = async (req, res) => {
     let data = req.query;

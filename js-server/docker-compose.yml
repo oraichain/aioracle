@@ -5,6 +5,7 @@ services:
     image: orai/aioracle-server:0.0.1
     working_dir: /workspace
     # tty: true
+    restart: on-failure
     ulimits:
       nofile:
         soft: 65536

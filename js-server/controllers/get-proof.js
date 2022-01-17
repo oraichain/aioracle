@@ -1,14 +1,15 @@
-const db = require('./db');
+const { env } = require('../config');
+const db = require('../db');
 const {
     MerkleProofTree,
     sha256,
-} = require('./merkle-proof-tree');
-const { getRequest, getCurrentStage } = require('./utils');
+} = require('../models/merkle-proof-tree');
+const { getRequest, getCurrentStage } = require('../utils');
 
 const getProof = async (req, res) => {
     let { requestId, leaf } = req.body;
     console.log("leaf: ", leaf);
-    let contractAddr = process.env.CONTRACT_ADDRESS;
+    let contractAddr = env.CONTRACT_ADDRESS;
     try {
         // collect the root hex based on the request id to form a tree
         let { data } = await getRequest(contractAddr, requestId);

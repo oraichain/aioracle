@@ -1,6 +1,6 @@
 const { MerkleTree } = require('merkletreejs');
 const crypto = require('crypto');
-const db = require('./db');
+const db = require('../db');
 
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
 const verifyHexProof = (hexLeaf, hexProof, hexRoot) => {
