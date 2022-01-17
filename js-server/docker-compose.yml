@@ -16,3 +16,8 @@ services:
       - SYS_PTRACE
     env_file:
       - .env
+    volumes:
+      - merkle_proof:/workspace/merkle-proof
+
+volumes:
+  merkle_proof: null
