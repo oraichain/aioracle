@@ -17,14 +17,15 @@ const getProof = async (req, res) => {
         const leaves = JSON.parse((await db.get(Buffer.from(data.merkle_root, 'hex'))));
         const tree = new MerkleProofTree(leaves);
         const hexLeaf = sha256(JSON.stringify(leaf));
+        console.log("hex leaf: ", hexLeaf.toString('hex'));
 
-        // special case, tree with only root
-        if (hexLeaf.toString('hex') === tree.getHexRoot()) return res.send({ code: 200, proofs: [], root: tree.getHexRoot() })
-        const proofs = tree.getHexProof(hexLeaf);
         const root = tree.getHexRoot();
+        // special case, tree with only root
+        if (hexLeaf.toString('hex') === root) return res.send({ code: 200, proofs: [], root: tree.getHexRoot() })
+        const proofs = tree.getHexProof(hexLeaf);
         console.log("root: ", root);
         console.log("proofs: ", proofs);
-        if (proofs.length === 0 && root === hexLeaf.toString('hex')) return res.send({ code: 404 });
+        if (proofs.length === 0 && root !== hexLeaf.toString('hex')) return res.send({ code: 404 });
         return res.send({ code: 200, proofs, root: root })
     } catch (error) {
         console.log("error: ", error);

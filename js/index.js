@@ -127,4 +127,4 @@ const handleCurrentRequest = async (interval = 5000) => {
     }
 };
 
-handleCurrentRequest(1000);
+handleCurrentRequest(parseInt(process.env.MNEMONIC) || 1000);

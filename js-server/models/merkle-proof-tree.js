@@ -21,8 +21,8 @@ const formTree = async (reports) => {
   const leaves = values.map((value) => sha256(value).toString('hex'));
   // store the leaves to retrieve later. Can possibly store this on contract (but could be expensive)
   const tree = new MerkleProofTree(leaves);
-  await db.put(Buffer.from(tree.getHexRoot(), 'hex'), JSON.stringify(leaves));
-  return tree.getHexRoot();
+  // await db.put(Buffer.from(tree.getHexRoot(), 'hex'), JSON.stringify(leaves));
+  return [tree.getHexRoot(), JSON.stringify(leaves)];
 }
 
 class MerkleProofTree extends MerkleTree {

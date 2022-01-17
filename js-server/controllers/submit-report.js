@@ -55,7 +55,8 @@ const submitReport = async (req, res) => {
             }
 
             // form a merkle root based on the value
-            root = await formTree(reports);
+            let [newRoot, leaves] = await formTree(reports);
+            root = newRoot;
 
             // store the merkle root on-chain
             const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), gasData: { gasAmount: "0", denom: "orai" } });
@@ -64,6 +65,8 @@ const submitReport = async (req, res) => {
 
             // only store reports when the merkle root is successfully stored on-chain.
             await db.put(key, JSON.stringify(reports));
+            // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
+            await db.put(Buffer.from(root, 'hex'), leaves);
 
             return handleResponse(res, 200, "success");
         }
