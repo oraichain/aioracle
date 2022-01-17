@@ -36,8 +36,8 @@ const handleCurrentRequest = async (interval = 5000) => {
                 // only write to file when stage info is different from local
                 if (stageInfo.checkpoint !== checkpoint || stageInfo !== latest_stage) {
                     // store new stage info into json
-                    fs.writeFile(stageInfoPath, JSON.stringify({ checkpoint, latest_stage }), 'utf8', (err, data) => {
-                        if (err) {
+                    fs.writeFile(stageInfoPath, JSON.stringify({ checkpoint, latest_stage }), 'utf8', (error, data) => {
+                        if (error) {
                             console.log("error writing file: ", error);
                             return;
                         }
@@ -80,8 +80,8 @@ const handleCurrentRequest = async (interval = 5000) => {
                 }
                 console.log("leaf base64: ", Buffer.from(JSON.stringify(leaf)).toString('base64'));
                 await submitReport(requestId, leaf);
-                fs.writeFile(leafPath, JSON.stringify({ requestId, leaf }), 'utf8', (err, data) => {
-                    if (err) {
+                fs.writeFile(leafPath, JSON.stringify({ requestId, leaf }), 'utf8', (error, data) => {
+                    if (error) {
                         console.log("error writing file: ", error);
                         return;
                     }
