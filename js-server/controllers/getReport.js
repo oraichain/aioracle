@@ -1,9 +1,10 @@
 const db = require('../db');
 const { handleResponse } = require('../utils');
+const { validationResult } = require('express-validator');
 
 const checkSubmit = async (req, res) => {
     let data = req.query;
-    if (!data.request_id || !data.executor || !data.contract_addr) return res.status(403).send({ code: 403 });
+    // if (!data.request_id || !data.executor || !data.contract_addr) return res.status(403).send({ code: 403 });
     let key = `${data.contract_addr}${data.request_id}`;
     let reportsStr = "";
     try {
@@ -25,7 +26,7 @@ const checkSubmit = async (req, res) => {
 
 const getReports = async (req, res) => {
     let data = req.query;
-    if (!data.request_id || !data.contract_addr) return res.status(403).send({ code: 403 });
+    // if (!data.request_id || !data.contract_addr) return res.status(403).send({ code: 403 });
     let key = `${data.contract_addr}${data.request_id}`;
     let reportsStr = "";
     try {

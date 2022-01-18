@@ -12,9 +12,6 @@ const submitReport = async (req, res) => {
     const contractAddr = env.CONTRACT_ADDRESS;
     const wallet = env.MNEMONIC;
 
-    // invalid data format
-    if (!report.executor || !report.data) return handleResponse(res, 403, "wrong input format");
-
     // collect current request id that we need to handle
     let threshold = 0;
     try {
