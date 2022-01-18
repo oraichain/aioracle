@@ -28,7 +28,7 @@ const getStageInfo = async (contractAddr) => {
 }
 
 const checkSubmit = async (contractAddr, requestId, executor) => {
-    return fetch(`${backendUrl}/check_submit?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => data.json());
+    return fetch(`${backendUrl}/report-info/check-submit?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => data.json());
 }
 
 const getServiceContracts = async (contractAddr, requestId) => {
@@ -53,7 +53,7 @@ const submitReport = async (requestId, leaf) => {
         body: JSON.stringify({ requestId, report: leaf }),
         redirect: 'follow'
     };
-    const result = await fetch(`${backendUrl}/submit_report`, requestOptions).then(data => data.json());
+    const result = await fetch(`${backendUrl}/submit-report`, requestOptions).then(data => data.json());
     console.log("result: ", result);
 }
 
