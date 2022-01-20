@@ -60,13 +60,13 @@ const submitReport = async (requestId, leaf) => {
 const initStage = async (path, contractAddr) => {
     let requestId = 1;
     let latestStage = 1;
-    // let checkpointThreshold = 5;
+    let checkpointThreshold = 5;
     try {
         if (!fs.existsSync(path)) {
             let data = await getStageInfo(contractAddr);
             requestId = data.checkpoint;
             latestStage = data.latest_stage;
-            // checkpointThreshold = data.checkpoint_threshold;
+            checkpointThreshold = data.checkpoint_threshold;
             // write file to dir
             fs.writeFile(path, JSON.stringify(data), 'utf8', (error, data) => {
                 if (error) {
@@ -81,13 +81,12 @@ const initStage = async (path, contractAddr) => {
             const data = JSON.parse(buffer);
             requestId = data.checkpoint;
             latestStage = data.latest_stage;
-            // checkpointThreshold = data.checkpoint_threshold;
+            checkpointThreshold = data.checkpoint_threshold;
         }
     } catch (error) {
-        console.log("error init stage: ", error);
-        return { requestId, latestStage };
+        return { requestId, latestStage, checkpointThreshold };
     }
-    return { requestId, latestStage };
+    return { requestId, latestStage, checkpointThreshold };
 }
 
 module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage };

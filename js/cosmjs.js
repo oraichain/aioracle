@@ -36,11 +36,11 @@ const getFirstWalletPubkey = async (mnemonic) => {
     return Buffer.from(accounts[0].pubkey).toString('base64');
 }
 
-const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = undefined }) => {
+const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = undefined, gasLimits }) => {
     try {
         const wallet = await collectWallet(mnemonic);
         const [firstAccount] = await wallet.getAccounts();
-        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix });
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix, gasLimits });
         const input = JSON.parse(handleMsg);
         const result = await client.execute(firstAccount.address, address, input, memo, amount);
         return result.transactionHash;
@@ -50,13 +50,13 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     }
 }
 
-const signSubmitSignature = async (mnemonic, contractAddr, stage, message) => {
+const signSubmitSignature = async (mnemonic, contractAddr, stage, message, gasAmount, gasLimits) => {
     // sign the message
     const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
     const pubKey = childKey.publicKey;
     const signature = signSignature(message, childKey.privateKey, pubKey);
     const input = JSON.stringify({ update_signature: { stage: parseInt(stage), pubkey: Buffer.from(pubKey).toString('base64'), signature } });
-    return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" } });
+    return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gasAmount: gasAmount.toString(), denom: "orai" }, gasLimits });
 }
 
 const isSignatureSubmitted = async (contractAddr, requestId, executor) => {

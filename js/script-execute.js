@@ -1,4 +1,4 @@
-const { spawn } = require('child_process');
+const { spawn, execSync } = require('child_process');
 const fetch = require('isomorphic-fetch');
 
 // TODO: make sure that this function calls enough data sources & test cases. This one is just a demo to run deno only.
@@ -28,7 +28,8 @@ const handleScript = async (contracts) => {
 
 const processDenoScript = (scriptUrl, params) => {
     return new Promise((resolve, reject) => {
-        const ls = spawn('deno', ['run', '--allow-net', '--unstable', scriptUrl, ...params]);
+        const denoPath = execSync("which deno").toString('ascii').trim(); // collect absolute path for deno binary. This helps when the binary runs as a ubuntu service
+        const ls = spawn(denoPath, ['run', '--allow-net', '--unstable', scriptUrl, ...params]);
 
         ls.stdout.on('data', (data) => {
             resolve(`${data}`);
