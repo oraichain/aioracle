@@ -1,10 +1,11 @@
 const fetch = require('isomorphic-fetch');
 const fs = require('fs');
-const { config } = require('./config');
-require('dotenv').config(config)
+const { env, network } = require('./config');
+const Cosmos = require('@oraichain/cosmosjs').default;
+const signSignature = require('./crypto');
 
-const lcdUrl = process.env.LCD_URL;
-const backendUrl = process.env.BACKEND_URL;
+const lcdUrl = env.LCD_URL;
+const backendUrl = env.BACKEND_URL;
 
 const getRequest = async (contractAddr, requestId) => {
     const input = JSON.stringify({
@@ -43,18 +44,26 @@ const getServiceContracts = async (contractAddr, requestId) => {
     return data.data;
 }
 
-const submitReport = async (requestId, leaf) => {
+const submitReport = async (requestId, leaf, mnemonic) => {
+
+    // sign report for future verification
+    const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
+    const pubKey = childKey.publicKey;
+    let message = { requestId, report: leaf };
+    const signature = Buffer.from(signSignature(Buffer.from(JSON.stringify(message), 'ascii'), childKey.privateKey, pubKey)).toString('base64');
+    message = { requestId, report: { ...leaf, signature } };
+
     const requestOptions = {
         method: 'POST',
         headers: {
             'Accept': 'application/json',
             'Content-Type': "application/json"
         },
-        body: JSON.stringify({ requestId, report: leaf }),
+        body: JSON.stringify(message),
         redirect: 'follow'
     };
     const result = await fetch(`${backendUrl}/submit-report`, requestOptions).then(data => data.json());
-    console.log("result: ", result);
+    console.log("result submitting report: ", result);
 }
 
 const initStage = async (path, contractAddr) => {

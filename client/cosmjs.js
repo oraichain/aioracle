@@ -23,7 +23,7 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     try {
         const wallet = await collectWallet(mnemonic);
         const [firstAccount] = await wallet.getAccounts();
-        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix });
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix, gasLimits: { exec: 20000000 } });
         const input = JSON.parse(handleMsg);
         const result = await client.execute(firstAccount.address, address, input, memo, amount);
         return result.transactionHash;

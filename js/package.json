@@ -6,9 +6,8 @@
   },
   "scripts": {
     "start": "node index.js",
-    "prepackage": "mkdir -p dist && cp package.json -r *.js dist",
-    "package": "pkg dist",
-    "package-test": "mkdir -p dist-test && cp package.test.json -r *.js dist-test && mv dist-test/package.test.json dist-test/package.json && pkg dist-test"
+    "prepackage": "mkdir -p dist dist/stage-data && cp package.json -r *.js dist",
+    "package": "pkg dist"
   },
   "bin": "index.js",
   "main": "index.js",
@@ -22,7 +21,8 @@
     "dotenv": "^10.0.0",
     "isomorphic-fetch": "^3.0.0",
     "js-sha256": "^0.9.0",
-    "secp256k1": "^4.0.2"
+    "secp256k1": "^4.0.2",
+    "ws": "^8.4.2"
   },
   "devDependencies": {
     "pkg": "^5.5.2"

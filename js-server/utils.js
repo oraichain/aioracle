@@ -1,4 +1,7 @@
 const fetch = require('isomorphic-fetch');
+const { sha256 } = require('js-sha256');
+const secp256k1 = require('secp256k1');
+
 const getRequest = async (contractAddr, requestId) => {
 
     const input = JSON.stringify({
@@ -34,4 +37,11 @@ const handleResponse = (res, status, message, data = undefined) => {
     return res.status(status).send({ message })
 }
 
-module.exports = { getRequest, handleResponse, isWhiteListed };
+// verify the executor's signature. If match => allow to store in the report
+const verifySignature = (bufferMessage, signature, pubkey) => {
+    const hashedSig = sha256.update(bufferMessage).digest(); // on contract, when parsing from hex string to bytes it uses from utf8 func (ascii)
+    const bufferHashedSig = Uint8Array.from(hashedSig);
+    return secp256k1.ecdsaVerify(signature, bufferHashedSig, pubkey);
+}
+
+module.exports = { getRequest, handleResponse, isWhiteListed, verifySignature };
