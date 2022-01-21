@@ -40,7 +40,7 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     try {
         const wallet = await collectWallet(mnemonic);
         const [firstAccount] = await wallet.getAccounts();
-        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix, gasLimits });
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gPrice}${gasData.denom}`) : undefined, prefix: network.prefix, gasLimits });
         const input = JSON.parse(handleMsg);
         const result = await client.execute(firstAccount.address, address, input, memo, amount);
         return result.transactionHash;
@@ -50,13 +50,13 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     }
 }
 
-const signSubmitSignature = async (mnemonic, contractAddr, stage, message, gasAmount, gasLimits) => {
+const signSubmitSignature = async (mnemonic, contractAddr, stage, message, gPrice, gasLimits) => {
     // sign the message
     const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
     const pubKey = childKey.publicKey;
     const signature = signSignature(message, childKey.privateKey, pubKey);
     const input = JSON.stringify({ update_signature: { stage: parseInt(stage), pubkey: Buffer.from(pubKey).toString('base64'), signature } });
-    return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gasAmount: gasAmount.toString(), denom: "orai" }, gasLimits });
+    return execute({ mnemonic, address: contractAddr, handleMsg: input, gasData: { gPrice: gPrice.toString(), denom: "orai" }, gasLimits });
 }
 
 const isSignatureSubmitted = async (contractAddr, requestId, executor) => {
@@ -69,7 +69,7 @@ const isSignatureSubmitted = async (contractAddr, requestId, executor) => {
     return fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 }
 
-const getData = async (contractAddr, requestId, contracts) => {
+const getData = async (contractAddr, requestId) => {
     const tempContracts = await getServiceContracts(contractAddr, requestId);
     let data = await handleScript(tempContracts);
     input = JSON.stringify({
@@ -83,7 +83,7 @@ const getData = async (contractAddr, requestId, contracts) => {
         // TODO: need to filter the rewards, only allow successful results from providers receive rewards
         rewards: request.data.rewards,
     }
-    return result;
+    return [result, requestId]; // return request id so that in the callback we can collect it
 }
 
 module.exports = { execute, getFirstWalletAddr, isSignatureSubmitted, signSubmitSignature, getData, getFirstWalletPubkey };

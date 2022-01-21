@@ -3,9 +3,10 @@ const db = require('../db');
 const {
     formTree,
 } = require('../models/merkle-proof-tree');
-const { execute } = require('../models/cosmjs');
+// const { execute } = require('../models/cosmjs');
 const { getRequest, handleResponse, isWhiteListed } = require('../utils');
 const { env } = require('../config');
+const execute = require('../models/cosmosjs');
 
 const submitReport = async (req, res) => {
     let { requestId, report } = req.body;
@@ -19,8 +20,6 @@ const submitReport = async (req, res) => {
         // verify executor not in list
         if (!(await isWhiteListed(contractAddr, report.executor, data.data.executors_key))) return handleResponse(res, 401, "not in list");
         threshold = data.data.threshold;
-        console.log("request id: ", requestId);
-        console.log("threshold: ", threshold);
     } catch (error) {
         return handleResponse(res, 500, error.toString());
     }
@@ -39,6 +38,8 @@ const submitReport = async (req, res) => {
         reports = [report];
     }
 
+    console.log("current request id handling: ", requestId);
+
     try {
         if (reports.length < threshold) {
             await db.put(key, JSON.stringify(reports));
@@ -56,8 +57,9 @@ const submitReport = async (req, res) => {
             root = newRoot;
 
             // store the merkle root on-chain
-            const executeResult = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), gasData: { gasAmount: "0", denom: "orai" } });
+            const executeResult = await execute({ mnemonic: wallet, contractAddr, message: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), fees: 0, gasLimits: 20000000 });
 
+            console.log("request id after finish executing result: ", requestId);
             console.log("execute result: ", executeResult);
 
             // only store reports when the merkle root is successfully stored on-chain.

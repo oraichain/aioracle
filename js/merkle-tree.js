@@ -8,24 +8,18 @@ const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
 
 const getProofs = async (requestId, leaf) => {
     let result = {};
-    let count = 0;
     let finalLeaf = { ...leaf, data: sha256(leaf.data).toString('hex') };
-    do {
-        const requestOptions = {
-            method: 'POST',
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': "application/json"
-            },
-            body: JSON.stringify({ requestId, leaf: finalLeaf }),
-            redirect: 'follow'
-        };
-        result = await fetch(`${backendUrl}/report-info/get-proof`, requestOptions).then(data => data.json());
-        // sleep for 5 seconds then repeat. Break after 10 tries
-        await new Promise(r => setTimeout(r, 5000));
-        count++;
-        if (count > 10) break;
-    } while (!result.proofs);
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': "application/json"
+        },
+        body: JSON.stringify({ requestId, leaf: finalLeaf }),
+        redirect: 'follow'
+    };
+    result = await fetch(`${backendUrl}/report-info/get-proof`, requestOptions).then(data => data.json());
+    // sleep for 5 seconds then repeat. Break after 10 tries
     return result;
 }
 

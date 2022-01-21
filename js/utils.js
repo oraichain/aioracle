@@ -54,7 +54,7 @@ const submitReport = async (requestId, leaf) => {
         redirect: 'follow'
     };
     const result = await fetch(`${backendUrl}/submit-report`, requestOptions).then(data => data.json());
-    console.log("result: ", result);
+    console.log("result submitting report: ", result);
 }
 
 const initStage = async (path, contractAddr) => {

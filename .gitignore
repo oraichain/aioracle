@@ -107,6 +107,7 @@ dist-test
 .tern-port
 
 js-server/merkle-proof
+js/stage-data
 target
 
 js/leaf-*.json

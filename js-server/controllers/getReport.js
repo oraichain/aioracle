@@ -6,6 +6,7 @@ const checkSubmit = async (req, res) => {
     let data = req.query;
     // if (!data.request_id || !data.executor || !data.contract_addr) return res.status(403).send({ code: 403 });
     let key = `${data.contract_addr}${data.request_id}`;
+    console.log("data request id: ", data.request_id);
     let reportsStr = "";
     try {
         reportsStr = await db.get(key);
