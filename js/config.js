@@ -14,6 +14,14 @@ const env = {
     WEBSOCKET_URL: process.env.WEBSOCKET_URL || "ws://testnet-rpc.orai.io",
     REPLAY: process.env.REPLAY || false,
     START_STAGE: process.env.START_STAGE,
+    LCD_URL: process.env.LCD_URL,
+    BACKEND_URL: process.env.BACKEND_URL,
 }
 
-module.exports = { config, env };
+const network = {
+    rpc: env.RPC_URL || "https://testnet-rpc.orai.io",
+    prefix: "orai",
+    path: "m/44'/118'/0'/0/0",
+}
+
+module.exports = { config, env, network };

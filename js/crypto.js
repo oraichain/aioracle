@@ -10,4 +10,4 @@ const signSignature = (message, key, pubKey) => {
     return Buffer.from(signedSig).toString('base64');
 }
 
-module.exports = { signSignature };
+module.exports = signSignature;
