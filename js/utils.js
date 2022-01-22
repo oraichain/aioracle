@@ -50,7 +50,7 @@ const submitReport = async (requestId, leaf, mnemonic) => {
     const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
     const pubKey = childKey.publicKey;
     let message = { requestId, report: leaf };
-    const signature = signSignature(JSON.stringify(message), childKey.privateKey, pubKey);
+    const signature = Buffer.from(signSignature(Buffer.from(JSON.stringify(message), 'ascii'), childKey.privateKey, pubKey)).toString('base64');
     message = { requestId, report: { ...leaf, signature } };
 
     const requestOptions = {

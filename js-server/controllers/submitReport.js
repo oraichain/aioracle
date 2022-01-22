@@ -4,7 +4,7 @@ const {
     formTree,
 } = require('../models/merkle-proof-tree');
 // const { execute } = require('../models/cosmjs');
-const { getRequest, handleResponse, isWhiteListed } = require('../utils');
+const { getRequest, handleResponse, isWhiteListed, verifySignature } = require('../utils');
 const { env } = require('../config');
 const execute = require('../models/cosmosjs');
 
@@ -23,6 +23,14 @@ const submitReport = async (req, res) => {
     } catch (error) {
         return handleResponse(res, 500, error.toString());
     }
+
+    const { signature, ...rawReport } = report;
+    // verify report signature
+    let rawMessage = {
+        requestId,
+        report: rawReport
+    }
+    if (!verifySignature(Buffer.from(JSON.stringify(rawMessage), 'ascii'), Buffer.from(signature, 'base64'), Buffer.from(report.executor, 'base64'))) return handleResponse(res, 403, "Invalid report signature");
 
     let key = `${contractAddr}${requestId.toString()}`;
     let reports = [];
