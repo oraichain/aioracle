@@ -27,9 +27,9 @@ const getFirstWalletPubkey = async (mnemonic) => {
     return Buffer.from(accounts[0].pubkey).toString('base64');
 }
 
-const getData = async (contractAddr, requestId) => {
-    const tempContracts = await getServiceContracts(contractAddr, requestId);
-    let data = await handleScript(tempContracts);
+const getData = async (contractAddr, requestId, requestInput) => {
+    const serviceContracts = await getServiceContracts(contractAddr, requestId);
+    let data = await handleScript(serviceContracts, requestInput);
     input = JSON.stringify({
         request: {
             stage: requestId

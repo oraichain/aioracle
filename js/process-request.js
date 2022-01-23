@@ -1,10 +1,7 @@
-const { submitReport, getServiceContracts, checkSubmit, initStage, getRequest } = require('./utils');
+const { submitReport, checkSubmit, getRequest } = require('./utils');
 // set node env config
 const { env } = require('./config');
 const { getData, getFirstWalletPubkey } = require('./cosmjs');
-const { getProofs, verifyLeaf } = require('./merkle-tree');
-
-const mnemonic = env.MNEMONIC;
 
 const processRequest = async (requestId) => {
     console.log("request id: ", requestId);
@@ -22,8 +19,7 @@ const processRequest = async (requestId) => {
         if (submitted) return; // no need to submit again. Wait for other executors
         console.log("prepare to get new date for this request id");
         // get service contracts to get data from the scripts, then submit report
-        let serviceContracts = await getServiceContracts(contractAddr, requestId);
-        getData(contractAddr, requestId, serviceContracts).then(async ([result, reqId]) => {
+        getData(contractAddr, requestId, request.input).then(async ([result, reqId]) => {
             const { data, rewards } = result;
             const leaf = {
                 executor,

@@ -2,7 +2,7 @@ const { spawn, execSync } = require('child_process');
 const fetch = require('isomorphic-fetch');
 
 // TODO: make sure that this function calls enough data sources & test cases. This one is just a demo to run deno only.
-const handleScript = async (contracts) => {
+const handleScript = async (contracts, requestInput) => {
     const { oscript, dsources, tcases } = contracts;
     // execute the data sources
     let results = [];
@@ -12,8 +12,8 @@ const handleScript = async (contracts) => {
         });
         let data = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${dsource}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
 
-        // handle deno script
-        let result = await processDenoScript(data.data.script_url, data.data.parameters);
+        // handle deno script. By default, the user's input is the last element of the parameter list
+        let result = await processDenoScript(data.data.script_url, [...data.data.parameters, requestInput]);
         results.push(result.trim()); // trim to remove trailing space & newline char
     }
     // aggregate results
