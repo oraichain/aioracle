@@ -14,7 +14,7 @@ const env = {
     WEBSOCKET_URL: process.env.WEBSOCKET_URL || "ws://testnet-rpc.orai.io",
     REPLAY: process.env.REPLAY || false,
     START_STAGE: process.env.START_STAGE,
-    LCD_URL: process.env.LCD_URL,
+    LCD_URL: process.env.LCD_URL || "https://testnet-lcd.orai.io",
     BACKEND_URL: process.env.BACKEND_URL,
 }
 

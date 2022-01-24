@@ -1,8 +1,16 @@
 const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const { stringToPath } = require("@cosmjs/crypto");
-const { handleScript } = require("./script-execute");
-const { getServiceContracts } = require("./utils");
-const { network } = require("./config");
+const { network, env } = require("./config");
+
+const handleResult = (result) => {
+    if (result.code && result.code !== 0) throw result.message;
+    return result.data;
+}
+
+const queryWasm = async (address, input) => {
+    let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    return handleResult(result);
+};
 
 const collectWallet = async (mnemonic) => {
     const wallet = await DirectSecp256k1HdWallet.fromMnemonic(
@@ -27,21 +35,4 @@ const getFirstWalletPubkey = async (mnemonic) => {
     return Buffer.from(accounts[0].pubkey).toString('base64');
 }
 
-const getData = async (contractAddr, requestId, requestInput) => {
-    const serviceContracts = await getServiceContracts(contractAddr, requestId);
-    let data = await handleScript(serviceContracts, requestInput);
-    input = JSON.stringify({
-        request: {
-            stage: requestId
-        }
-    });
-    let request = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
-    let result = {
-        data: Buffer.from(data).toString('base64'),
-        // TODO: need to filter the rewards, only allow successful results from providers receive rewards
-        rewards: request.data.rewards,
-    }
-    return [result, requestId]; // return request id so that in the callback we can collect it
-}
-
-module.exports = { getFirstWalletAddr, getData, getFirstWalletPubkey };
+module.exports = { getFirstWalletAddr, getFirstWalletPubkey, queryWasm };

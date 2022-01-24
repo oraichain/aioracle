@@ -1,7 +1,8 @@
 const { submitReport, checkSubmit, getRequest } = require('./utils');
 // set node env config
 const { env } = require('./config');
-const { getData, getFirstWalletPubkey } = require('./cosmjs');
+const { getFirstWalletPubkey } = require('./cosmjs');
+const { getData } = require('./script-execute');
 
 const processRequest = async (requestId) => {
     console.log("request id: ", requestId);
