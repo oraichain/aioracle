@@ -13,14 +13,13 @@ const getData = async (contractAddr, requestId, requestInput) => {
         }
     });
     let { rewards } = await queryWasm(contractAddr, input);
-    let validDSourceRewards = rewards.filter(reward => validDSources.includes(reward));
-    let validTestCaseRewards = rewards.filter(reward => validTestCases.includes(reward));
+    let validDSourceRewards = rewards.filter(reward => validDSources.includes(reward[0]));
+    let validTestCaseRewards = rewards.filter(reward => validTestCases.includes(reward[0]));
     let result = {
         data: Buffer.from(data).toString('base64'),
         // filter the rewards, only allow successful results from providers receive rewards
         rewards: validDSourceRewards.concat(validTestCaseRewards),
     }
-    console.log("rewards after getting data: ", result.rewards);
     return [result, requestId]; // return request id so that in the callback we can collect it
 }
 
