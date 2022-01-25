@@ -7,6 +7,7 @@ const port = 8080
 const host = '0.0.0.0'
 app.use(express.json()); // built-in middleware for express
 app.use(cors()) // simplest form, allow all cors
+const client = require('./mongo');
 const reportInfoRouter = require('./routes/reportInfo.route');
 const submitReportRouter = require('./routes/submitReport.route');
 
@@ -22,6 +23,15 @@ app.use((err, req, res, next) => {
 
   return;
 });
+
+// cleanup funciton to close the mongo client
+const cleanup = (event) => {
+  console.log("event to close: ", event);
+  client.close().then(process.exit()); // Close MongodDB Connection when Process ends
+}
+
+process.on('SIGINT', cleanup);
+process.on('SIGTERM', cleanup);
 
 app.use('/report-info', reportInfoRouter);
 
