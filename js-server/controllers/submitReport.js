@@ -7,6 +7,9 @@ const {
 const { getRequest, handleResponse, isWhiteListed, verifySignature } = require('../utils');
 const { env } = require('../config');
 const execute = require('../models/cosmosjs');
+const findReports = require('../models/mongo/find-reports');
+const updateOrInsertReports = require('../models/mongo/update-reports');
+const insertMerkleRoot = require('../models/mongo/insert-merkle-root');
 
 const submitReport = async (req, res) => {
     let { requestId, report } = req.body;
@@ -33,24 +36,24 @@ const submitReport = async (req, res) => {
     if (!verifySignature(Buffer.from(JSON.stringify(rawMessage), 'ascii'), Buffer.from(signature, 'base64'), Buffer.from(report.executor, 'base64'))) return handleResponse(res, 403, "Invalid report signature");
 
     let key = `${contractAddr}${requestId.toString()}`;
-    let reports = [];
-    try {
-        const data = await db.get(key);
-        reports = JSON.parse(data);
-        if (reports.filter(rep => rep.executor === report.executor).length === 0) {
-            // append into the existing value if not submitted
-            reports.push(report);
-        }
-    } catch (error) {
-        // if we cant find the request id, we init new
-        reports = [report];
-    }
-
     console.log("current request id handling: ", requestId);
 
     try {
+
+        let reports = [];
+        // const data = await db.get(key);
+        reports = await findReports(contractAddr, requestId);
+        console.log("reports: ", reports);
+        // if we cant find the request id, we init new
+        if (!reports) reports = [report];
+        else if (reports.filter(rep => rep.executor === report.executor).length === 0) {
+            // append into the existing value if not submitted
+            reports.push(report);
+        }
+
         if (reports.length < threshold) {
-            await db.put(key, JSON.stringify(reports));
+            // await db.put(key, JSON.stringify(reports));
+            await updateOrInsertReports(contractAddr, requestId, reports);
             return handleResponse(res, 200, "success");
         }
         else if (reports.length === threshold) {
@@ -71,9 +74,10 @@ const submitReport = async (req, res) => {
             console.log("execute result: ", executeResult);
 
             // only store reports when the merkle root is successfully stored on-chain.
-            await db.put(key, JSON.stringify(reports));
+            await updateOrInsertReports(contractAddr, requestId, reports);
             // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
-            await db.put(Buffer.from(root, 'hex'), leaves);
+            // await db.put(Buffer.from(root, 'hex'), leaves);
+            await insertMerkleRoot(contractAddr, root, leaves);
 
             return handleResponse(res, 200, "success");
         }
