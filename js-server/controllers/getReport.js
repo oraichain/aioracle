@@ -16,7 +16,7 @@ const checkSubmit = async (req, res) => {
     //     return res.status(404).send({ submitted: false, code: 404 });
     // }
     try {
-        const reports = await findReports(data.contract_addr, data.request_id);
+        const reports = await findReports(data.contract_addr, parseInt(data.request_id));
         if (!reports) return res.status(404).send({ submitted: false, code: 404 });
         const report = reports.filter(rep => rep.executor === Buffer.from(data.executor, 'hex').toString('base64')); // convert executor pubkey to hex to put in query string parameter. decode to base64
         if (report.length > 0) return res.send({ code: 200, submitted: true, report: report[0] })
@@ -47,8 +47,9 @@ const getReports = async (req, res) => {
     //     return handleResponse(res, 200, "successfully retrieved the reports", reportsStr);
     // }
     try {
-        let reports = await findReports(data.contract_addr, data.request_id);
-        return handleResponse(res, 200, "successfully retrieved the reports", reports);
+        let reports = await findReports(data.contract_addr, parseInt(data.request_id));
+        if (reports) return handleResponse(res, 200, "successfully retrieved the reports", reports);
+        return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
     } catch (error) {
         return handleResponse(res, 500, error);
     }

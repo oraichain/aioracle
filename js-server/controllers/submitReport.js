@@ -42,7 +42,7 @@ const submitReport = async (req, res) => {
 
         let reports = [];
         // const data = await db.get(key);
-        reports = await findReports(contractAddr, requestId);
+        reports = await findReports(contractAddr, parseInt(requestId));
         console.log("reports: ", reports);
         // if we cant find the request id, we init new
         if (!reports) reports = [report];
@@ -53,7 +53,7 @@ const submitReport = async (req, res) => {
 
         if (reports.length < threshold) {
             // await db.put(key, JSON.stringify(reports));
-            await updateOrInsertReports(contractAddr, requestId, reports);
+            await updateOrInsertReports(contractAddr, parseInt(requestId), reports);
             return handleResponse(res, 200, "success");
         }
         else if (reports.length === threshold) {
@@ -74,7 +74,7 @@ const submitReport = async (req, res) => {
             console.log("execute result: ", executeResult);
 
             // only store reports when the merkle root is successfully stored on-chain.
-            await updateOrInsertReports(contractAddr, requestId, reports);
+            await updateOrInsertReports(contractAddr, parseInt(requestId), reports);
             // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
             // await db.put(Buffer.from(root, 'hex'), leaves);
             await insertMerkleRoot(contractAddr, root, leaves);

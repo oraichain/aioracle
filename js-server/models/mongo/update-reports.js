@@ -32,8 +32,8 @@ const updateOrInsertReports = async (contractAddr, requestId, reports) => {
         const requestCollections = db.collection(constants.REQUESTS_COLLECTION);
 
         // check if report exist. If yes then update, else insert
-        reports = await findReports(contractAddr, requestId);
-        if (!reports) await insertReports(requestCollections, requestId, reports);
+        const currentReports = await findReports(contractAddr, requestId);
+        if (!currentReports) await insertReports(requestCollections, requestId, reports);
         else await updateReports(requestCollections, requestId, reports);
     } catch (error) {
         console.log("error while updating / inserting reports: ", error);
