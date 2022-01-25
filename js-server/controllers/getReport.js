@@ -1,7 +1,7 @@
 const db = require('../db');
 const { handleResponse } = require('../utils');
 const { validationResult } = require('express-validator');
-const findReports = require('../models/mongo/find-reports');
+const findReports = require('../models/mongo/findReports');
 
 const checkSubmit = async (req, res) => {
     let data = req.query;

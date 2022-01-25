@@ -1,6 +1,6 @@
 const client = require('../../mongo');
 const { constants } = require('../../config');
-const findReports = require('./find-reports');
+const findReports = require('./findReports');
 
 const updateReports = async (collection, requestId, reports) => {
     const filter = { requestId };

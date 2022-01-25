@@ -7,9 +7,9 @@ const {
 const { getRequest, handleResponse, isWhiteListed, verifySignature } = require('../utils');
 const { env } = require('../config');
 const execute = require('../models/cosmosjs');
-const findReports = require('../models/mongo/find-reports');
-const updateOrInsertReports = require('../models/mongo/update-reports');
-const insertMerkleRoot = require('../models/mongo/insert-merkle-root');
+const findReports = require('../models/mongo/findReports');
+const updateOrInsertReports = require('../models/mongo/updateReports');
+const insertMerkleRoot = require('../models/mongo/InsertMerkleRoot');
 
 const submitReport = async (req, res) => {
     let { requestId, report } = req.body;

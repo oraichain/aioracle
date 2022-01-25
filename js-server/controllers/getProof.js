@@ -4,7 +4,7 @@ const {
     MerkleProofTree,
     sha256,
 } = require('../models/merkle-proof-tree');
-const findLeaves = require('../models/mongo/find-merkle-root');
+const findLeaves = require('../models/mongo/findMerkleRoot');
 const { getRequest, getCurrentStage } = require('../utils');
 
 const getProof = async (req, res) => {
