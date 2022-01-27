@@ -1,24 +1,53 @@
 const { env, constants } = require('./config');
 const { execute, getLatestBlock } = require('./models/cosmosjs');
 const { formTree } = require('./models/merkle-proof-tree');
-const insertMerkleRoot = require('./models/mongo/InsertMerkleRoot');
-const { updateReportsStatus } = require('./models/mongo/updateReports');
-const client = require('./mongo');
+const { mongoDb } = require('./models/mongo');
+// const bulkUpdateRequests = require('./models/mongo/bulkUpdateRequests');
+// const { findMerkleRoot } = require('./models/mongo/findMerkle');
+// const findRequest = require('./models/mongo/findRequest');
+// const findUnsubmittedRequests = require('./models/mongo/findUnsubmittedRequests');
+// const insertMerkleRoot = require('./models/mongo/InsertMerkleRoot');
+// const { updateReportsStatus } = require('./models/mongo/updateReports');
 const { getRequest } = require('./utils');
 
+const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves) => {
+    console.log("merkle root already exists for this request id")
+    if (submittedMerkleRoot !== localMerkleRoot) {
+        console.log("root is inconsistent. Skip this request");
+        return;
+    }
+    // try inserting the merkle root if does not exist in db
+    const merkleRoot = await mongoDb.findMerkleRoot(submittedMerkleRoot);
+    if (!merkleRoot) await mongoDb.insertMerkleRoot(submittedMerkleRoot, leaves);
+    // try updating the submitted status to true for this request
+    const { submitted } = await mongoDb.findRequest(requestId);
+    if (!submitted) await mongoDb.updateReportsStatus(requestId);
+}
+
+const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
+    const latestBlockData = await getLatestBlock();
+    const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
+
+    // store the merkle root on-chain
+    const executeResult = await execute({ mnemonic: env.MNEMONIC, contractAddr: env.CONTRACT_ADDRESS, rawMessages: msgs, gasPrices, gasLimits: constants.GAS_LIMITS, timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+    console.log("execute result: ", executeResult);
+
+    // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
+    await Promise.all(requestsData.map(async tree => mongoDb.insertMerkleRoot(tree.root, tree.leaves)));
+
+    // update the requests that have been handled in the database
+    await mongoDb.bulkUpdateRequests(requestsData, executeResult.tx_response.txhash);
+}
+
 const submitReportInterval = async (gasPrices) => {
+
     // query a list of send data
-    await client.connect();
-    const db = client.db(env.CONTRACT_ADDRESS);
-    const collection = db.collection(constants.REQUESTS_COLLECTION);
-    // only find requests with null txhash
-    const queryResult = await collection.find({ submitted: null, threshold: { $ne: null } }).limit(10).sort({ requestId: -1 }).toArray();
+    const queryResult = await mongoDb.findUnsubmittedRequests();
     console.log("query result: ", queryResult);
 
     // broadcast send tx & update tx hash
-    const msgs = [];
-    let bulkUpdateOps = [];
-    let requestsData = [];
+    const msgs = []; // msgs to broadcast to blockchain network
+    let requestsData = []; // requests data to store into database
     for (let { reports, requestId, threshold } of queryResult) {
         // only submit merkle root for requests that have enough reports
         if (reports && reports.length === threshold) {
@@ -27,47 +56,17 @@ const submitReportInterval = async (gasPrices) => {
             let request = await getRequest(env.CONTRACT_ADDRESS, requestId);
             let root = request.data.merkle_root ? request.data.merkle_root : newRoot;
             if (request.data && request.data.merkle_root) {
-                console.log("merkle root already exists for this request id")
-                if (request.data.merkle_root !== newRoot) {
-                    console.log("root is inconsistent. Skip this request");
-                    continue;
-                }
-                // TODO: query if already has merkle root
-                // try inserting the merkle root if does not exist in db
-                await insertMerkleRoot(env.CONTRACT_ADDRESS, root, leaves);
-                // TODO: query if already has status submitted
-                // try updating the submitted status to true for this request
-                await updateReportsStatus(env.CONTRACT_ADDRESS, requestId);
+                await processSubmittedRequest(requestId, root, newRoot, leaves);
                 continue;
             }
-            requestsData.push({ requestId: requestId, root, leaves });
+            requestsData.push({ requestId, root, leaves });
             msgs.push(Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })))
         }
     }
     if (msgs.length > 0) {
         // only broadcast new txs if has unfinished reports
         // query latest block
-        const latestBlockData = await getLatestBlock();
-        const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
-
-        // store the merkle root on-chain
-        const executeResult = await execute({ mnemonic: env.MNEMONIC, contractAddr: env.CONTRACT_ADDRESS, rawMessages: msgs, gasPrices, gasLimits: constants.GAS_LIMITS, timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
-        console.log("execute result: ", executeResult);
-
-        // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
-        await Promise.all(requestsData.map(async tree => insertMerkleRoot(env.CONTRACT_ADDRESS, tree.root, tree.leaves)));
-
-        for (let { requestId } of requestsData) {
-            bulkUpdateOps.push({
-                "updateOne": {
-                    "filter": { requestId },
-                    "update": { "$set": { "txhash": executeResult.tx_response.txhash, "submitted": true } }
-                }
-            })
-        }
-
-        const bulkResult = await collection.bulkWrite(bulkUpdateOps);
-        console.log("bulk result: ", bulkResult);
+        await processUnsubmittedRequests(msgs, gasPrices, requestsData);
     }
 }
 

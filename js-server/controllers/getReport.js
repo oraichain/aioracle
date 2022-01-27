@@ -1,22 +1,13 @@
 const db = require('../db');
 const { handleResponse } = require('../utils');
-const { validationResult } = require('express-validator');
-const findReports = require('../models/mongo/findReports');
+const { MongoDb } = require('../models/mongo');
 
 const checkSubmit = async (req, res) => {
     let data = req.query;
-    // if (!data.request_id || !data.executor || !data.contract_addr) return res.status(403).send({ code: 403 });
-    // let key = `${data.contract_addr}${data.request_id}`;
-    // console.log("data request id: ", data.request_id);
-    // let reportsStr = "";
-    // try {
-    //     reportsStr = await db.get(key);
-    // } catch (error) {
-    //     // cannot find key case
-    //     return res.status(404).send({ submitted: false, code: 404 });
-    // }
+    const mongoDb = new MongoDb(data.contract_addr);
+
     try {
-        const reports = await findReports(data.contract_addr, parseInt(data.request_id));
+        const reports = await mongoDb.findReports(parseInt(data.request_id));
         if (!reports) return res.status(404).send({ submitted: false, code: 404 });
         const report = reports.filter(rep => rep.executor === Buffer.from(data.executor, 'hex').toString('base64')); // convert executor pubkey to hex to put in query string parameter. decode to base64
         if (report.length > 0) return res.send({ code: 200, submitted: true, report: report[0] })
@@ -29,25 +20,9 @@ const checkSubmit = async (req, res) => {
 
 const getReports = async (req, res) => {
     let data = req.query;
-    // if (!data.request_id || !data.contract_addr) return res.status(403).send({ code: 403 });
-    // let key = `${data.contract_addr}${data.request_id}`;
-    // let reportsStr = "";
-    // try {
-    //     reportsStr = await db.get(key);
-    // } catch (error) {
-    //     // cannot find key case
-    //     return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
-    // }
-    // if (reportsStr === "") {
-    //     return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
-    // }
-    // const [err, result] = safeJsonParse(reportsStr);
-    // if (err) {
-    //     console.log('Failed to parse JSON: ' + err.message);
-    //     return handleResponse(res, 200, "successfully retrieved the reports", reportsStr);
-    // }
+    const mongoDb = new MongoDb(data.contract_addr);
     try {
-        let reports = await findReports(data.contract_addr, parseInt(data.request_id));
+        let reports = await mongoDb.findReports(parseInt(data.request_id));
         if (reports) return handleResponse(res, 200, "successfully retrieved the reports", reports);
         return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
     } catch (error) {

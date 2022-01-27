@@ -11,7 +11,7 @@ const client = require('./mongo');
 const reportInfoRouter = require('./routes/reportInfo.route');
 const submitReportRouter = require('./routes/submitReport.route');
 const submitReportInterval = require('./submitReportInterval');
-const { constants } = require('./config');
+const { constants, env } = require('./config');
 
 app.get('/', (req, res) => {
   res.send("Welcome to the AI Oracle server");
@@ -46,6 +46,7 @@ app.listen(port, host, async () => {
 // interval process that handles submitting merkle roots onto the blockchain network
 const intervalProcess = async () => {
   let gasPrices = constants.BASE_GAS_PRICES;
+  await client.connect();
   while (true) {
     try {
       console.log("gas prices: ", gasPrices);

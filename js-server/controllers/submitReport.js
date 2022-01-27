@@ -1,20 +1,14 @@
 
-const db = require('../db');
-const {
-    formTree,
-} = require('../models/merkle-proof-tree');
-// const { execute } = require('../models/cosmjs');
 const { getRequest, handleResponse, isWhiteListed, verifySignature } = require('../utils');
 const { env } = require('../config');
-const execute = require('../models/cosmosjs');
-const findReports = require('../models/mongo/findReports');
-const { updateOrInsertReports } = require('../models/mongo/updateReports');
-const insertMerkleRoot = require('../models/mongo/InsertMerkleRoot');
+const { MongoDb } = require('../models/mongo');
 
 const submitReport = async (req, res) => {
-    let { requestId, report } = req.body;
+    let { request_id: requestId, report } = req.body;
+    // const requestId = request_id;
+    // const contractAddr = contract_addr;
     const contractAddr = env.CONTRACT_ADDRESS;
-    const wallet = env.MNEMONIC;
+    const mongoDb = new MongoDb(contractAddr);
 
     console.log("current request id handling: ", requestId);
 
@@ -33,7 +27,7 @@ const submitReport = async (req, res) => {
         if (!verifySignature(Buffer.from(JSON.stringify(rawMessage), 'ascii'), Buffer.from(signature, 'base64'), Buffer.from(report.executor, 'base64'))) return handleResponse(res, 403, "Invalid report signature");
 
         let reports = [];
-        reports = await findReports(contractAddr, parseInt(requestId));
+        reports = await mongoDb.findReports(parseInt(requestId));
         console.log("reports: ", reports);
         // if we cant find the request id, we init new
         if (!reports) reports = [report];
@@ -44,7 +38,7 @@ const submitReport = async (req, res) => {
 
         if (reports.length <= threshold) {
             // await db.put(key, JSON.stringify(reports));
-            await updateOrInsertReports(contractAddr, parseInt(requestId), reports, threshold);
+            await mongoDb.updateOrInsertReports(parseInt(requestId), reports, threshold);
             return handleResponse(res, 200, "success");
         }
         // else if (reports.length === threshold) {
