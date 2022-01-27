@@ -284,10 +284,8 @@
   resolved "https://registry.yarnpkg.com/@cosmjs/utils/-/utils-0.25.6.tgz#934d9a967180baa66163847616a74358732227ca"
   integrity sha512-ofOYiuxVKNo238vCPPlaDzqPXy2AQ/5/nashBo5rvPZJkxt9LciGfUEQWPCOb1BIJDNx2Dzu0z4XCf/dwzl0Dg==
 
-"@oraichain/cosmosjs@^0.0.76":
-  version "0.0.76"
-  resolved "https://registry.yarnpkg.com/@oraichain/cosmosjs/-/cosmosjs-0.0.76.tgz#1afaf3c8d7438b247ebface351b3382a471fdc73"
-  integrity sha512-2WHxGO1sGxGRRNAT0l7KWOmBl94a14rdlt9wFECR4GWK0NfQV/wl7VfSqJ1EhBKo6+X1aPDHpO4S9LvJ+Pc5iA==
+"@oraichain/cosmosjs@../../cosmosjs":
+  version "0.0.79"
   dependencies:
     bech32 "^1.1.3"
     bip32 "^2.0.5"

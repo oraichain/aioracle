@@ -10,6 +10,8 @@ app.use(cors()) // simplest form, allow all cors
 const client = require('./mongo');
 const reportInfoRouter = require('./routes/reportInfo.route');
 const submitReportRouter = require('./routes/submitReport.route');
+const submitReportInterval = require('./submitReportInterval');
+const { constants } = require('./config');
 
 app.get('/', (req, res) => {
   res.send("Welcome to the AI Oracle server");
@@ -40,3 +42,24 @@ app.use('/submit-report', submitReportRouter)
 app.listen(port, host, async () => {
   console.log(`AI Oracle server listening at http://${host}:${port}`)
 })
+
+// interval process that handles submitting merkle roots onto the blockchain network
+const intervalProcess = async () => {
+  let gasPrices = constants.BASE_GAS_PRICES;
+  while (true) {
+    try {
+      console.log("gas prices: ", gasPrices);
+      await submitReportInterval(gasPrices);
+    } catch (error) {
+      console.log("error: ", error);
+      if (error.status === 400) {
+        // increase tx fees
+        gasPrices += 0.002;
+      }
+    } finally {
+      await new Promise(r => setTimeout(r, 10000));
+    }
+  }
+}
+
+intervalProcess();
