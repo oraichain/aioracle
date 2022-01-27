@@ -51,7 +51,7 @@ const submitReport = async (requestId, leaf, mnemonic) => {
     const pubKey = childKey.publicKey;
     let message = { requestId, report: leaf };
     const signature = Buffer.from(signSignature(Buffer.from(JSON.stringify(message), 'ascii'), childKey.privateKey, pubKey)).toString('base64');
-    message = { requestId, report: { ...leaf, signature } };
+    message = { request_id: requestId, report: { ...leaf, signature } };
 
     const requestOptions = {
         method: 'POST',

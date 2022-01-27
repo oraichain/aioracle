@@ -19,23 +19,33 @@ const getHandleMessage = (contract, msg, sender, amount) => {
         sent_funds
     });
 
-    const msgSendAny = new message.google.protobuf.Any({
+    return new message.google.protobuf.Any({
         type_url: '/cosmwasm.wasm.v1beta1.MsgExecuteContract',
         value: message.cosmwasm.wasm.v1beta1.MsgExecuteContract.encode(msgSend).finish()
     });
-
-    return new message.cosmos.tx.v1beta1.TxBody({
-        messages: [msgSendAny]
-    });
 };
 
-const execute = async ({ mnemonic, contractAddr, message, fees, gasLimits }) => {
-    // sign the message
-    const childKey = cosmos.getChildKey(mnemonic);
-    const pubKey = childKey.publicKey;
-    const txBody = getHandleMessage(contractAddr, Buffer.from(message), getAddress(mnemonic), 0);
-
-    return cosmos.submit(childKey, txBody, 'BROADCAST_MODE_SYNC', isNaN(fees) ? 0 : parseInt(fees), gasLimits);
+const getTxBody = (messages, timeout_height) => {
+    return new message.cosmos.tx.v1beta1.TxBody({
+        messages,
+        timeout_height
+    });
 }
 
-module.exports = execute;
+const getLatestBlock = () => {
+    return cosmos.get('/blocks/latest');
+}
+
+const execute = async ({ mnemonic, contractAddr, rawMessages, gasPrices, gasLimits, timeoutHeight, timeoutIntervalCheck }) => {
+    // sign the message
+    const childKey = cosmos.getChildKey(mnemonic);
+    let msgs = [];
+    for (let message of rawMessages) {
+        msgs.push(getHandleMessage(contractAddr, message, getAddress(childKey), 0));
+    }
+    let txBody = getTxBody(msgs, timeoutHeight);
+    const fees = gasPrices ? null : gasPrices * gasLimits;
+    return cosmos.submit(childKey, txBody, 'BROADCAST_MODE_SYNC', !fees || fees === 0 ? null : [{ denom: cosmos.bech32MainPrefix, amount: fees.toString() }], gasLimits, timeoutHeight, timeoutIntervalCheck);
+}
+
+module.exports = { execute, getLatestBlock };
