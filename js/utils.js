@@ -47,7 +47,7 @@ const getServiceContracts = async (contractAddr, requestId) => {
 const submitReport = async (requestId, leaf, mnemonic) => {
 
     // sign report for future verification
-    const childKey = Cosmos.getChildKeyStatic(mnemonic, true, network.path);
+    const childKey = Cosmos.getChildKeyStatic(mnemonic, network.path, true);
     const pubKey = childKey.publicKey;
     let message = { requestId, report: leaf };
     const signature = Buffer.from(signSignature(Buffer.from(JSON.stringify(message), 'ascii'), childKey.privateKey, pubKey)).toString('base64');

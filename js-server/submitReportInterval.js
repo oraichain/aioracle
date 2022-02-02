@@ -2,12 +2,7 @@ const { env, constants } = require('./config');
 const { execute, getLatestBlock } = require('./models/cosmosjs');
 const { formTree } = require('./models/merkle-proof-tree');
 const { mongoDb } = require('./models/mongo');
-// const bulkUpdateRequests = require('./models/mongo/bulkUpdateRequests');
-// const { findMerkleRoot } = require('./models/mongo/findMerkle');
-// const findRequest = require('./models/mongo/findRequest');
-// const findUnsubmittedRequests = require('./models/mongo/findUnsubmittedRequests');
-// const insertMerkleRoot = require('./models/mongo/InsertMerkleRoot');
-// const { updateReportsStatus } = require('./models/mongo/updateReports');
+const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest } = require('./utils');
 
 const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves) => {
@@ -29,7 +24,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
     const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
     // store the merkle root on-chain
-    const executeResult = await execute({ mnemonic: env.MNEMONIC, contractAddr: env.CONTRACT_ADDRESS, rawMessages: msgs, gasPrices, gasLimits: constants.GAS_LIMITS, timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+    const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), contractAddr: env.CONTRACT_ADDRESS, rawMessages: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
     console.log("execute result: ", executeResult);
 
     // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
