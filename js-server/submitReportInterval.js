@@ -24,7 +24,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
     const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
     // store the merkle root on-chain
-    const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), contractAddr: env.CONTRACT_ADDRESS, rawMessages: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+    const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
     console.log("execute result: ", executeResult);
 
     // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
@@ -55,7 +55,8 @@ const submitReportInterval = async (gasPrices) => {
                 continue;
             }
             requestsData.push({ requestId, root, leaves });
-            msgs.push(Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })))
+            const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })) };
+            msgs.push(msg)
         }
     }
     if (msgs.length > 0) {

@@ -284,10 +284,10 @@
   resolved "https://registry.yarnpkg.com/@cosmjs/utils/-/utils-0.25.6.tgz#934d9a967180baa66163847616a74358732227ca"
   integrity sha512-ofOYiuxVKNo238vCPPlaDzqPXy2AQ/5/nashBo5rvPZJkxt9LciGfUEQWPCOb1BIJDNx2Dzu0z4XCf/dwzl0Dg==
 
-"@oraichain/cosmosjs@0.0.83":
-  version "0.0.83"
-  resolved "https://registry.yarnpkg.com/@oraichain/cosmosjs/-/cosmosjs-0.0.83.tgz#eae9e11ea196a7bd9f23eaee60f5307f17679274"
-  integrity sha512-bIP+Eu6hV+L7b06XHpju87iEhZHa32aez2GMmjsCDqGMXSdlgga5E/kGX7Za1gH8MLXDgmP2yJFyaEaCune2MQ==
+"@oraichain/cosmosjs@0.0.84":
+  version "0.0.84"
+  resolved "https://registry.yarnpkg.com/@oraichain/cosmosjs/-/cosmosjs-0.0.84.tgz#706f6753c53a01bfd68629398f350d84a7f132a9"
+  integrity sha512-fm4U/BseJos0H2Rg12+hvnoM/X4kNLBBHoJ6NHohpCtDGHcdUPvPiXm65C1nczMSaiaGoahMCoxkr9oQN0PNLQ==
   dependencies:
     bech32 "^1.1.3"
     bip32 "^2.0.5"
@@ -301,7 +301,7 @@
 "@oraichain/oraiwasm-js@../../cosmosjs-monorepo/packages/oraiwasm-js":
   version "0.0.1"
   dependencies:
-    "@oraichain/cosmosjs" "0.0.83"
+    "@oraichain/cosmosjs" "0.0.84"
     dotenv "^8.2.0"
 
 "@protobufjs/aspromise@^1.1.1", "@protobufjs/aspromise@^1.1.2":
