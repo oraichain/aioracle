@@ -1,14 +1,12 @@
 const { env, constants } = require('./config');
-const { execute, getLatestBlock } = require('./models/cosmosjs');
 const { formTree } = require('./models/merkle-proof-tree');
 const { mongoDb } = require('./models/mongo');
-// const bulkUpdateRequests = require('./models/mongo/bulkUpdateRequests');
-// const { findMerkleRoot } = require('./models/mongo/findMerkle');
-// const findRequest = require('./models/mongo/findRequest');
-// const findUnsubmittedRequests = require('./models/mongo/findUnsubmittedRequests');
-// const insertMerkleRoot = require('./models/mongo/InsertMerkleRoot');
-// const { updateReportsStatus } = require('./models/mongo/updateReports');
+const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest } = require('./utils');
+
+const getLatestBlock = () => {
+    return oraiwasmJs.get('/blocks/latest');
+}
 
 const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves) => {
     console.log("merkle root already exists for this request id")
@@ -29,7 +27,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
     const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
     // store the merkle root on-chain
-    const executeResult = await execute({ mnemonic: env.MNEMONIC, contractAddr: env.CONTRACT_ADDRESS, rawMessages: msgs, gasPrices, gasLimits: constants.GAS_LIMITS, timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+    const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
     console.log("execute result: ", executeResult);
 
     // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
@@ -60,7 +58,8 @@ const submitReportInterval = async (gasPrices) => {
                 continue;
             }
             requestsData.push({ requestId, root, leaves });
-            msgs.push(Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })))
+            const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })) };
+            msgs.push(msg)
         }
     }
     if (msgs.length > 0) {
