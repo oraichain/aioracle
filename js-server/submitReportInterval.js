@@ -2,7 +2,8 @@ const { env, constants } = require('./config');
 const { formTree } = require('./models/merkle-proof-tree');
 const { mongoDb } = require('./models/mongo');
 const oraiwasmJs = require('./models/oraiwasm');
-const { getRequest } = require('./utils');
+const { getRequest, getCurrentDateInfo } = require('./utils');
+const { index } = require('./models/elasticsearch/index')
 
 const getLatestBlock = () => {
     return oraiwasmJs.get('/blocks/latest');
@@ -14,27 +15,40 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
         console.log("root is inconsistent. Skip this request");
         return;
     }
-    // try inserting the merkle root if does not exist in db
-    const merkleRoot = await mongoDb.findMerkleRoot(submittedMerkleRoot);
-    if (!merkleRoot) await mongoDb.insertMerkleRoot(submittedMerkleRoot, leaves);
-    // try updating the submitted status to true for this request
-    const { submitted } = await mongoDb.findRequest(requestId);
-    if (!submitted) await mongoDb.updateReportsStatus(requestId);
+    try {
+        // try inserting the merkle root if does not exist in db
+        const merkleRoot = await mongoDb.findMerkleRoot(submittedMerkleRoot);
+        if (!merkleRoot) await mongoDb.insertMerkleRoot(submittedMerkleRoot, leaves);
+        // try updating the submitted status to true for this request
+        const { submitted } = await mongoDb.findRequest(requestId);
+        if (!submitted) await mongoDb.updateReportsStatus(requestId);
+    } catch (error) {
+        index('process-unsubmitted-request-errors', { error: String(error), ...getCurrentDateInfo() })
+    }
 }
 
 const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
-    const latestBlockData = await getLatestBlock();
-    const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
+    try {
+        const latestBlockData = await getLatestBlock();
+        const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
-    // store the merkle root on-chain
-    const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
-    console.log("execute result: ", executeResult);
+        // store the merkle root on-chain
+        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+        console.log("execute result: ", executeResult);
+        // check error
+        if (executeResult.tx_response.txhash) {
+            index('submit-merkle-txhash', { txhash: executeResult.tx_response.txhash, ...getCurrentDateInfo() });
+            // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
+            await Promise.all(requestsData.map(async tree => mongoDb.insertMerkleRoot(tree.root, tree.leaves)));
 
-    // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
-    await Promise.all(requestsData.map(async tree => mongoDb.insertMerkleRoot(tree.root, tree.leaves)));
-
-    // update the requests that have been handled in the database
-    await mongoDb.bulkUpdateRequests(requestsData, executeResult.tx_response.txhash);
+            // update the requests that have been handled in the database
+            await mongoDb.bulkUpdateRequests(requestsData, executeResult.tx_response.txhash);
+        } else {
+            index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
+        }
+    } catch (error) {
+        index('process-unsubmitted-requests-error', { error: String(error), ...getCurrentDateInfo() });
+    }
 }
 
 const submitReportInterval = async (gasPrices) => {
@@ -53,6 +67,7 @@ const submitReportInterval = async (gasPrices) => {
             let [newRoot, leaves] = await formTree(reports);
             let request = await getRequest(env.CONTRACT_ADDRESS, requestId);
             let root = request.data.merkle_root ? request.data.merkle_root : newRoot;
+            // if the request already has merkle root stored on-chain, then we only update our db accordingly
             if (request.data && request.data.merkle_root) {
                 await processSubmittedRequest(requestId, root, newRoot, leaves);
                 continue;
