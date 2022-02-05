@@ -7,7 +7,7 @@ require('dotenv').config(config)
 
 const env = {
     CONTRACT_ADDRESS: process.env.CONTRACT_ADDRESS,
-    MNEMONIC: process.env.MNEMONIC,
+    // MNEMONIC: process.env.MNEMONIC,
     RPC_URL: process.env.NETWORK_RPC,
     GAS_PRICE: process.env.GAS_PRICE || 0,
     GAS_LIMITS: process.env.GAS_LIMITS ? process.env.GAS_LIMITS : 2000000,
@@ -16,6 +16,7 @@ const env = {
     START_STAGE: process.env.START_STAGE,
     LCD_URL: process.env.LCD_URL || "https://testnet-lcd.orai.io",
     BACKEND_URL: process.env.BACKEND_URL,
+    ENCRYPTED_MNEMONIC: process.env.ENCRYPTED_MNEMONIC,
 }
 
 const network = {

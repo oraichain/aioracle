@@ -2,7 +2,7 @@ const fetch = require('isomorphic-fetch');
 const fs = require('fs');
 const { env, network } = require('./config');
 const Cosmos = require('@oraichain/cosmosjs').default;
-const signSignature = require('./crypto');
+const { signSignature } = require('./crypto');
 
 const lcdUrl = env.LCD_URL;
 const backendUrl = env.BACKEND_URL;

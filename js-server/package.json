@@ -7,6 +7,7 @@
     "@cosmjs/stargate": "^0.26.5",
     "@elastic/elasticsearch": "^7.17.0",
     "@oraichain/oraiwasm-js": "../../cosmosjs-monorepo/packages/oraiwasm-js",
+    "bech32": "^2.0.0",
     "config": "^3.3.7",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",

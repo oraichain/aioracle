@@ -4,9 +4,8 @@ const { env } = require('./config');
 const { getFirstWalletPubkey } = require('./cosmjs');
 const { getData } = require('./script-execute');
 
-const processRequest = async (requestId) => {
+const processRequest = async (requestId, mnemonic) => {
     console.log("request id: ", requestId);
-    const mnemonic = env.MNEMONIC;
     const contractAddr = env.CONTRACT_ADDRESS;
 
     const executor = await getFirstWalletPubkey(mnemonic);
