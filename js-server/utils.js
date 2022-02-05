@@ -44,4 +44,9 @@ const verifySignature = (bufferMessage, signature, pubkey) => {
     return secp256k1.ecdsaVerify(signature, bufferHashedSig, pubkey);
 }
 
-module.exports = { getRequest, handleResponse, isWhiteListed, verifySignature };
+const getCurrentDateInfo = () => {
+    const date = new Date();
+    return { date: date.toUTCString(), timestamp: date.getTime() }
+}
+
+module.exports = { getRequest, handleResponse, isWhiteListed, verifySignature, getCurrentDateInfo };

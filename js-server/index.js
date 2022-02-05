@@ -12,6 +12,8 @@ const reportInfoRouter = require('./routes/reportInfo.route');
 const submitReportRouter = require('./routes/submitReport.route');
 const submitReportInterval = require('./submitReportInterval');
 const { constants, env } = require('./config');
+const { index } = require('./models/elasticsearch/index');
+const { getCurrentDateInfo } = require('./utils');
 
 app.get('/', (req, res) => {
   res.send("Welcome to the AI Oracle server");
@@ -53,6 +55,8 @@ const intervalProcess = async () => {
       await submitReportInterval(gasPrices);
     } catch (error) {
       console.log("error: ", error);
+      // index the error to elasticsearch
+      index('interval-errors', { error: String(error), ...getCurrentDateInfo() });
       if (error.status === 400) {
         // increase tx fees
         gasPrices += 0.002;

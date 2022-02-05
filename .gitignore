@@ -107,10 +107,8 @@ dist-test
 .tern-port
 
 js-server/merkle-proof
-js/stage-data
 target
 
-js/leaf-*.json
-js/stage-info-*.json
-
 js/aioracle*
+
+js-server/config/default.json
