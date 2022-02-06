@@ -3,14 +3,20 @@ const { env } = require('./config');
 const processRequest = require('./process-request');
 const { getStageInfo } = require('./utils');
 const connect = require('./ws');
+const { collectPin } = require('./prompt');
+const { evaluatePin } = require('./crypto');
 
 const start = async () => {
+
+    // prompt password
+    const pin = await collectPin();
+    const mnemonic = evaluatePin(pin, env.ENCRYPTED_MNEMONIC);
 
     // query lalest stage
     let { checkpoint, latest_stage, checkpoint_threshold } = await getStageInfo(env.CONTRACT_ADDRESS);
     if (env.REPLAY) {
         for (let i = env.START_STAGE || parseInt(checkpoint); i <= latest_stage; i++) {
-            await processRequest(parseInt(i));
+            await processRequest(parseInt(i), mnemonic);
         }
     }
 

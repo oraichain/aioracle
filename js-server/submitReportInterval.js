@@ -27,13 +27,13 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
     }
 }
 
-const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
+const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemonic) => {
     try {
         const latestBlockData = await getLatestBlock();
         const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
         // store the merkle root on-chain
-        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(env.MNEMONIC), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
         console.log("execute result: ", executeResult);
         // check error
         if (executeResult.tx_response.txhash) {
@@ -51,7 +51,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData) => {
     }
 }
 
-const submitReportInterval = async (gasPrices) => {
+const submitReportInterval = async (gasPrices, mnemonic) => {
 
     // query a list of send data
     const queryResult = await mongoDb.findUnsubmittedRequests();
@@ -80,7 +80,7 @@ const submitReportInterval = async (gasPrices) => {
     if (msgs.length > 0) {
         // only broadcast new txs if has unfinished reports
         // query latest block
-        await processUnsubmittedRequests(msgs, gasPrices, requestsData);
+        await processUnsubmittedRequests(msgs, gasPrices, requestsData, mnemonic);
     }
 }
 

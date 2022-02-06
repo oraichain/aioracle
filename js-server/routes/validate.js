@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const { bech32 } = require('bech32');
 
 // parallel processing
 const validate = validations => {
@@ -14,4 +15,30 @@ const validate = validations => {
     };
 };
 
-module.exports = validate;
+const isOraiAddress = (value) => {
+    try {
+        const result = bech32.decode(value, 43);
+        if (result.prefix === 'orai') return true;
+        throw "invalid prefix"
+    } catch (error) {
+        throw error
+    }
+}
+
+const isValidRewards = (rewards) => {
+    try {
+        for (let reward of rewards) {
+            // first index is oraiaddr, must be correct
+            isOraiAddress(reward[0]);
+            // 2nd index is denom of reward. Force it to be orai for now.
+            if (reward[1] !== "orai") throw "invalid reward denom";
+            // 3rd index is amount of reward. must be a number
+            if (isNaN(reward[2])) throw "invalid reward amount";
+        }
+        return true;
+    } catch (error) {
+        throw error
+    }
+}
+
+module.exports = { validate, isOraiAddress, isValidRewards };
