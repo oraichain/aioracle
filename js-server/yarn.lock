@@ -308,8 +308,10 @@
     protobufjs "^6.10.2"
     secp256k1 "^4.0.2"
 
-"@oraichain/oraiwasm-js@../../cosmosjs-monorepo/packages/oraiwasm-js":
+"@oraichain2/oraiwasm-js@0.0.1":
   version "0.0.1"
+  resolved "https://registry.yarnpkg.com/@oraichain2/oraiwasm-js/-/oraiwasm-js-0.0.1.tgz#7a0fe0372bd64465922c3858404063d14636de24"
+  integrity sha512-xXolnP6dXyojUyulMMyfvPS1/BgKl6w78VtwM6ldlyV7MjPYPryNkPgzvyvaro9Q80XQ4VadLQU/DTr19pMpxw==
   dependencies:
     "@oraichain/cosmosjs" "0.0.84"
     dotenv "^8.2.0"
