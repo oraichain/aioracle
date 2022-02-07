@@ -19,11 +19,11 @@ const start = async () => {
     let { checkpoint, latest_stage, checkpoint_threshold } = await getStageInfo(env.CONTRACT_ADDRESS);
     if (env.REPLAY) {
         for (let i = env.START_STAGE || parseInt(checkpoint); i <= latest_stage; i++) {
-            await processRequest(parseInt(i), env.MNEMONIC);
+            await processRequest(parseInt(i), mnemonic);
         }
     }
     console.log('\x1b[36m%s\x1b[0m', "\nOraichain Oracle Runner, v1.0.0\n")
-    connect();
+    connect(mnemonic);
 }
 
 start();

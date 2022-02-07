@@ -2,6 +2,8 @@ version: '3.3'
 services:
   mongodb_container:
     image: mongo
+    env_file:
+      - .env.mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
       MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD

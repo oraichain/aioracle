@@ -30,13 +30,14 @@ const submitReport = async (req, res) => {
         reports = await mongoDb.findReports(parseInt(requestId));
         // if we cant find the request id, we init new
         if (!reports) reports = [report];
-        else if (reports.filter(rep => rep.executor === report.executor).length === 0) {
+        else if (reports.filter(rep => rep.executor === report.executor).length !== 0) {
             // append into the existing value if not submitted
-            reports.push(report);
+            // reports.push(report);
+            return handleResponse(res, 403, "You already submitted the reports");
         }
 
-        if (reports.length <= threshold) {
-            await mongoDb.updateOrInsertReports(parseInt(requestId), reports, threshold);
+        if (reports.length < threshold) {
+            await mongoDb.updateUniqueReports(parseInt(requestId), report, threshold);
             return handleResponse(res, 200, "success");
         }
         else return handleResponse(res, 403, "request has already finished");

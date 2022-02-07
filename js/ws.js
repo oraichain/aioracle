@@ -2,7 +2,7 @@ const { env } = require('./config');
 const WebSocket = require('ws');
 const processRequest = require('./process-request');
 
-const connect = () => {
+const connect = (mnemonic) => {
     const ws = new WebSocket(`${env.WEBSOCKET_URL}/websocket`);
     ws.on('open', function open() {
         ws.send(
@@ -27,7 +27,7 @@ const connect = () => {
                 console.log('events: ', events);
                 const requestId = events['wasm.stage'];
                 console.log("request id: ", requestId);
-                processRequest(parseInt(requestId), env.MNEMONIC);
+                processRequest(parseInt(requestId), mnemonic);
             }
         } catch (error) {
             console.error("error: ", error);

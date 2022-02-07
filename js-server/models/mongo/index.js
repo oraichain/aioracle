@@ -16,7 +16,7 @@ class MongoDb {
         for (let { requestId, root } of requestsData) {
             bulkUpdateOps.push({
                 "updateOne": {
-                    "filter": { requestId },
+                    "filter": { _id: requestId, requestId },
                     "update": { "$set": { "txhash": txHash, "submitted": true, "merkle_root": root } }
                 }
             })
@@ -46,7 +46,7 @@ class MongoDb {
 
     findReports = async (requestId) => {
         try {
-            const query = { requestId };
+            const query = { _id: requestId, requestId };
             const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
             if (request && request.reports) return request.reports;
             return null;
@@ -57,14 +57,14 @@ class MongoDb {
     }
 
     findRequest = async (requestId) => {
-        const query = { requestId };
+        const query = { _id: requestId, requestId, submitted: false };
         const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
         return request;
 
     }
 
     findUnsubmittedRequests = async () => {
-        const queryResult = await this.requestCollections.find({ submitted: null, threshold: { $ne: null } }).limit(10).sort({ requestId: -1 }).toArray();
+        const queryResult = await this.requestCollections.find({ submitted: null, threshold: { $ne: null } }).limit(10).sort({ _id: -1, requestId: -1 }).toArray();
         return queryResult;
 
     }
@@ -85,22 +85,22 @@ class MongoDb {
         }
     }
 
-    updateReports = async (requestId, reports) => {
-        const filter = { requestId };
-        // create a document that sets the plot of the movie
-        const updateDoc = {
-            $set: {
-                reports
-            },
-        };
+    // updateReports = async (requestId, reports) => {
+    //     const filter = { requestId };
+    //     // create a document that sets the plot of the movie
+    //     const updateDoc = {
+    //         $set: {
+    //             reports
+    //         },
+    //     };
 
-        const result = await this.requestCollections.updateOne(filter, updateDoc);
-        console.log("update reports result: ", result);
-    }
+    //     const result = await this.requestCollections.updateOne(filter, updateDoc);
+    //     console.log("update reports result: ", result);
+    // }
 
     updateReportsStatus = async (requestId) => {
 
-        const filter = { requestId };
+        const filter = { _id: requestId, requestId };
         // create a document that sets the plot of the movie
         const updateDoc = {
             $set: {
@@ -112,27 +112,46 @@ class MongoDb {
         console.log("update reports result: ", result);
     }
 
-    insertReports = async (requestId, reports, threshold) => {
-        const insertObj = {
-            requestId,
-            reports,
-            threshold
-        }
-        const result = await this.requestCollections.insertOne(insertObj);
-        console.log("insert report result: ", result);
+    // removeReports = async (requestId) => {
+    //     const filter = { requestId };
+    //     const result = await this.requestCollections.deleteMany(filter);
+    //     console.log("insert report result: ", result);
+    // }
+
+    // insertReports = async (requestId, reports, threshold) => {
+    //     const insertObj = {
+    //         requestId,
+    //         reports,
+    //         threshold
+    //     }
+    //     const result = await this.requestCollections.insertOne(insertObj);
+    //     console.log("insert report result: ", result);
+    // }
+
+    updateUniqueReports = async (requestId, reports, threshold) => {
+        const filter = { _id: requestId, requestId, threshold };
+        // add unique report to the list of reports.
+        const updateDoc = {
+            $addToSet: {
+                reports
+            },
+        };
+
+        const result = await this.requestCollections.updateOne(filter, updateDoc, { upsert: true }); // upsert means if does not exist then create document
+        console.log("update reports result: ", result);
     }
 
-    updateOrInsertReports = async (requestId, reports, threshold) => {
-        try {
-            // check if report exist. If yes then update, else insert
-            const currentReports = await this.findReports(requestId);
-            if (!currentReports) await this.insertReports(requestId, reports, threshold);
-            else await this.updateReports(requestId, reports);
-        } catch (error) {
-            console.log("error while updating / inserting reports: ", error);
-            throw error;
-        }
-    }
+    // updateOrInsertReports = async (requestId, reports, threshold) => {
+    //     try {
+    //         // check if report exist. If yes then update, else insert
+    //         const currentReports = await this.findReports(requestId);
+    //         if (!currentReports) await this.insertReports(requestId, reports, threshold);
+    //         else await this.updateReports(requestId, reports);
+    //     } catch (error) {
+    //         console.log("error while updating / inserting reports: ", error);
+    //         throw error;
+    //     }
+    // }
 }
 
 const mongoDb = new MongoDb(env.CONTRACT_ADDRESS);
