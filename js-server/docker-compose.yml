@@ -16,6 +16,3 @@ services:
       - SYS_PTRACE
     env_file:
       - .env
-
-volumes:
-  merkle_proof: null
