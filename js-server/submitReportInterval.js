@@ -62,6 +62,8 @@ const submitReportInterval = async (gasPrices, mnemonic) => {
     let requestsData = []; // requests data to store into database
     for (let { reports, requestId, threshold } of queryResult) {
         // only submit merkle root for requests that have enough reports
+        console.log("threshold of the report: ", threshold);
+        console.log("reports length: ", reports.length);
         if (reports && reports.length === threshold) {
             // form a merkle root based on the value
             let [newRoot, leaves] = await formTree(reports);
@@ -75,6 +77,10 @@ const submitReportInterval = async (gasPrices, mnemonic) => {
             requestsData.push({ requestId, root, leaves });
             const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })) };
             msgs.push(msg)
+        } else if (reports && reports.length > threshold) {
+            // update the reports so they have equal threshold. No need to await this
+            reports = reports.slice(0, threshold - 1);
+            mongoDb.updateOrInsertReports(parseInt(requestId), reports, threshold);
         }
     }
     if (msgs.length > 0) {

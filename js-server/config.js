@@ -9,7 +9,8 @@ const env = {
     ENCRYPTED_MNEMONIC: process.env.ENCRYPTED_MNEMONIC,
     RPC_URL: process.env.NETWORK_RPC,
     MONGO_URL: process.env.MONGO_URL || "mongodb://foo:bar@localhost:27017/",
-    ELASTICSEARCH_NODE: process.env.ELASTICSEARCH_NODE || "http://localhost:9200"
+    ELASTICSEARCH_NODE: process.env.ELASTICSEARCH_NODE || "http://localhost:9200",
+    PROCESS_INTERVAL: parseInt(process.env.PROCESS_INTERVAL) || 10000,
 }
 
 const constants = {

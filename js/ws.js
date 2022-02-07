@@ -27,7 +27,7 @@ const connect = () => {
                 console.log('events: ', events);
                 const requestId = events['wasm.stage'];
                 console.log("request id: ", requestId);
-                processRequest(parseInt(requestId));
+                processRequest(parseInt(requestId), env.MNEMONIC);
             }
         } catch (error) {
             console.error("error: ", error);

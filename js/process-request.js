@@ -7,7 +7,7 @@ const { getData } = require('./script-execute');
 const processRequest = async (requestId, mnemonic) => {
     console.log("request id: ", requestId);
     const contractAddr = env.CONTRACT_ADDRESS;
-
+    console.log("mnemonic in process request: ", mnemonic);
     const executor = await getFirstWalletPubkey(mnemonic);
     // try to collect leaf from backend
     const request = await getRequest(contractAddr, requestId);
@@ -17,7 +17,6 @@ const processRequest = async (requestId, mnemonic) => {
     else {
         const { submitted } = await checkSubmit(contractAddr, requestId, executor);
         if (submitted) return; // no need to submit again. Wait for other executors
-        console.log("prepare to get new date for this request id");
         // get service contracts to get data from the scripts, then submit report
         getData(contractAddr, requestId, request.input).then(async ([result, reqId]) => {
             const { data, rewards } = result;
@@ -35,7 +34,7 @@ const processRequest = async (requestId, mnemonic) => {
             if (!submitted) {
                 await submitReport(reqId, leaf, mnemonic);
             }
-        });
+        }).catch(error => console.log("error in getting data: ", error));
     }
 };
 

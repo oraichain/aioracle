@@ -28,7 +28,6 @@ const submitReport = async (req, res) => {
 
         let reports = [];
         reports = await mongoDb.findReports(parseInt(requestId));
-        console.log("reports: ", reports);
         // if we cant find the request id, we init new
         if (!reports) reports = [report];
         else if (reports.filter(rep => rep.executor === report.executor).length === 0) {
@@ -37,35 +36,9 @@ const submitReport = async (req, res) => {
         }
 
         if (reports.length <= threshold) {
-            // await db.put(key, JSON.stringify(reports));
             await mongoDb.updateOrInsertReports(parseInt(requestId), reports, threshold);
             return handleResponse(res, 200, "success");
         }
-        // else if (reports.length === threshold) {
-        //     // if root already exists return
-        //     let root = await getRequest(contractAddr, requestId);
-        //     if (root.data && root.data.merkle_root) {
-        //         return handleResponse(res, 403, "merkle root already exists for this request id");
-        //     }
-
-        //     // form a merkle root based on the value
-        //     let [newRoot, leaves] = await formTree(reports);
-        //     root = newRoot;
-
-        //     // store the merkle root on-chain
-        //     const executeResult = await execute({ mnemonic: wallet, contractAddr, message: JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } }), fees: 0, gasLimits: 20000000 });
-
-        //     console.log("request id after finish executing result: ", requestId);
-        //     console.log("execute result: ", executeResult);
-
-        //     // only store reports when the merkle root is successfully stored on-chain.
-        //     await updateOrInsertReports(contractAddr, parseInt(requestId), reports, threshold);
-        //     // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
-        //     // await db.put(Buffer.from(root, 'hex'), leaves);
-        //     await insertMerkleRoot(contractAddr, root, leaves);
-
-        //     return handleResponse(res, 200, "success");
-        // }
         else return handleResponse(res, 403, "request has already finished");
     } catch (error) {
         return handleResponse(res, 500, String(error));

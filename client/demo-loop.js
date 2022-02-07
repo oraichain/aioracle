@@ -29,7 +29,7 @@ const start = async () => {
         } catch (error) {
             console.log("error: ", error);
         }
-        await new Promise(r => setTimeout(r, 10000));
+        await new Promise(r => setTimeout(r, 2000));
     }
 }
 

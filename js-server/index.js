@@ -16,7 +16,6 @@ const { index } = require('./models/elasticsearch/index');
 const { getCurrentDateInfo } = require('./utils');
 const { collectPin } = require('./crypto/prompt');
 const { evaluatePin } = require('./crypto/crypto');
-const { default: Cosmos } = require('@oraichain/oraiwasm-js/node_modules/@oraichain/cosmosjs');
 
 app.get('/', (req, res) => {
   res.send("Welcome to the AI Oracle server");
@@ -70,7 +69,7 @@ const intervalProcess = async () => {
         gasPrices += 0.002;
       }
     } finally {
-      await new Promise(r => setTimeout(r, 10000));
+      await new Promise(r => setTimeout(r, env.PROCESS_INTERVAL));
     }
   }
 }

@@ -1,18 +1,33 @@
 const exec = require('child_process').execFile;
+const { spawn } = require('child_process');
 require('dotenv').config({ path: '.env.testnet' });
+const Cosmos = require('@oraichain/cosmosjs').default;
 
-let env = ['dev1', 'dev2'];
-const executor_addrs = ["orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573", "orai1602dkqjvh4s7ryajnz2uwhr8vetrwr8nekpxv5"];
+const cosmos = new Cosmos('https://testnet-lcd.orai.io', 'Oraichain-testnet');
 
-for (let i = 0; i < 2; i++) {
-    let fileName = './aioracle-executor-process';
-    const ls = exec(fileName, {
-        env: Object.assign(process.env, { NODE_ENV: env[i], EXECUTOR_ADDRESS: executor_addrs[i], REPLAY: process.env.REPLAY }),
+const parseMnemonics = () => {
+    let mnemonics = process.env.MNEMONICS.substring(1, process.env.MNEMONICS.length - 1).split(',');
+    for (let mnemonic of mnemonics) {
+        let childKey = cosmos.getChildKey(mnemonic);
+        let pubkey = Buffer.from(cosmos.getPubKey(childKey.privateKey)).toString('base64');
+        // console.log("pubkey: ", pubkey);
+        const address = cosmos.getAddress(mnemonic);
+        console.log(address);
+    }
+    return mnemonics;
+}
+
+const mnemonics = parseMnemonics();
+
+for (let i = 0; i < 13; i++) {
+    let fileName = 'index.js';
+    const ls = spawn('node', [fileName], {
+        env: Object.assign(process.env, { NODE_ENV: 'dev1', MNEMONIC: mnemonics[i] }),
         cwd: process.cwd()
     });
 
     ls.stdout.on('data', (data) => {
-        console.log(`mnemonic index ${i} stdout: ${data}`);
+        console.log(`stdout: ${data}`);
     });
     ls.stderr.on('data', (data) => {
         console.error(`stderr: ${data}`);
