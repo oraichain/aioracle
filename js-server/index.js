@@ -14,8 +14,6 @@ const submitReportInterval = require('./submitReportInterval');
 const { constants, env } = require('./config');
 const { index } = require('./models/elasticsearch/index');
 const { getCurrentDateInfo } = require('./utils');
-const { collectPin } = require('./crypto/prompt');
-const { evaluatePin } = require('./crypto/crypto');
 
 app.get('/', (req, res) => {
   res.send("Welcome to the AI Oracle server");
@@ -50,16 +48,12 @@ app.listen(port, host, async () => {
 // interval process that handles submitting merkle roots onto the blockchain network
 const intervalProcess = async () => {
 
-  // collect pin
-  const pin = await collectPin();
-  const mnemonic = evaluatePin(pin, env.ENCRYPTED_MNEMONIC);
-
   let gasPrices = constants.BASE_GAS_PRICES;
   await client.connect();
   while (true) {
     try {
       console.log("gas prices: ", gasPrices);
-      await submitReportInterval(gasPrices, mnemonic);
+      await submitReportInterval(gasPrices, env.MNEMONIC);
     } catch (error) {
       console.log("error: ", error);
       // index the error to elasticsearch
