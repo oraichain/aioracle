@@ -1,5 +1,6 @@
 const { spawn, execSync } = require('child_process');
 const fetch = require('isomorphic-fetch');
+const { env } = require('./config');
 const { queryWasm } = require('./cosmjs');
 const queryTestCases = require('./query-testcase');
 const { getServiceContracts } = require('./utils');
@@ -13,7 +14,7 @@ const getData = async (contractAddr, requestId, requestInput) => {
         }
     });
     let { rewards } = await queryWasm(contractAddr, input);
-    let validDSourceRewards = rewards.filter(reward => validDSources.includes(reward[0]));
+    let validDSourceRewards = rewards.filter(reward => validDSources.includes(reward[0])); // first index of reward is executor / provider addr. We're filtering the list of eligible addrs
     let validTestCaseRewards = rewards.filter(reward => validTestCases.includes(reward[0]));
     let result = {
         data: Buffer.from(data).toString('base64'),
@@ -33,7 +34,7 @@ const executeTestCases = async (dsourceScriptUrl, tcaseAddrs) => {
         for (let testCase of testCases) {
             // execute the data source given the test case input
             // handle deno script. By default, the user's input is the last element of the parameter list
-            let result = await processDenoScript(dsourceScriptUrl, [JSON.parse(testCase.parameters)]);
+            let result = await processDenoScript(dsourceScriptUrl, testCase.parameters);
             let assertInput = { output: result.trim(), expected_output: testCase.expected_output };
             assertInputs.push(JSON.stringify(assertInput));
         }
@@ -78,14 +79,14 @@ const handleScript = async (contracts, requestInput) => {
             results
         }
     });
-    let { data } = await fetch(`https://testnet-lcd.orai.io/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    let { data } = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
     return [JSON.stringify(data), [... new Set(validDSources)], [... new Set(validTestCases)]];
 }
 
 const processDenoScript = (scriptUrl, params) => {
     return new Promise((resolve, reject) => {
         const denoPath = execSync("which deno").toString('ascii').trim(); // collect absolute path for deno binary. This helps when the binary runs as a ubuntu service
-        const ls = spawn(denoPath, ['run', '--allow-net', '--unstable', scriptUrl, ...params]);
+        const ls = spawn(denoPath, ['run', '--allow-net', '--unstable', scriptUrl, JSON.stringify(params)]);
 
         ls.stdout.on('data', (data) => {
             resolve(`${data}`);

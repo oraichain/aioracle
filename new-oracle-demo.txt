@@ -16,4 +16,6 @@ binance: orai1y88tlgddntj66sn46qqlvtx3tp7tgl8sxxx6uk
 
 coinbase: orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f
 
-test case: orai1mcan6te02gxy38luxnn8eexjgcvp4jrwuwhh3c
+test case: orai1thf5ppdz59am9sr65tm46hw6fu83lau0v8pga8
+
+test case classification: orai1s7jusca6fmhpw40j5ncdrmuu7ftguj7gext34n
