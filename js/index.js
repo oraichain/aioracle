@@ -13,6 +13,11 @@ const start = async () => {
     if (env.ENCRYPTED_MNEMONIC) {
         const pin = await collectPin();
         mnemonic = evaluatePin(pin, env.ENCRYPTED_MNEMONIC);
+    } else {
+        if (!mnemonic) {
+            console.log("You need to have either mnemonic or encrypted mnemonic in your .env file to start the application!");
+            process.exit(0);
+        }
     }
 
     // query lalest stage

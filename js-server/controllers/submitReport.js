@@ -36,7 +36,7 @@ const submitReport = async (req, res) => {
             return handleResponse(res, 403, "You already submitted the reports");
         }
 
-        if (reports.length < threshold) {
+        if (reports.length <= threshold) {
             await mongoDb.updateUniqueReports(parseInt(requestId), report, threshold);
             return handleResponse(res, 200, "success");
         }

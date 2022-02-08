@@ -7,11 +7,11 @@ const { getData } = require('./script-execute');
 const processRequest = async (requestId, mnemonic) => {
     console.log("request id: ", requestId);
     const contractAddr = env.CONTRACT_ADDRESS;
-    console.log("mnemonic in process request: ", mnemonic);
     const executor = await getFirstWalletPubkey(mnemonic);
     // try to collect leaf from backend
     const request = await getRequest(contractAddr, requestId);
     if (request.data && request.data.merkle_root) {
+        console.log(`request ${requestId} already has merkle root`);
         return;
     }
     else {

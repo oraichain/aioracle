@@ -57,8 +57,15 @@ class MongoDb {
     }
 
     findRequest = async (requestId) => {
-        const query = { _id: requestId, requestId, submitted: false };
+        const query = { _id: requestId, requestId, submitted: null };
         const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
+        return request;
+    }
+
+    findSubmittedRequest = async (requestId) => {
+        const query = { _id: requestId, requestId, submitted: true };
+        const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
+        if (!request) return { reports: null, submitted: null, threshold: null }
         return request;
 
     }
@@ -85,18 +92,18 @@ class MongoDb {
         }
     }
 
-    // updateReports = async (requestId, reports) => {
-    //     const filter = { requestId };
-    //     // create a document that sets the plot of the movie
-    //     const updateDoc = {
-    //         $set: {
-    //             reports
-    //         },
-    //     };
+    updateReports = async (requestId, reports) => {
+        const filter = { requestId };
+        // create a document that sets the plot of the movie
+        const updateDoc = {
+            $set: {
+                reports
+            },
+        };
 
-    //     const result = await this.requestCollections.updateOne(filter, updateDoc);
-    //     console.log("update reports result: ", result);
-    // }
+        const result = await this.requestCollections.updateOne(filter, updateDoc);
+        console.log("update reports result: ", result);
+    }
 
     updateReportsStatus = async (requestId) => {
 
@@ -112,11 +119,11 @@ class MongoDb {
         console.log("update reports result: ", result);
     }
 
-    // removeReports = async (requestId) => {
-    //     const filter = { requestId };
-    //     const result = await this.requestCollections.deleteMany(filter);
-    //     console.log("insert report result: ", result);
-    // }
+    removeRedundantRequests = async (requestId) => {
+        const filter = { requestId, submitted: null };
+        const result = await this.requestCollections.deleteMany(filter);
+        console.log("insert report result: ", result);
+    }
 
     // insertReports = async (requestId, reports, threshold) => {
     //     const insertObj = {

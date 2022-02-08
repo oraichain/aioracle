@@ -1,13 +1,11 @@
 const { Client } = require('@elastic/elasticsearch')
-const config = require('config');
-const elasticConfig = config.get('elastic');
 const { env } = require('../../config');
 
 const elasticClient = new Client({
     node: env.ELASTICSEARCH_NODE,
     auth: {
-        username: elasticConfig.username,
-        password: elasticConfig.password
+        username: env.ELASTIC_USERNAME,
+        password: env.ELASTIC_PASSWORD
     }
 })
 
