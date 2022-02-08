@@ -18,4 +18,8 @@ coinbase: orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f
 
 test case: orai1thf5ppdz59am9sr65tm46hw6fu83lau0v8pga8
 
-test case classification: orai1s7jusca6fmhpw40j5ncdrmuu7ftguj7gext34n
+test case flower classification: orai1s7jusca6fmhpw40j5ncdrmuu7ftguj7gext34n
+
+dsource flower classification: orai1pdgzqucp7fwjvf5q0enfes2ev5fsh9pujps6uh
+
+oscript flower classification: orai1qkrp53m75q2qglkhr0v7ftwu2x7rjv95gz0xgq

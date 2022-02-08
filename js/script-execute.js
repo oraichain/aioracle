@@ -14,7 +14,8 @@ const getData = async (contractAddr, requestId, requestInput) => {
         }
     });
     let { rewards } = await queryWasm(contractAddr, input);
-    let validDSourceRewards = rewards.filter(reward => validDSources.includes(reward[0])); // first index of reward is executor / provider addr. We're filtering the list of eligible addrs
+    // first index of reward is executor / provider addr. We're filtering the list of eligible addrs
+    let validDSourceRewards = rewards.filter(reward => validDSources.includes(reward[0]));
     let validTestCaseRewards = rewards.filter(reward => validTestCases.includes(reward[0]));
     let result = {
         data: Buffer.from(data).toString('base64'),
@@ -45,7 +46,6 @@ const executeTestCases = async (dsourceScriptUrl, tcaseAddrs) => {
     return assertResults;
 }
 
-// TODO: make sure that this function calls enough data sources & test cases. This one is just a demo to run deno only.
 const handleScript = async (contracts, requestInput) => {
     const { oscript, dsources, tcases } = contracts;
     // execute the data sources
@@ -66,13 +66,13 @@ const handleScript = async (contracts, requestInput) => {
         let assertResultsTcases = assertResults.filter(assertResult => assertResult.tcase_status).map(assertResult => assertResult.contract);
         validTestCases = validTestCases.concat(assertResultsTcases);
 
-        // handle deno script. By default, the user's input is the last element of the parameter list
+        // By default, the user's input is the last element of the parameter list
         let result = await processDenoScript(state.script_url, [...state.parameters, requestInput]);
         results.push(result.trim()); // trim to remove trailing space & newline char
 
-        // append valid data sources
         validDSources.push(dsource);
     }
+    console.log("results: ", results);
     // aggregate results
     let input = JSON.stringify({
         aggregate: {
