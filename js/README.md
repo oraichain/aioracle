@@ -4,7 +4,7 @@
 
 ### 1. Deno
 
-[Deno](https://deno.land/) is JavaScript & TypeScript runtime, which provides a secured environment for third parties to run scripts safely. Oraichain leverages this amazing feature and integrates Deno into the AI Executor program, where it downloads & runs deno scripts from the data source, test case, & oracle script providers. 
+[Deno](https://deno.land/) is a JavaScript & TypeScript runtime, which provides a secured environment for third parties to run scripts safely. Oraichain leverages this amazing feature and integrates Deno into the AI Executor program, where it downloads & runs deno scripts from the data source, test case, & oracle script providers. 
 
 Deno protects the AI executors from malicious provider scripts that attempt to hack into their host machines and only enables the host network access to execute the scripts.
 
@@ -14,4 +14,33 @@ After finishing the Deno's installation process, you should be able to try runni
 
 Then you can move on to the next step.
 
-### 2. 
+### 2. Download the program
+
+***Shell (Mac, Linux):***
+
+```
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R" -O executor.zip && rm /tmp/cookies.txt
+```
+
+***Windows:***
+
+For Windows users, you can download the zip and unzip it directly.
+
+### 3. Configure the env file
+
+The .env file in the zip configures the network, wallet, and other basic variables for your program to use. All the key-value pairs are heavily commented already. If you still have questions about them, freel free to ask us, the Oraichain team.
+
+### 4. Run the program
+
+In the directory containing the ```aioracle-executor-process``` binary, please use Terminal and type:
+
+**For Linux and MacOS users:**
+
+```
+./aioracle-executor-process
+```
+
+**For Windows users:**
+
+You can click on the exe file to start running!
+
