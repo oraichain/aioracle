@@ -62,7 +62,10 @@ const submitReportInterval = async (gasPrices, mnemonic) => {
     let requestsData = []; // requests data to store into database
     for (let { reports, requestId, threshold } of queryResult) {
         // only submit merkle root for requests that have enough reports
-        if (reports && reports.length === threshold) {
+        if (reports && reports.length >= threshold) {
+            // update the reports so they have equal threshold
+            reports = reports.slice(0, threshold);
+            await mongoDb.updateReports(parseInt(requestId), reports);
             // form a merkle root based on the value
             let [newRoot, leaves] = await formTree(reports);
             let request = await getRequest(env.CONTRACT_ADDRESS, requestId);
@@ -75,11 +78,7 @@ const submitReportInterval = async (gasPrices, mnemonic) => {
             requestsData.push({ requestId, root, leaves });
             const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })) };
             msgs.push(msg)
-        } else if (reports && reports.length > threshold) {
-            // update the reports so they have equal threshold. No need to await this
-            reports = reports.slice(0, threshold);
-            mongoDb.updateReports(parseInt(requestId), reports);
-        } else {
+        } else if (reports && reports.length < threshold) {
             // in case report length is smaller than threshold, consider removing it if there exists a finished request in db
             const { reports, submitted, threshold } = await mongoDb.findSubmittedRequest(requestId);
             if (submitted && reports.length === threshold) await mongoDb.removeRedundantRequests(requestId);
