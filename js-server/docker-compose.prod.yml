@@ -1,20 +1,20 @@
 version: '3.3'
 services:
 
-  mongodb_container_testnet:
+  mongodb_container:
     image: mongo
     env_file:
-      - .env.mongo.testnet
+      - .env.mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
       MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
     ports:
-      - 27018:27017
+      - 27017:27017
     volumes:
-      - mongodb_data_container_testnet:/data/db
+      - mongodb_data_container:/data/db
 
-  aioracle_server_testnet:
-    container_name: aioracle_server_testnet
+  aioracle_server:
+    container_name: aioracle_server
     image: orai/aioracle-server:0.0.1
     working_dir: /workspace
     restart: on-failure
@@ -23,13 +23,13 @@ services:
         soft: 65536
         hard: 65536
     ports:
-      - 8081:8080
+      - 8080:8080
     cap_add:
       - SYS_PTRACE
     env_file:
-      - .env.testnet
+      - .env
     depends_on:
-      - mongodb_container_testnet
+      - mongodb_container
 
 volumes:
-  mongodb_data_container_testnet:
+  mongodb_data_container:

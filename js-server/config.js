@@ -14,6 +14,8 @@ const env = {
     ELASTIC_USERNAME: process.env.ELASTIC_USERNAME || "elastic",
     ELASTIC_PASSWORD: process.env.ELASTIC_PASSWORD || "changeme",
     PROCESS_INTERVAL: parseInt(process.env.PROCESS_INTERVAL) || 10000,
+    PORT: parseInt(process.env.PORT) || 8080,
+    HOST: process.env.HOST || '0.0.0.0'
 }
 
 const constants = {

@@ -1,17 +1,17 @@
 require('./db');
+const { constants, env } = require('./config');
 
 const express = require('express');
 const cors = require('cors');
 const app = express()
-const port = 8080
-const host = '0.0.0.0'
+const port = env.PORT
+const host = env.HOST
 app.use(express.json()); // built-in middleware for express
 app.use(cors()) // simplest form, allow all cors
 const client = require('./mongo');
 const reportInfoRouter = require('./routes/reportInfo.route');
 const submitReportRouter = require('./routes/submitReport.route');
 const submitReportInterval = require('./submitReportInterval');
-const { constants, env } = require('./config');
 const { index } = require('./models/elasticsearch/index');
 const { getCurrentDateInfo } = require('./utils');
 

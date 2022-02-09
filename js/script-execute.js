@@ -85,8 +85,7 @@ const handleScript = async (contracts, requestInput) => {
 
 const processDenoScript = (scriptUrl, params) => {
     return new Promise((resolve, reject) => {
-        const denoPath = execSync("which deno").toString('ascii').trim(); // collect absolute path for deno binary. This helps when the binary runs as a ubuntu service
-        const ls = spawn(denoPath, ['run', '--allow-net', '--unstable', scriptUrl, JSON.stringify(params)]);
+        const ls = spawn('deno', ['run', '--allow-net', '--unstable', scriptUrl, JSON.stringify(params)]);
 
         ls.stdout.on('data', (data) => {
             resolve(`${data}`);
