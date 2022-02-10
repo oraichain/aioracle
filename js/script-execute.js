@@ -92,9 +92,11 @@ const processDenoScript = (scriptUrl, params) => {
         });
         ls.stderr.on('data', (data) => {
             const dataStr = data.toString();
-            console.log("data in error process deno: ", dataStr);
             // Deno will push its log to err stream. Most common logs include download & check module imports. Otherwise, we reject err
-            if (!dataStr.includes("Download") && !dataStr.includes("Check")) reject(dataStr);
+            if (!dataStr.includes("Download") && !dataStr.includes("Check")) {
+                console.log("data in error process deno: ", dataStr);
+                reject(dataStr);
+            }
         });
     })
 }

@@ -8,7 +8,7 @@ const { MongoDb } = require('../models/mongo');
 const { getRequest } = require('../utils');
 
 const getProof = async (req, res) => {
-    let { requestId, leaf, contractAddr } = req.body;
+    let { request_id: requestId, leaf, contract_addr: contractAddr } = req.body;
     // let contractAddr = env.CONTRACT_ADDRESS;
     const mongoDb = new MongoDb(contractAddr);
     try {
@@ -28,7 +28,7 @@ const getProof = async (req, res) => {
         return res.send({ code: 200, proofs, root: root })
     } catch (error) {
         console.log("error: ", error);
-        return res.status(404).send({ code: 404, error })
+        return res.status(404).send({ code: 404, error: String(error) })
     }
 }
 module.exports = { getProof };

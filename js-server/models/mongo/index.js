@@ -31,7 +31,7 @@ class MongoDb {
             const query = { merkleRoot };
 
             const result = await this.merkleCollection.findOne(query, { projection: { _id: 0 } });
-            if (result && result.leaves) return result.leaves;
+            if (result && result.leaves) return JSON.parse(result.leaves);
             return null;
         } catch (error) {
             console.log(error);
