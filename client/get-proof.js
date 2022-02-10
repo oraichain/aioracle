@@ -4,11 +4,11 @@ const fetch = require('isomorphic-fetch');
 
 const backendUrl = 'http://localhost:8080';
 const contractAddr = 'orai1d2yhksryjk6ly0wa6nwkp9t563s5ap2kzar7up';
-const requestId = 169;
+const requestId = 284;
 
 const getReports = async (requestId) => {
     const { data } = await fetch(`${backendUrl}/report-info/get-reports?request_id=${requestId}&contract_addr=${contractAddr}`).then(data => data.json());
-    return data[0];
+    return data;
 }
 
 // example of a valid raw leaf: 
@@ -34,27 +34,30 @@ const getReports = async (requestId) => {
 // then we submit the object to the backend
 */
 
-const getProofs = async (requestId, leaf) => {
-    let result = {};
-    let finalLeaf = { ...leaf, data: sha256(leaf.data).toString('hex') };
-    console.log("final leaf: ", finalLeaf);
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': "application/json"
-        },
-        body: JSON.stringify({ request_id: requestId, contract_addr: contractAddr, leaf: finalLeaf }),
-        redirect: 'follow'
-    };
-    result = await fetch(`${backendUrl}/report-info/get-proof`, requestOptions).then(data => data.json());
-    return result;
+const getProofs = async (requestId, contractAddr) => {
+    const leafs = await getReports(requestId, contractAddr);
+    let listProofs = [];
+    for (let leaf of leafs) {
+        let proofs = {};
+        let finalReport = { ...leaf, data: sha256(leaf.data).toString('hex') };
+        const requestOptions = {
+            method: 'POST',
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': "application/json"
+            },
+            body: JSON.stringify({ request_id: requestId, contract_addr: contractAddr, leaf: finalReport }),
+            redirect: 'follow'
+        };
+        proofs = await fetch(`${backendUrl}/report-info/get-proof`, requestOptions).then(data => data.json());
+        listProofs.push({ proofs, finalReport });
+    }
+    return listProofs;
 }
 
 const start = async () => {
-    const leaf = await getReports(requestId, contractAddr);
-    const proofs = await getProofs(requestId, leaf);
+    const listProofs = await getProofs(requestId, contractAddr);
     console.log("proofs: ", proofs)
 }
 
-start();
+module.exports = getProofs;
