@@ -44,7 +44,7 @@ const connect = (mnemonic) => {
         setTimeout(function () {
             console.log('\x1b[32m%s\x1b[0m', "\nThe Oracle Runner is reconnecting ...\n");
             connect(mnemonic);
-        }, 1000);
+        }, 5000);
     })
 }
 
