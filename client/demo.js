@@ -11,6 +11,25 @@ const demo = async () => {
     const threshold = process.env.THRESHOLD || 1;
     const service = process.env.SERVICE || "price";
     const lcdUrl = process.env.LCD_URL || "https://testnet-lcd.orai.io";
+    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
+    const feeAmount = await getServiceFees(contractAddr, lcdUrl, service, threshold);
+    const input = JSON.stringify({
+        request: {
+            threshold: parseInt(threshold),
+            service
+        }
+    })
+
+    // store the merkle root on-chain
+    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: feeAmount });
+    console.log("execute result: ", txHash);
+    const requestId = await collectRequestId(lcdUrl, txHash);
+    console.log("request id: ", requestId);
+    const reports = await collectReports(backendUrl, contractAddr, requestId);
+    console.log("reports: ", reports);
+}
+
+const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
     const getServiceFeesMsg = JSON.stringify({
         get_service_fees: {
             service,
@@ -29,32 +48,21 @@ const demo = async () => {
     // ];
     data = data.map(reward => ({ denom: reward[1], amount: parseInt(reward[2]) })).reduce((prev, curr) => {
         if (prev.constructor === Array) {
+            // find if the current denom exists already in the accumulator
             const index = prev.findIndex(prevElement => prevElement.denom === curr.denom);
             if (index !== -1) {
+                // if exist then we update the amount of the index in the accumulator, then keep the accumulator 
                 prev[index].amount += curr.amount;
-                return [...prev];
+                return prev;
             }
+            // if does not exist then we append the current obj into the accumulator
             return [...prev, curr];
         } else {
             if (prev.denom === curr.denom) return [{ ...prev, amount: prev.amount + curr.amount }];
         }
         return [...prev, curr];
     }, []).map(reward => ({ ...reward, amount: String(reward.amount * threshold) }));
-    const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-    const input = JSON.stringify({
-        request: {
-            threshold: parseInt(threshold),
-            service
-        }
-    })
-
-    // store the merkle root on-chain
-    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: data });
-    console.log("execute result: ", txHash);
-    const requestId = await collectRequestId(lcdUrl, txHash);
-    console.log("request id: ", requestId);
-    const reports = await collectReports(backendUrl, contractAddr, requestId);
-    console.log("reports: ", reports);
+    return data;
 }
 
 const collectRequestId = async (lcdUrl, txHash) => {
