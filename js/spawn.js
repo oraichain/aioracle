@@ -10,9 +10,9 @@ const parseMnemonics = () => {
     for (let mnemonic of mnemonics) {
         let childKey = cosmos.getChildKey(mnemonic);
         let pubkey = Buffer.from(cosmos.getPubKey(childKey.privateKey)).toString('base64');
-        // console.log("pubkey: ", pubkey);
+        console.log("pubkey: ", pubkey);
         const address = cosmos.getAddress(mnemonic);
-        console.log(address);
+        // console.log(address);
     }
     return mnemonics;
 }

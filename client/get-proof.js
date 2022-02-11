@@ -3,7 +3,7 @@ const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
 const fetch = require('isomorphic-fetch');
 
 const backendUrl = 'http://localhost:8080';
-const contractAddr = 'orai1d2yhksryjk6ly0wa6nwkp9t563s5ap2kzar7up';
+const contractAddr = 'orai1wneeqjlv6h7hyjlmy0jqgkl83dp26py99k60dl';
 const requestId = 284;
 
 const getReports = async (requestId) => {

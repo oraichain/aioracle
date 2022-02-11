@@ -113,4 +113,4 @@ js/aioracle*
 
 js-server/config/default.json
 
-js/*.tar.*
+js/*.zip

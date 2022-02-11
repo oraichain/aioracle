@@ -43,7 +43,7 @@ const connect = (mnemonic) => {
         console.error('\x1b[31m%s\x1b[0m', "on close error code: ", error);
         setTimeout(function () {
             console.log('\x1b[32m%s\x1b[0m', "\nThe Oracle Runner is reconnecting ...\n");
-            connect();
+            connect(mnemonic);
         }, 1000);
     })
 }

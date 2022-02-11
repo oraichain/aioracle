@@ -10,10 +10,37 @@ const demo = async () => {
     const wallet = process.env.MNEMONIC;
     const threshold = process.env.THRESHOLD || 1;
     const service = process.env.SERVICE || "price";
-    const amount = process.env.SENT_FUNDS || "4";
     const lcdUrl = process.env.LCD_URL || "https://testnet-lcd.orai.io";
+    const getServiceFeesMsg = JSON.stringify({
+        get_service_fees: {
+            service,
+        }
+    })
+    let { data } = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
+    // let data = [
+    //     ['orai1y88tlgddntj66sn46qqlvtx3tp7tgl8sxxx6uk', 'orai', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'orai', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'foobar', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'orai', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'orai', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'xyz', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'foobar', '1'],
+    //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'xyz', '1'],
+    // ];
+    data = data.map(reward => ({ denom: reward[1], amount: parseInt(reward[2]) })).reduce((prev, curr) => {
+        if (prev.constructor === Array) {
+            const index = prev.findIndex(prevElement => prevElement.denom === curr.denom);
+            if (index !== -1) {
+                prev[index].amount += curr.amount;
+                return [...prev];
+            }
+            return [...prev, curr];
+        } else {
+            if (prev.denom === curr.denom) return [{ ...prev, amount: prev.amount + curr.amount }];
+        }
+        return [...prev, curr];
+    }, []).map(reward => ({ ...reward, amount: String(reward.amount * threshold) }));
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-    const denom = "orai";
     const input = JSON.stringify({
         request: {
             threshold: parseInt(threshold),
@@ -22,7 +49,7 @@ const demo = async () => {
     })
 
     // store the merkle root on-chain
-    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: [{ amount: String(amount), denom }] });
+    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: data });
     console.log("execute result: ", txHash);
     const requestId = await collectRequestId(lcdUrl, txHash);
     console.log("request id: ", requestId);
