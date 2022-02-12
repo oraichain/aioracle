@@ -6,7 +6,7 @@
   },
   "scripts": {
     "start": "node index.js",
-    "prepackage": "mkdir -p dist dist/stage-data && cp package.json -r *.js dist",
+    "prepackage": "cp package.json -r *.js dist",
     "package": "pkg dist"
   },
   "bin": "index.js",

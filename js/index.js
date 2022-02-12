@@ -6,7 +6,7 @@ const connect = require('./ws');
 const { collectPin } = require('./prompt');
 const { evaluatePin } = require('./crypto');
 const fs = require('fs');
-const writeStream = fs.createWriteStream(__dirname + '/debug.log', {
+const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
     flags: 'a+'
 });
 
@@ -23,10 +23,10 @@ const start = async () => {
             process.exit(0);
         }
     }
-    await process(mnemonic);
+    await processRequestWrapper(mnemonic);
 }
 
-const process = async (mnemonic) => {
+const processRequestWrapper = async (mnemonic) => {
     try {
         // query lalest stage
         let { checkpoint, latest_stage, checkpoint_threshold } = await getStageInfo(env.CONTRACT_ADDRESS);
@@ -44,7 +44,7 @@ const process = async (mnemonic) => {
         })
         // sleep 5s then start again
         await new Promise(resolve => setTimeout(resolve, 5000));
-        await process(mnemonic);
+        await processRequestWrapper(mnemonic);
     }
 }
 
