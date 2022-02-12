@@ -2,6 +2,17 @@
 
 ## Installation
 
+### 0. Hardware specification
+
+A dedicated machine that can keep the program running continuously. The program supports Linux, Windows & MacOS.
+
+Minimum requirement:
+
+```
+2vCPUs
+2GB RAM
+```
+
 ### 1. Deno
 
 [Deno](https://deno.land/) is a JavaScript & TypeScript runtime, which provides a secured environment for third parties to run scripts safely. Oraichain leverages this amazing feature and integrates Deno into the AI Executor program, where it downloads & runs deno scripts from the data source, test case, & oracle script providers. 
@@ -32,7 +43,7 @@ The .env file in the zip configures the network, wallet, and other basic variabl
 
 ### 4. Run the program
 
-In the directory containing the ```aioracle-executor-process``` binary, please use Terminal and type:
+In the directory containing the ```aioracle-executor-process-*``` binary, please choose one that matches your OS and run it.
 
 **For Linux and MacOS users:**
 
