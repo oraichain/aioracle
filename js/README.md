@@ -43,7 +43,7 @@ The .env file in the zip configures the network, wallet, and other basic variabl
 
 ### 4. Run the program
 
-In the directory containing the ```aioracle-executor-process-*``` binary, please choose one that matches your OS and run it.
+In the zip contains the ```aioracle-executor-process-*``` programs, please choose one that matches your OS and run it.
 
 **For Linux and MacOS users:**
 
