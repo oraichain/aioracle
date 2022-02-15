@@ -1,6 +1,6 @@
 const { env } = require('./config');
 const WebSocket = require('ws');
-const processRequest = require('./process-request');
+const { processRequest } = require('./process-request');
 
 const connect = (mnemonic) => {
     const ws = new WebSocket(`${env.WEBSOCKET_URL}/websocket`);

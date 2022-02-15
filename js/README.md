@@ -33,6 +33,8 @@ Then you can move on to the next step.
 wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R" -O executor.zip && rm /tmp/cookies.txt
 ```
 
+You would probably need to install ***unzip*** afterward if your dedicated host does not have it.
+
 ***Windows:***
 
 For Windows users, you can download the zip and unzip it directly.

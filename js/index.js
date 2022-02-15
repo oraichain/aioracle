@@ -1,6 +1,6 @@
 // set node env config
 const { env } = require('./config');
-const processRequest = require('./process-request');
+const { processRequest, processRequestAwait } = require('./process-request');
 const { getStageInfo } = require('./utils');
 const connect = require('./ws');
 const { collectPin } = require('./prompt');
@@ -30,12 +30,12 @@ const processRequestWrapper = async (mnemonic) => {
     try {
         // query lalest stage
         let { checkpoint, latest_stage, checkpoint_threshold } = await getStageInfo(env.CONTRACT_ADDRESS);
-        if (env.REPLAY) {
+        if (env.REPLAY === 'true') {
             for (let i = env.START_STAGE || parseInt(checkpoint); i <= latest_stage; i++) {
-                await processRequest(parseInt(i), mnemonic);
+                await processRequestAwait(parseInt(i), mnemonic);
             }
         }
-        console.log('\x1b[36m%s\x1b[0m', "\nOraichain Oracle Runner, v1.0.0\n")
+        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.1.0\n")
         connect(mnemonic);
     } catch (error) {
         console.log("Error while trying to run the program: ", error);
