@@ -15,6 +15,7 @@ const env = {
     LCD_URL: process.env.LCD_URL || "https://testnet-lcd.orai.io",
     BACKEND_URL: process.env.BACKEND_URL,
     ENCRYPTED_MNEMONIC: process.env.ENCRYPTED_MNEMONIC,
+    PIN: process.env.PIN,
 }
 
 const network = {

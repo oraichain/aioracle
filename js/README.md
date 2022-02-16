@@ -13,47 +13,66 @@ Minimum requirement:
 2GB RAM
 ```
 
-### 1. Deno
+### 1. Docker & docker-compose
 
-[Deno](https://deno.land/) is a JavaScript & TypeScript runtime, which provides a secured environment for third parties to run scripts safely. Oraichain leverages this amazing feature and integrates Deno into the AI Executor program, where it downloads & runs deno scripts from the data source, test case, & oracle script providers. 
+With docker, the AI Executor program can run on any platforms. As a result, it is a must to install and download Docker. Docker-compose is a tool for defining & running multi-container Docker applications. It is convenient to use docker-compose to work with Docker containers. You can follow the following links: [Downloading & installing Docker](https://docs.docker.com/engine/install/#server), [Downloading & installing docker-compose](https://docs.docker.com/compose/install/).
 
-Deno protects the AI executors from malicious provider scripts that attempt to hack into their host machines and only enables the host network access to execute the scripts.
+Next, please create a file called: ***docker-compose.yml*** that has the following content:
 
-To install Deno, please follow the official [Deno's documentation](https://deno.land/#installation).
+```yml
+version: '3.3'
+services:
+  ai_executor:
+    container_name: ai_executor
+    image: orai/ai-executor:0.0.1
+    tty: true
+    environment:
+      - PIN=${PIN}
+    restart: on-failure
+    volumes:
+      - ./:/workspace
+    command: ./aioracle-executor-process
+```
 
-After finishing the Deno's installation process, you should be able to try running their simple program and receive the following result: ```Welcome to Deno!```
-
-Then you can move on to the next step.
-
-### 2. Download the program
+### 2. Download the executor zip file
 
 ***Shell (Mac, Linux):***
-
+```bash
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R" -O executor.zip && rm /tmp/cookies.txt && unzip executor.zip
 ```
-wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R" -O executor.zip && rm /tmp/cookies.txt
-```
-
-You would probably need to install ***unzip*** afterward if your dedicated host does not have it.
 
 ***Windows:***
 
-For Windows users, you can download the zip and unzip it directly.
+With windows, you can download using the following link: ```https://drive.google.com/file/d/1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R/view?usp=sharing```
 
-### 3. Configure the env file
+### 3. Configure the .env file
 
 The .env file in the zip configures the network, wallet, and other basic variables for your program to use. All the key-value pairs are heavily commented already. If you still have questions about them, freel free to ask us, the Oraichain team.
 
-### 4. Run the program
+### 4. Start the container & program
 
-In the zip contains the ```aioracle-executor-process-*``` programs, please choose one that matches your OS and run it.
+***Shell (Mac, Linux):***
 
-**For Linux and MacOS users:**
+Type:
+
+```bash
+PIN=<your-pin-for-encrypted-mnemonic> docker-compose up -d
+```
+
+***Windows:***
+
+throw powershell
+
+```bash
+$Env:PIN = "<your-pin-for-encrypted-mnemonic>" && docker-compose up -d
+```
+
+If you do not use an encrypted mnemonic, then you don't have to type in the PIN variable.
+
+### 5. Monitoring the program
+
+To view the program's log, please type the following: 
 
 ```
-./aioracle-executor-process
+docker-compose logs -f --tail=100 ai_executor
 ```
-
-**For Windows users:**
-
-You can click on the exe file to start running!
-

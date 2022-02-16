@@ -1,0 +1,12 @@
+version: '3.3'
+services:
+  ai_executor:
+    container_name: ai_executor
+    image: orai/ai-executor:0.0.1
+    tty: true
+    environment:
+      - PIN=${PIN}
+    restart: on-failure
+    volumes:
+      - ./:/workspace
+    command: ./aioracle-executor-process
