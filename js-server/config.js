@@ -15,7 +15,8 @@ const env = {
     ELASTIC_PASSWORD: process.env.ELASTIC_PASSWORD || "changeme",
     PROCESS_INTERVAL: parseInt(process.env.PROCESS_INTERVAL) || 10000,
     PORT: parseInt(process.env.PORT) || 8080,
-    HOST: process.env.HOST || '0.0.0.0'
+    HOST: process.env.HOST || '0.0.0.0',
+    NETWORK_TYPE: process.env.NETWORK_TYPE,
 }
 
 const constants = {
@@ -30,4 +31,29 @@ const constants = {
     GAS_LIMITS: 20000000
 }
 
-module.exports = { config, env, constants };
+const getCors = () => {
+    if (env.NETWORK_TYPE === 'testnet') {
+        return {
+            "origin": "*",
+            "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+            "preflightContinue": true,
+            "optionsSuccessStatus": 204
+        }
+    }
+    if (env.NETWORK_TYPE === 'local') {
+        return {
+            "origin": "*",
+            "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+            "preflightContinue": true,
+            "optionsSuccessStatus": 204
+        }
+    }
+    return {
+        "origin": ["https://scan.orai.io", "https://api.wallet.orai.io", /\.localhost$/],
+        "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
+        "preflightContinue": false,
+        "optionsSuccessStatus": 204
+    }
+}
+
+module.exports = { config, env, constants, getCors };
