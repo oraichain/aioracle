@@ -19,8 +19,11 @@ const env = {
 }
 
 const constants = {
-    REQUESTS_COLLECTION: "requests",
-    MERKLE_ROOTS_COLLECTION: "merkle_roots",
+    mongo: {
+        REQUESTS_COLLECTION: "requests",
+        MERKLE_ROOTS_COLLECTION: "merkle_roots",
+        EXECUTORS_COLLECTION: "executors",
+    },
     TIMEOUT_HEIGHT: 30,
     TIMEOUT_INTERVAL_CHECK: 3000,
     BASE_GAS_PRICES: 0,

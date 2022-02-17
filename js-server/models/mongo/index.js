@@ -6,8 +6,39 @@ class MongoDb {
     constructor(contractAddr) {
         this.contractAddr = contractAddr;
         this.db = client.db(this.contractAddr);
-        this.requestCollections = this.db.collection(constants.REQUESTS_COLLECTION);
-        this.merkleCollection = this.db.collection(constants.MERKLE_ROOTS_COLLECTION);
+        this.requestCollections = this.db.collection(constants.mongo.REQUESTS_COLLECTION);
+        this.merkleCollection = this.db.collection(constants.mongo.MERKLE_ROOTS_COLLECTION);
+        this.executorCollection = this.db.collection(constants.mongo.EXECUTORS_COLLECTION);
+    }
+
+    indexFinishedRequests = async () => {
+        await this.db.createIndex(constants.mongo.REQUESTS_COLLECTION, { "submitted": -1 });
+    }
+
+    indexExecutorReport = async () => {
+        await this.db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "requestId": -1 })
+    }
+
+    indexData = async () => {
+        await this.indexFinishedRequests();
+        await this.indexExecutorReport();
+    }
+
+    insertExecutorReport = async (requestId, executor, report) => {
+        // request ID + executor should be unique
+        const insertObj = {
+            _id: `${requestId}-${executor}`, // force the executor report to be unique
+            requestId,
+            executor,
+            report
+        }
+        const result = await this.executorCollection.insertOne(insertObj);
+        console.log("insert executor report result: ", result);
+    }
+
+    removeExecutorReport = async (requestId, executor) => {
+        const result = await this.executorCollection.deleteOne({ requestId, executor });
+        console.log("insert remove executor result: ", result);
     }
 
     bulkUpdateRequests = async (requestsData, txHash) => {
@@ -26,9 +57,25 @@ class MongoDb {
         console.log("bulk result: ", bulkResult);
     }
 
+    // bulkUpdateExecutorReports = async (executorsData) => {
+    //     // update the requests that have been handled in the database
+    //     let bulkUpdateOps = [];
+    //     for (let { executor, requestId } of executorsData) {
+    //         bulkUpdateOps.push({
+    //             "updateOne": {
+    //                 "filter": { requestId, executor },
+    //                 "update": { "$set": { "txhash": txHash, "submitted": true, "merkle_root": root } }
+    //             }
+    //         })
+    //     }
+
+    //     const bulkResult = await this.requestCollections.bulkWrite(bulkUpdateOps);
+    //     console.log("bulk result: ", bulkResult);
+    // }
+
     findLeaves = async (merkleRoot) => {
         try {
-            const query = { merkleRoot };
+            const query = { _id: merkleRoot };
 
             const result = await this.merkleCollection.findOne(query, { projection: { _id: 0 } });
             if (result && result.leaves) return JSON.parse(result.leaves);
@@ -80,6 +127,7 @@ class MongoDb {
         try {
 
             const insertObj = {
+                _id: merkleRoot,
                 merkleRoot,
                 leaves,
             }
@@ -124,16 +172,6 @@ class MongoDb {
         const result = await this.requestCollections.deleteMany(filter);
         console.log("insert report result: ", result);
     }
-
-    // insertReports = async (requestId, reports, threshold) => {
-    //     const insertObj = {
-    //         requestId,
-    //         reports,
-    //         threshold
-    //     }
-    //     const result = await this.requestCollections.insertOne(insertObj);
-    //     console.log("insert report result: ", result);
-    // }
 
     updateUniqueReports = async (requestId, reports, threshold) => {
         const filter = { _id: requestId, requestId, threshold };

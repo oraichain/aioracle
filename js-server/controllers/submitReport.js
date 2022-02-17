@@ -38,6 +38,8 @@ const submitReport = async (req, res) => {
 
         if (reports.length <= threshold) {
             await mongoDb.updateUniqueReports(parseInt(requestId), report, threshold);
+            // insert executor with report for easy indexing & querying
+            await mongoDb.insertExecutorReport(requestId, report.executor, report);
             return handleResponse(res, 200, "success");
         }
         else return handleResponse(res, 403, "request has already finished");

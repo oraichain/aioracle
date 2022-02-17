@@ -7,7 +7,7 @@ const contractAddr = 'orai1wneeqjlv6h7hyjlmy0jqgkl83dp26py99k60dl';
 const requestId = 284;
 
 const getReports = async (requestId) => {
-    const { data } = await fetch(`${backendUrl}/report-info/get-reports?request_id=${requestId}&contract_addr=${contractAddr}`).then(data => data.json());
+    const { data } = await fetch(`${backendUrl}/report/reports?request_id=${requestId}&contract_addr=${contractAddr}`).then(data => data.json());
     return data;
 }
 
@@ -49,7 +49,7 @@ const getProofs = async (requestId, contractAddr) => {
             body: JSON.stringify({ request_id: requestId, contract_addr: contractAddr, leaf: finalReport }),
             redirect: 'follow'
         };
-        proofs = await fetch(`${backendUrl}/report-info/get-proof`, requestOptions).then(data => data.json());
+        proofs = await fetch(`${backendUrl}/proof`, requestOptions).then(data => data.json());
         listProofs.push({ proofs, finalReport });
     }
     return listProofs;

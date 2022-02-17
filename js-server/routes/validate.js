@@ -25,6 +25,16 @@ const isOraiAddress = (value) => {
     }
 }
 
+const isNotEmpty = (value) => {
+    try {
+        if (!value) return true;
+        if (isNaN(value)) throw "Value must be a number or left empty";
+        return true;
+    } catch (error) {
+        throw error
+    }
+}
+
 const isValidRewards = (rewards) => {
     try {
         for (let reward of rewards) {
@@ -41,4 +51,4 @@ const isValidRewards = (rewards) => {
     }
 }
 
-module.exports = { validate, isOraiAddress, isValidRewards };
+module.exports = { validate, isOraiAddress, isValidRewards, isNotEmpty };

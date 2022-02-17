@@ -9,11 +9,13 @@ const host = env.HOST
 app.use(express.json()); // built-in middleware for express
 app.use(cors()) // simplest form, allow all cors
 const client = require('./mongo');
-const reportInfoRouter = require('./routes/reportInfo.route');
-const submitReportRouter = require('./routes/submitReport.route');
+const proofRouter = require('./routes/proof.info.route');
+const reportRouter = require('./routes/report.route');
+const executorInfoRouter = require('./routes/executor.info.route');
 const submitReportInterval = require('./submitReportInterval');
 const { index } = require('./models/elasticsearch/index');
 const { getCurrentDateInfo } = require('./utils');
+const { mongoDb } = require('./models/mongo');
 
 app.get('/', (req, res) => {
   res.send("Welcome to the AI Oracle server");
@@ -37,9 +39,11 @@ const cleanup = (event) => {
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 
-app.use('/report-info', reportInfoRouter);
+app.use('/proof', proofRouter);
 
-app.use('/submit-report', submitReportRouter)
+app.use('/executor', executorInfoRouter)
+
+app.use('/report', reportRouter)
 
 app.listen(port, host, async () => {
   console.log(`AI Oracle server listening at http://${host}:${port}`)
@@ -47,9 +51,10 @@ app.listen(port, host, async () => {
 
 // interval process that handles submitting merkle roots onto the blockchain network
 const intervalProcess = async () => {
-
   let gasPrices = constants.BASE_GAS_PRICES;
   await client.connect();
+  // create indexes for mongo data
+  await mongoDb.indexData();
   while (true) {
     try {
       console.log("gas prices: ", gasPrices);

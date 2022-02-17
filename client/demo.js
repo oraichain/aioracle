@@ -91,7 +91,7 @@ const collectReports = async (url, contractAddr, requestId) => {
     let reports = {};
     do {
         try {
-            reports = await fetch(`${url}/report-info/get-reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
+            reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
             if (!reports.data) throw "error";
         } catch (error) {
             count++;
