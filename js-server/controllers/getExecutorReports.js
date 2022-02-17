@@ -17,13 +17,14 @@ const getExecutorsReport = async (req, res) => {
         const skip = pageNumber > 0 ? ((pageNumber - 1) * limit) : 0;
         console.log("skip: ", skip)
         // collect the root hex based on the request id to form a tree
-        const data = await mongoDb.db.collection(constants.mongo.EXECUTORS_COLLECTION)
+        const cursor = mongoDb.db.collection(constants.mongo.EXECUTORS_COLLECTION)
             .find({ executor })
             .sort({ requestId: -1 })
             .skip(skip)
-            .limit(limit)
-            .toArray();
-        return res.send({ code: 200, data })
+            .limit(limit);
+        const count = await cursor.count();
+
+        return res.send({ code: 200, data: await cursor.toArray(), count })
     } catch (error) {
         console.log("error: ", error);
         return res.status(404).send({ code: 404, error: String(error) })
