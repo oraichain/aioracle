@@ -5,18 +5,18 @@ const client = require('../../mongo');
 class MongoDb {
     constructor(contractAddr) {
         this.contractAddr = contractAddr;
-        this.db = client.db(this.contractAddr);
-        this.requestCollections = this.db.collection(constants.mongo.REQUESTS_COLLECTION);
-        this.merkleCollection = this.db.collection(constants.mongo.MERKLE_ROOTS_COLLECTION);
-        this.executorCollection = this.db.collection(constants.mongo.EXECUTORS_COLLECTION);
+        this._db = client.db(this.contractAddr);
+        this.requestCollections = this._db.collection(constants.mongo.REQUESTS_COLLECTION);
+        this.merkleCollection = this._db.collection(constants.mongo.MERKLE_ROOTS_COLLECTION);
+        this.executorCollection = this._db.collection(constants.mongo.EXECUTORS_COLLECTION);
     }
 
     indexFinishedRequests = async () => {
-        await this.db.createIndex(constants.mongo.REQUESTS_COLLECTION, { "submitted": -1 });
+        await this._db.createIndex(constants.mongo.REQUESTS_COLLECTION, { "submitted": -1 });
     }
 
     indexExecutorReport = async () => {
-        await this.db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "requestId": -1 })
+        await this._db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "requestId": -1 })
     }
 
     indexData = async () => {
@@ -97,6 +97,20 @@ class MongoDb {
             const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
             if (request && request.reports) return request.reports;
             return null;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    findExecutorReports = async (executor, skip, limit) => {
+        try {
+            const cursor = this.executorCollection
+                .find({ executor })
+                .sort({ requestId: -1 })
+                .skip(skip)
+                .limit(limit);
+            return { data: await cursor.toArray(), count: await cursor.count() };
         } catch (error) {
             console.log(error);
             throw error;
