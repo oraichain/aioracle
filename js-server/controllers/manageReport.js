@@ -18,6 +18,19 @@ const checkSubmit = async (req, res) => {
     }
 }
 
+const getReport = async (req, res) => {
+    const { request_id: requestId, contract_addr: contractAddr } = req.query;
+    const { executor } = req.params;
+    const mongoDb = new MongoDb(contractAddr);
+    try {
+        let report = await mongoDb.findReport(parseInt(requestId), executor);
+        if (report) return handleResponse(res, 200, "successfully retrieved the report", report);
+        return handleResponse(res, 404, "cannot find the report with the given request id, contract address & executor");
+    } catch (error) {
+        return handleResponse(res, 500, error);
+    }
+}
+
 const getReports = async (req, res) => {
     let data = req.query;
     const mongoDb = new MongoDb(data.contract_addr);
@@ -30,12 +43,4 @@ const getReports = async (req, res) => {
     }
 }
 
-const safeJsonParse = (str) => {
-    try {
-        return [null, JSON.parse(str)];
-    } catch (err) {
-        return [err];
-    }
-}
-
-module.exports = { checkSubmit, getReports };
+module.exports = { checkSubmit, getReports, getReport };

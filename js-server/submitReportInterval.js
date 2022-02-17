@@ -1,5 +1,5 @@
 const { env, constants } = require('./config');
-const { formTree } = require('./models/merkle-proof-tree');
+const { formTree } = require('./models/merkleTree');
 const { mongoDb } = require('./models/mongo');
 const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest, getCurrentDateInfo } = require('./utils');

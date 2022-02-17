@@ -1,6 +1,6 @@
 const { constants } = require('../config');
 const {
-} = require('../models/merkle-proof-tree');
+} = require('../models/merkleTree');
 const { MongoDb } = require('../models/mongo');
 
 const getExecutorsReport = async (req, res) => {

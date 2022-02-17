@@ -3,7 +3,7 @@ const db = require('../db');
 const {
     MerkleProofTree,
     sha256,
-} = require('../models/merkle-proof-tree');
+} = require('../models/merkleTree');
 const { MongoDb } = require('../models/mongo');
 const { getRequest } = require('../utils');
 

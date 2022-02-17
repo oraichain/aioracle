@@ -103,6 +103,19 @@ class MongoDb {
         }
     }
 
+    findReport = async (requestId, executor) => {
+        try {
+            const query = { _id: `${requestId}-${executor}` };
+            console.log("query: ", query);
+            const result = await this.executorCollection.findOne(query, { projection: { _id: 0 } });
+            if (result && result.report) return result.report;
+            return null;
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
     findRequest = async (requestId) => {
         const query = { _id: requestId, requestId, submitted: null };
         const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
