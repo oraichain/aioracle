@@ -64,6 +64,7 @@ const submitReport = async (requestId, leaf, mnemonic) => {
     };
     const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => data.json());
     console.log("result submitting report: ", result);
+    console.log("Successful submission time: ", new Date().toUTCString())
 }
 
 const initStage = async (path, contractAddr) => {

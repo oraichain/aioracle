@@ -50,7 +50,6 @@ const processData = async ({ contractAddr, requestId, input, executor, mnemonic 
             rewards
         }
         console.log("request id after getting new leaf data: ", reqId);
-        console.log("leaf base64: ", Buffer.from(JSON.stringify(leaf)).toString('base64'));
         // use req id returned from the getData to preserve the id when getting data
         // check again if has submitted. This is because getting data takes a long time. During this period, another process may have finished already
         // try to collect leaf from backend

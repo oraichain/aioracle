@@ -34,7 +34,7 @@ const processRequestWrapper = async (mnemonic) => {
                 await processRequestAwait(parseInt(i), mnemonic);
             }
         }
-        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.1.0\n")
+        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.2.0\n")
         connect(mnemonic);
     } catch (error) {
         console.log("Error while trying to run the program: ", error);
