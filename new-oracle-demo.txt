@@ -6,7 +6,7 @@ service fees contract: orai1qgae072t5tak83kg5xt8um0q2vclr9y5mah23z
 
 service provider demo: orai13aekpmlmxnjg5rwqgh2qkztx5kf77mj06dgc9q
 
-ai oracle contract demo: orai1wneeqjlv6h7hyjlmy0jqgkl83dp26py99k60dl
+ai oracle contract demo: orai1tx4wgnvhfpc5nvc2sk79pstkn5d28ywvyvmqhz
 
 executors: AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn, AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX
 
