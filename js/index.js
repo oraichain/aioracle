@@ -15,7 +15,10 @@ const start = async () => {
     let mnemonic = env.MNEMONIC;
     // prompt password if users use encrypted mnemonic
     if (env.ENCRYPTED_MNEMONIC) {
-        mnemonic = evaluatePin(env.PIN, env.ENCRYPTED_MNEMONIC);
+        let pin = env.PIN;
+        // env for non-docker program
+        if (env.DOCKER === "false") pin = await collectPin();
+        mnemonic = evaluatePin(pin, env.ENCRYPTED_MNEMONIC);
     } else {
         if (!mnemonic) {
             console.log("You need to have either mnemonic or encrypted mnemonic in your .env file to start the application!");
