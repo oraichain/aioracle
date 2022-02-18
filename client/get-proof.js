@@ -1,13 +1,19 @@
 const crypto = require('crypto');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
 const fetch = require('isomorphic-fetch');
+require('dotenv').config();
 
 const backendUrl = 'http://localhost:8080';
-const contractAddr = 'orai1wneeqjlv6h7hyjlmy0jqgkl83dp26py99k60dl';
-const requestId = 284;
+// const contractAddr = process.env.CONTRACT_ADDRESS;
+// const requestId = 284;
 
-const getReports = async (requestId) => {
-    const { data } = await fetch(`${backendUrl}/report/reports?request_id=${requestId}&contract_addr=${contractAddr}`).then(data => data.json());
+// const getReports = async (requestId) => {
+//     const { data } = await fetch(`${backendUrl}/report/reports?request_id=${requestId}&contract_addr=${contractAddr}`).then(data => data.json());
+//     return data;
+// }
+
+const getFinishedReports = async (executor, contractAddr) => {
+    const { data } = await fetch(`${backendUrl}/executor/finished/${executor}?contract_addr=${contractAddr}`).then(data => data.json());
     return data;
 }
 
@@ -34,10 +40,10 @@ const getReports = async (requestId) => {
 // then we submit the object to the backend
 */
 
-const getProofs = async (requestId, contractAddr) => {
-    const leafs = await getReports(requestId, contractAddr);
+const handleFinishedReports = async (executor, contractAddr) => {
+    const reports = await getFinishedReports(executor, contractAddr);
     let listProofs = [];
-    for (let leaf of leafs) {
+    for (let { report: leaf, requestId } of reports) {
         let proofs = {};
         let finalReport = { ...leaf, data: sha256(leaf.data).toString('hex') };
         const requestOptions = {
@@ -50,14 +56,30 @@ const getProofs = async (requestId, contractAddr) => {
             redirect: 'follow'
         };
         proofs = await fetch(`${backendUrl}/proof`, requestOptions).then(data => data.json());
-        listProofs.push({ proofs, finalReport });
+        listProofs.push({ proofs, finalReport, requestId });
     }
     return listProofs;
 }
 
-const start = async () => {
-    const listProofs = await getProofs(requestId, contractAddr);
-    console.log("proofs: ", proofs)
+const updateClaim = async (data, contractAddr) => {
+    const requestOptions = {
+        method: 'POST',
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': "application/json"
+        },
+        body: JSON.stringify({ data, contract_addr: contractAddr }),
+        redirect: 'follow'
+    };
+    let result = await fetch(`${backendUrl}/executor/claim`, requestOptions).then(data => data.json())
+    return result;
 }
 
-module.exports = getProofs;
+// const start = async () => {
+//     const reports = await handleFinishedReports(process.env.EXECUTOR, process.env.CONTRACT_ADDRESS);
+//     console.log("reports: ", reports)
+// }
+
+// start();
+
+module.exports = { handleFinishedReports, updateClaim };

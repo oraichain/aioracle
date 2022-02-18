@@ -19,6 +19,12 @@ const collectWallet = async (mnemonic) => {
     return wallet;
 }
 
+const getFirstWalletPubkey = async (mnemonic) => {
+    let wallet = await collectWallet(mnemonic);
+    let accounts = await wallet.getAccounts();
+    return Buffer.from(accounts[0].pubkey).toString('base64');
+}
+
 const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = undefined }) => {
     try {
         const wallet = await collectWallet(mnemonic);
@@ -33,4 +39,4 @@ const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = u
     }
 }
 
-module.exports = { execute };
+module.exports = { execute, getFirstWalletPubkey };

@@ -1,6 +1,5 @@
 const { env, constants } = require('./config');
 const { formTree } = require('./models/merkleTree');
-const { mongoDb } = require('./models/mongo');
 const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest, getCurrentDateInfo } = require('./utils');
 const { index } = require('./models/elasticsearch/index')
@@ -9,7 +8,7 @@ const getLatestBlock = () => {
     return oraiwasmJs.get('/blocks/latest');
 }
 
-const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves) => {
+const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves, mongoDb) => {
     console.log("merkle root already exists for this request id")
     if (submittedMerkleRoot !== localMerkleRoot) {
         console.log("root is inconsistent. Skip this request");
@@ -27,7 +26,7 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
     }
 }
 
-const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemonic) => {
+const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemonic, mongoDb) => {
     try {
         const latestBlockData = await getLatestBlock();
         const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
@@ -51,7 +50,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
     }
 }
 
-const submitReportInterval = async (gasPrices, mnemonic) => {
+const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
 
     // query a list of send data
     const queryResult = await mongoDb.findUnsubmittedRequests();
@@ -69,7 +68,7 @@ const submitReportInterval = async (gasPrices, mnemonic) => {
             let root = request.data.merkle_root ? request.data.merkle_root : newRoot;
             // if the request already has merkle root stored on-chain, then we only update our db accordingly
             if (request.data && request.data.merkle_root) {
-                await processSubmittedRequest(requestId, root, newRoot, leaves);
+                await processSubmittedRequest(requestId, root, newRoot, leaves, mongoDb);
                 continue;
             }
             requestsData.push({ requestId, root, leaves });
@@ -88,7 +87,7 @@ const submitReportInterval = async (gasPrices, mnemonic) => {
     if (msgs.length > 0) {
         // only broadcast new txs if has unfinished reports
         // query latest block
-        await processUnsubmittedRequests(msgs, gasPrices, requestsData, mnemonic);
+        await processUnsubmittedRequests(msgs, gasPrices, requestsData, mnemonic, mongoDb);
     }
 }
 

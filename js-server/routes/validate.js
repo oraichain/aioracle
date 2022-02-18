@@ -51,4 +51,16 @@ const isValidRewards = (rewards) => {
     }
 }
 
-module.exports = { validate, isOraiAddress, isValidRewards, isNotEmpty };
+const isValidData = (data) => {
+    try {
+        for (let claimData of data) {
+            // first index is oraiaddr, must be correct
+            if (!claimData.executor || !claimData.request_id) throw "invalid claim data. Need to have executor & request id";
+        }
+        return true;
+    } catch (error) {
+        throw error
+    }
+}
+
+module.exports = { validate, isOraiAddress, isValidRewards, isNotEmpty, isValidData };

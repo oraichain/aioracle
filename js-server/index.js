@@ -15,50 +15,58 @@ const executorInfoRouter = require('./routes/executor.info.route');
 const submitReportInterval = require('./submitReportInterval');
 const { index } = require('./models/elasticsearch/index');
 const { getCurrentDateInfo } = require('./utils');
-const { mongoDb } = require('./models/mongo');
+const { MongoDb } = require('./models/mongo');
+//const { mongoDb } = require('./models/mongo');
 
-app.get('/', (req, res) => {
-  res.send("Welcome to the AI Oracle server");
-});
+const start = (mongoDb) => {
 
-/* Error handler middleware */
-app.use((err, req, res, next) => {
-  const statusCode = err.statusCode || 500;
-  console.error(err.message, err.stack);
-  res.status(statusCode).json({ 'message': err.message });
+  app.get('/', (req, res) => {
+    res.send("Welcome to the AI Oracle server");
+  });
 
-  return;
-});
+  /* Error handler middleware */
+  app.use((err, req, res, next) => {
+    const statusCode = err.statusCode || 500;
+    console.error(err.message, err.stack);
+    res.status(statusCode).json({ 'message': err.message });
 
-// cleanup funciton to close the mongo client
-const cleanup = (event) => {
-  console.log("event to close: ", event);
-  client.close().then(process.exit()); // Close MongodDB Connection when Process ends
+    return;
+  });
+
+  // cleanup funciton to close the mongo client
+  const cleanup = (event) => {
+    console.log("event to close: ", event);
+    client.close().then(process.exit()); // Close MongodDB Connection when Process ends
+  }
+
+  process.on('SIGINT', cleanup);
+  process.on('SIGTERM', cleanup);
+
+  app.use('/proof', proofRouter);
+
+  app.use('/executor', executorInfoRouter)
+
+  app.use('/report', reportRouter)
+
+  app.listen(port, host, () => {
+    console.log(`AI Oracle server listening at http://${host}:${port}`)
+
+  })
+
 }
-
-process.on('SIGINT', cleanup);
-process.on('SIGTERM', cleanup);
-
-app.use('/proof', proofRouter);
-
-app.use('/executor', executorInfoRouter)
-
-app.use('/report', reportRouter)
-
-app.listen(port, host, async () => {
-  console.log(`AI Oracle server listening at http://${host}:${port}`)
-})
 
 // interval process that handles submitting merkle roots onto the blockchain network
 const intervalProcess = async () => {
   let gasPrices = constants.BASE_GAS_PRICES;
-  await client.connect();
   // create indexes for mongo data
+  await client.connect();
+  const mongoDb = new MongoDb(env.CONTRACT_ADDRESS);
   await mongoDb.indexData();
+  start(mongoDb);
   while (true) {
     try {
       console.log("gas prices: ", gasPrices);
-      await submitReportInterval(gasPrices, env.MNEMONIC);
+      await submitReportInterval(gasPrices, env.MNEMONIC, mongoDb);
     } catch (error) {
       console.log("error: ", error);
       // index the error to elasticsearch

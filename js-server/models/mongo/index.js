@@ -17,6 +17,7 @@ class MongoDb {
 
     indexExecutorReport = async () => {
         await this._db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "requestId": -1 })
+        await this._db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "claimed": -1 })
     }
 
     indexData = async () => {
@@ -30,7 +31,8 @@ class MongoDb {
             _id: `${requestId}-${executor}`, // force the executor report to be unique
             requestId,
             executor,
-            report
+            report,
+            claimed: false,
         }
         const result = await this.executorCollection.insertOne(insertObj);
         console.log("insert executor report result: ", result);
@@ -48,7 +50,7 @@ class MongoDb {
             bulkUpdateOps.push({
                 "updateOne": {
                     "filter": { _id: requestId, requestId },
-                    "update": { "$set": { "txhash": txHash, "submitted": true, "merkle_root": root } }
+                    "update": { "$set": { "txhash": txHash, "submitted": true, "merkleRoot": root } }
                 }
             })
         }
@@ -57,21 +59,23 @@ class MongoDb {
         console.log("bulk result: ", bulkResult);
     }
 
-    // bulkUpdateExecutorReports = async (executorsData) => {
-    //     // update the requests that have been handled in the database
-    //     let bulkUpdateOps = [];
-    //     for (let { executor, requestId } of executorsData) {
-    //         bulkUpdateOps.push({
-    //             "updateOne": {
-    //                 "filter": { requestId, executor },
-    //                 "update": { "$set": { "txhash": txHash, "submitted": true, "merkle_root": root } }
-    //             }
-    //         })
-    //     }
-
-    //     const bulkResult = await this.requestCollections.bulkWrite(bulkUpdateOps);
-    //     console.log("bulk result: ", bulkResult);
-    // }
+    // mark record as claimed for querying purpose
+    bulkUpdateExecutorReports = async (executorsData) => {
+        // update the requests that have been handled in the database
+        let bulkUpdateOps = [];
+        for (let { executor, request_id: requestId } of executorsData) {
+            // console.log("request id: ", requestId);
+            // console.log("executor: ", executor)
+            bulkUpdateOps.push({
+                "updateOne": {
+                    "filter": { executor, requestId },
+                    "update": { "$set": { "claimed": true } }
+                }
+            })
+        }
+        const bulkResult = await this.executorCollection.bulkWrite(bulkUpdateOps);
+        console.log("bulk result: ", bulkResult);
+    }
 
     findLeaves = async (merkleRoot) => {
         try {
@@ -111,6 +115,20 @@ class MongoDb {
                 .skip(skip)
                 .limit(limit);
             return { data: await cursor.toArray(), count: await cursor.count() };
+        } catch (error) {
+            console.log(error);
+            throw error;
+        }
+    }
+
+    findFinishedExecutorReports = async (executor, skip, limit, claimed) => {
+        try {
+            // find a list of reports that has the given executor & request id in the list of submitted request id. Note that the claim field must be false
+            let executorResults = await this.executorCollection.find({ executor, $or: [{ claimed: null }, { claimed: false }] }).sort({ requestId: -1 }).toArray();
+            let requestIds = executorResults.map(res => res.requestId);
+            let requestResults = await this.requestCollections.find({ "submitted": true, _id: { $in: requestIds } }).sort({ _id: -1 }).skip(skip).limit(limit).toArray();
+            executorResults = executorResults.filter(result => requestResults.find(reqResult => result.requestId === reqResult.requestId));
+            return { data: executorResults };
         } catch (error) {
             console.log(error);
             throw error;
@@ -226,6 +244,4 @@ class MongoDb {
     // }
 }
 
-const mongoDb = new MongoDb(env.CONTRACT_ADDRESS);
-
-module.exports = { mongoDb, MongoDb };
+module.exports = { MongoDb };
