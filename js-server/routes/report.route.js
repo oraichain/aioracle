@@ -3,11 +3,11 @@ const router = express.Router();
 const { submitReport } = require('../controllers/submitReport');
 const { body, query, param } = require('express-validator');
 const { validate, isValidRewards, isOraiAddress } = require('./validate');
-const { getReports, checkSubmit, getReport } = require('../controllers/manageReport');
+const { checkSubmit, getReport } = require('../controllers/manageReport');
 
 router.get('/submitted', validate([query('request_id').notEmpty().isNumeric(), query('contract_addr').notEmpty().isString().custom(value => isOraiAddress(value))]), checkSubmit)
 
-router.get('/reports', validate([query('request_id').notEmpty().isNumeric(), query('contract_addr').notEmpty().isString().custom(value => isOraiAddress(value))]), getReports)
+// router.get('/reports', validate([query('request_id').notEmpty().isNumeric(), query('contract_addr').notEmpty().isString().custom(value => isOraiAddress(value))]), getReports)
 
 router.get('/:executor', validate([query('request_id').notEmpty().isNumeric(), query('contract_addr').notEmpty().isString().custom(value => isOraiAddress(value)), param('executor').notEmpty().isBase64().isLength({ min: 44, max: 44 })]), getReport)
 

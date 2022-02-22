@@ -59,9 +59,13 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
     // broadcast send tx & update tx hash
     const msgs = []; // msgs to broadcast to blockchain network
     let requestsData = []; // requests data to store into database
-    for (let { reports, requestId, threshold } of queryResult) {
+    for (let { requestId, threshold } of queryResult) {
+        const reportCount = await mongoDb.countExecutorReports(requestId);
+        console.log("request id with report count and threshold: ", { requestId, reportCount, threshold });
         // only submit merkle root for requests that have enough reports
-        if (reports && reports.length === threshold) {
+        if (reportCount === threshold) {
+            // query a list of reports from the request id
+            const reports = await mongoDb.queryExecutorReportsWithThreshold(requestId, threshold);
             // form a merkle root based on the value
             let [newRoot, leaves] = await formTree(reports);
             let request = await getRequest(env.CONTRACT_ADDRESS, requestId);
@@ -74,14 +78,14 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
             requestsData.push({ requestId, root, leaves });
             const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })) };
             msgs.push(msg)
-        } else if (reports && reports.length < threshold) {
+        } else if (reportCount < threshold) {
             // in case report length is smaller than threshold, consider removing it if there exists a finished request in db
-            const { reports, submitted, threshold } = await mongoDb.findSubmittedRequest(requestId);
-            if (submitted && reports.length === threshold) await mongoDb.removeRedundantRequests(requestId);
-        } else if (reports && reports.length > threshold) {
+            const { submitted } = await mongoDb.findSubmittedRequest(requestId);
+            if (submitted) await mongoDb.removeRedundantRequests(requestId);
+        } else if (reportCount > threshold) {
+            let numRedundant = reportCount - threshold;
             // update the reports so they have equal threshold
-            reports = reports.slice(0, threshold);
-            await mongoDb.updateReports(parseInt(requestId), reports);
+            await mongoDb.updateReports(parseInt(requestId), numRedundant);
         }
     }
     if (msgs.length > 0) {

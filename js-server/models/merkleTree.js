@@ -16,7 +16,7 @@ const verifyHexProof = (hexLeaf, hexProof, hexRoot) => {
 };
 
 const formTree = async (reports) => {
-  const values = reports.map(report => JSON.stringify({ ...report, data: sha256(report.data).toString('hex') })); // hash data to reduce tx fee when claiming rewards
+  const values = reports.map(({ report }) => JSON.stringify({ ...report, data: sha256(report.data).toString('hex') })); // hash data to reduce tx fee when claiming rewards
   const leaves = values.map((value) => sha256(value).toString('hex'));
   // store the leaves to retrieve later. Can possibly store this on contract (but could be expensive)
   const tree = new MerkleProofTree(leaves);
