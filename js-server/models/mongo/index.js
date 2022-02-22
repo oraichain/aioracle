@@ -17,6 +17,7 @@ class MongoDb {
 
     indexExecutorReport = async () => {
         await this._db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "requestId": -1 })
+        await this._db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "requestId": -1 })
         await this._db.createIndex(constants.mongo.EXECUTORS_COLLECTION, { "executor": -1, "claimed": -1 })
     }
 
@@ -138,12 +139,11 @@ class MongoDb {
     findReport = async (requestId, executor) => {
         try {
             const query = { _id: `${requestId}-${executor}` };
-            console.log("query: ", query);
             const result = await this.executorCollection.findOne(query, { projection: { _id: 0 } });
             if (result && result.report) return result.report;
             return null;
         } catch (error) {
-            console.log(error);
+            console.log("error in find report: ", error);
             throw error;
         }
     }
@@ -165,7 +165,21 @@ class MongoDb {
     findUnsubmittedRequests = async () => {
         const queryResult = await this.requestCollections.find({ submitted: null, threshold: { $ne: null } }).limit(10).sort({ _id: -1, requestId: -1 }).toArray();
         return queryResult;
+    }
 
+    queryExecutorReportsWithThreshold = async (requestId, threshold) => {
+        const results = await this.executorCollection.find({ requestId }).limit(threshold).toArray();
+        return results;
+    }
+
+    countExecutorReports = async (requestId) => {
+        try {
+            const result = await this.executorCollection.find({ requestId }).count();
+            return result;
+        } catch (error) {
+            console.log("error counting the reports:", error);
+            throw error;
+        }
     }
 
     insertMerkleRoot = async (merkleRoot, leaves) => {
@@ -185,17 +199,11 @@ class MongoDb {
         }
     }
 
-    updateReports = async (requestId, reports) => {
-        const filter = { requestId };
-        // create a document that sets the plot of the movie
-        const updateDoc = {
-            $set: {
-                reports
-            },
-        };
-
-        const result = await this.requestCollections.updateOne(filter, updateDoc);
-        console.log("update reports result: ", result);
+    updateReports = async (requestId, numRedundant) => {
+        const reportsResult = await this.queryExecutorReportsWithThreshold(requestId, numRedundant);
+        const ids = reportsResult.map(result => result._id);
+        const removeResult = await this.executorCollection.deleteMany({ _id: { $in: ids } });
+        console.log("update executor reports result: ", removeResult);
     }
 
     updateReportsStatus = async (requestId) => {
@@ -218,30 +226,30 @@ class MongoDb {
         console.log("insert report result: ", result);
     }
 
-    updateUniqueReports = async (requestId, reports, threshold) => {
-        const filter = { _id: requestId, requestId, threshold };
-        // add unique report to the list of reports.
-        const updateDoc = {
-            $addToSet: {
-                reports
-            },
-        };
+    // updateUniqueReports = async (requestId, reports, threshold) => {
+    //     const filter = { _id: requestId, requestId, threshold };
+    //     // add unique report to the list of reports.
+    //     const updateDoc = {
+    //         $addToSet: {
+    //             reports
+    //         },
+    //     };
 
-        const result = await this.requestCollections.updateOne(filter, updateDoc, { upsert: true }); // upsert means if does not exist then create document
-        console.log("update reports result: ", result);
-    }
-
-    // updateOrInsertReports = async (requestId, reports, threshold) => {
-    //     try {
-    //         // check if report exist. If yes then update, else insert
-    //         const currentReports = await this.findReports(requestId);
-    //         if (!currentReports) await this.insertReports(requestId, reports, threshold);
-    //         else await this.updateReports(requestId, reports);
-    //     } catch (error) {
-    //         console.log("error while updating / inserting reports: ", error);
-    //         throw error;
-    //     }
+    //     const result = await this.requestCollections.updateOne(filter, updateDoc, { upsert: true }); // upsert means if does not exist then create document
+    //     console.log("update reports result: ", result);
     // }
+
+    insertRequest = async (requestId, threshold) => {
+        const filter = { _id: requestId, requestId };
+        // add unique report to the list of reports
+        const updateDoc = {
+            $setOnInsert: {
+                _id: requestId, requestId, threshold
+            }
+        }
+        const result = await this.requestCollections.updateOne(filter, updateDoc, { upsert: true }); // upsert means if does not exist then create document
+        console.log("insert request result: ", result);
+    }
 }
 
 module.exports = { MongoDb };

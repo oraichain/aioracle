@@ -22,7 +22,7 @@ const mnemonics = parseMnemonics();
 for (let i = 0; i < 13; i++) {
     let fileName = 'index.js';
     const ls = spawn('node', [fileName], {
-        env: Object.assign(process.env, { NODE_ENV: 'dev1', MNEMONIC: mnemonics[i], START_STAGE: process.env.START_STAGE, REPLAY: process.env.REPLAY }),
+        env: Object.assign(process.env, { NODE_ENV: 'dev1', MNEMONIC: mnemonics[i], START_STAGE: process.env.START_STAGE, REPLAY: process.env.REPLAY, DOCKER: true, PIN: process.env.PIN }),
         cwd: process.cwd()
     });
 

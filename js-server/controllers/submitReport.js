@@ -10,7 +10,7 @@ const submitReport = async (req, res) => {
     const contractAddr = env.CONTRACT_ADDRESS;
     const mongoDb = new MongoDb(contractAddr);
 
-    console.log("current request id handling: ", requestId);
+    requestId = parseInt(requestId);
 
     try {
         const requestData = await getRequest(contractAddr, requestId);
@@ -25,19 +25,12 @@ const submitReport = async (req, res) => {
             report: rawReport
         }
         if (!verifySignature(Buffer.from(JSON.stringify(rawMessage), 'ascii'), Buffer.from(signature, 'base64'), Buffer.from(report.executor, 'base64'))) return handleResponse(res, 403, "Invalid report signature");
-
-        let reports = [];
-        reports = await mongoDb.findReports(parseInt(requestId));
+        let executorReport = await mongoDb.findReport(requestId, report.executor);
         // if we cant find the request id, we init new
-        if (!reports) reports = [report];
-        else if (reports.filter(rep => rep.executor === report.executor).length !== 0) {
-            // append into the existing value if not submitted
-            // reports.push(report);
-            return handleResponse(res, 403, "You already submitted the reports");
-        }
-
-        if (reports.length <= threshold) {
-            await mongoDb.updateUniqueReports(parseInt(requestId), report, threshold);
+        if (executorReport) return handleResponse(res, 403, "You already submitted the report");
+        const reportCount = await mongoDb.countExecutorReports(requestId);
+        if (reportCount < threshold) {
+            await mongoDb.insertRequest(requestId, threshold);
             // insert executor with report for easy indexing & querying
             await mongoDb.insertExecutorReport(requestId, report.executor, report);
             return handleResponse(res, 200, "success");
