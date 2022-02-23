@@ -39,8 +39,7 @@ const evaluatePin = (enteredPin, encryptedMnemonic) => {
         }
         throw "Invalid pin!!"
     } catch (error) {
-        console.log(error);
-        process.exit(0);
+        throw error
     }
 };
 

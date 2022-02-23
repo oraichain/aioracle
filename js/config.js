@@ -17,9 +17,12 @@ const env = {
     BACKEND_URL: process.env.BACKEND_URL,
     ENCRYPTED_MNEMONIC: process.env.ENCRYPTED_MNEMONIC,
     PIN: process.env.PIN,
+    PING_INTERVAL: parseInt(process.env.PING_INTERVAL) || 5000,
+    PING_CONTRACT: process.env.PING_CONTRACT,
 }
 
 const network = {
+    rpc: env.RPC_URL || "https://testnet-rpc.orai.io",
     prefix: "orai",
     path: "m/44'/118'/0'/0/0",
 }
