@@ -1,6 +1,8 @@
 const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const { stringToPath } = require("@cosmjs/crypto");
 const { network, env } = require("./config");
+const cosmwasm = require('@cosmjs/cosmwasm-stargate');
+const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
@@ -35,4 +37,17 @@ const getFirstWalletPubkey = async (mnemonic) => {
     return Buffer.from(accounts[0].pubkey).toString('base64');
 }
 
-module.exports = { getFirstWalletAddr, getFirstWalletPubkey, queryWasm };
+const execute = async ({ mnemonic, address, handleMsg, memo, gasData }) => {
+    try {
+        const wallet = await collectWallet(mnemonic);
+        const [firstAccount] = await wallet.getAccounts();
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`), prefix: network.prefix });
+        const result = await client.execute(firstAccount.address, address, handleMsg, memo);
+        return result.transactionHash;
+    } catch (error) {
+        console.log("error in executing contract: ", error);
+        throw error;
+    }
+}
+
+module.exports = { getFirstWalletAddr, getFirstWalletPubkey, queryWasm, execute };
