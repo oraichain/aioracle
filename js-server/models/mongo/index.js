@@ -9,6 +9,7 @@ class MongoDb {
         this.requestCollections = this._db.collection(constants.mongo.REQUESTS_COLLECTION);
         this.merkleCollection = this._db.collection(constants.mongo.MERKLE_ROOTS_COLLECTION);
         this.executorCollection = this._db.collection(constants.mongo.EXECUTORS_COLLECTION);
+        this.MAX_LIMIT = 20;
     }
 
     indexFinishedRequests = async () => {
@@ -80,7 +81,7 @@ class MongoDb {
 
     findLeaves = async (merkleRoot) => {
         try {
-            const query = { _id: merkleRoot };
+            const query = { merkleRoot: merkleRoot };
 
             const result = await this.merkleCollection.findOne(query, { projection: { _id: 0 } });
             if (result && result.leaves) return JSON.parse(result.leaves);
@@ -114,7 +115,7 @@ class MongoDb {
                 .find({ executor })
                 .sort({ requestId: -1 })
                 .skip(skip)
-                .limit(limit);
+                .limit(limit > this.MAX_LIMIT ? this.MAX_LIMIT : limit);
             return { data: await cursor.toArray(), count: await cursor.count() };
         } catch (error) {
             console.log(error);
@@ -127,7 +128,7 @@ class MongoDb {
             // find a list of reports that has the given executor & request id in the list of submitted request id. Note that the claim field must be false
             let executorResults = await this.executorCollection.find({ executor, $or: [{ claimed: null }, { claimed: false }] }).sort({ requestId: -1 }).toArray();
             let requestIds = executorResults.map(res => res.requestId);
-            let requestResults = await this.requestCollections.find({ "submitted": true, _id: { $in: requestIds } }).sort({ _id: -1 }).skip(skip).limit(limit).toArray();
+            let requestResults = await this.requestCollections.find({ "submitted": true, _id: { $in: requestIds } }).sort({ _id: -1 }).skip(skip).limit(limit > this.MAX_LIMIT ? this.MAX_LIMIT : limit).toArray();
             executorResults = executorResults.filter(result => requestResults.find(reqResult => result.requestId === reqResult.requestId));
             return { data: executorResults };
         } catch (error) {
@@ -168,7 +169,7 @@ class MongoDb {
     }
 
     queryExecutorReportsWithThreshold = async (requestId, threshold) => {
-        const results = await this.executorCollection.find({ requestId }).limit(threshold).toArray();
+        const results = await this.executorCollection.find({ requestId }).limit(threshold > this.MAX_LIMIT ? this.MAX_LIMIT : threshold).toArray();
         return results;
     }
 
@@ -186,7 +187,6 @@ class MongoDb {
         try {
 
             const insertObj = {
-                _id: merkleRoot,
                 merkleRoot,
                 leaves,
             }
