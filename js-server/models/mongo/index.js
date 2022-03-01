@@ -93,7 +93,7 @@ class MongoDb {
     }
 
     findMerkleRoot = async (root) => {
-        const merkleTreeData = await this.merkleCollection.findOne({ root });
+        const merkleTreeData = await this.merkleCollection.findOne({ merkleRoot: root });
         return merkleTreeData ? merkleTreeData.merkleRoot : null;
     }
 
