@@ -1,0 +1,57 @@
+version: '3.7'
+
+services:
+  mongodb_container:
+    image: mongo
+    env_file:
+      - .env.mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+
+  aioracle_server_stack:
+    image: orai/aioracle-server:0.0.3
+    working_dir: /workspace
+    restart: on-failure
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - 8080:8080
+    cap_add:
+      - SYS_PTRACE
+    env_file:
+      - .env
+    depends_on:
+      - mongodb_container
+    deploy:
+      replicas: 4
+      update_config:
+        parallelism: 2
+        order: start-first
+        failure_action: rollback
+        delay: 10s
+      rollback_config:
+        parallelism: 0
+        order: stop-first
+      restart_policy:
+        condition: any
+        delay: 5s
+        max_attempts: 3
+        window: 120s
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "curl",
+          "-f",
+          "http://localhost:8080 || exit 1"
+        ]
+
+volumes:
+  mongodb_data_container:
