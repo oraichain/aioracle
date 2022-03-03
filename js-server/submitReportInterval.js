@@ -36,7 +36,6 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
         console.log("execute result: ", executeResult);
         // check error
         if (executeResult.tx_response.txhash) {
-            index('submit-merkle-txhash', { txhash: executeResult.tx_response.txhash, ...getCurrentDateInfo() });
             // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
             await Promise.all(requestsData.map(async tree => mongoDb.insertMerkleRoot(tree.root, tree.leaves)));
 

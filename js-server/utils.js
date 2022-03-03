@@ -14,20 +14,19 @@ const getRequest = async (contractAddr, requestId) => {
     return fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
 }
 
-// TODO: need to collect full list of executors using paging
-const isWhiteListed = async (contractAddr, executor, executorsKey) => {
+const isWhiteListed = async (contractAddr, executor) => {
 
     const input = JSON.stringify({
-        get_executors: {
-            nonce: parseInt(executorsKey)
+        get_executor: {
+            pubkey: executor
         }
     })
 
     const data = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
-    if (!data.data) {
-        throw "Cannot collect list executors";
+    if (!data) {
+        throw "Cannot verify executor";
     }
-    if (data.data.includes(executor)) {
+    if (data.data) {
         return true;
     }
     return false;

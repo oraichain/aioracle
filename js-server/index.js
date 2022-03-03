@@ -11,6 +11,7 @@ app.use(cors(getCors())) // custom cors
 const client = require('./mongo');
 const proofRouter = require('./routes/proof.info.route');
 const reportRouter = require('./routes/report.route');
+const reportTestnetRouter = require('./routes/report-testnet.route');
 const executorInfoRouter = require('./routes/executor.info.route');
 const submitReportInterval = require('./submitReportInterval');
 const { index } = require('./models/elasticsearch/index');
@@ -45,6 +46,13 @@ const start = (mongoDb) => {
   app.use('/proof', proofRouter);
 
   app.use('/executor', executorInfoRouter)
+
+  app.use('/report', reportRouter)
+
+  // special submit report router for benchmarking
+  if (env.NETWORK_TYPE === "testnet" || env.NETWORK_TYPE === "local") {
+    app.use('/report-testnet', reportTestnetRouter);
+  }
 
   app.use('/report', reportRouter)
 

@@ -36,8 +36,7 @@ class MongoDb {
             report,
             claimed: false,
         }
-        const result = await this.executorCollection.insertOne(insertObj);
-        console.log("insert executor report result: ", result);
+        this.executorCollection.insertOne(insertObj).then(result => console.log("insert executor report result: ", result));
     }
 
     removeExecutorReport = async (requestId, executor) => {
@@ -248,8 +247,7 @@ class MongoDb {
                 _id: requestId, requestId, threshold
             }
         }
-        const result = await this.requestCollections.updateOne(filter, updateDoc, { upsert: true }); // upsert means if does not exist then create document
-        console.log("insert request result: ", result);
+        this.requestCollections.updateOne(filter, updateDoc, { upsert: true }).then(result => console.log("insert request result: ", result)); // upsert means if does not exist then create document
     }
 }
 
