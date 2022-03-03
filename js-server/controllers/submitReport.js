@@ -16,7 +16,7 @@ const submitReport = async (req, res) => {
         const requestData = await getRequest(contractAddr, requestId);
         const threshold = requestData.data.threshold;
         // verify executor not in list
-        if (!(await isWhiteListed(contractAddr, report.executor, requestData.data.executors_key))) return handleResponse(res, 401, "not in list");
+        if (!(await isWhiteListed(contractAddr, report.executor))) return handleResponse(res, 401, "not in list");
 
         const { signature, ...rawReport } = report;
         // verify report signature
@@ -30,9 +30,9 @@ const submitReport = async (req, res) => {
         if (executorReport) return handleResponse(res, 403, "You already submitted the report");
         const reportCount = await mongoDb.countExecutorReports(requestId);
         if (reportCount < threshold) {
-            await mongoDb.insertRequest(requestId, threshold);
+            mongoDb.insertRequest(requestId, threshold);
             // insert executor with report for easy indexing & querying
-            await mongoDb.insertExecutorReport(requestId, report.executor, report);
+            mongoDb.insertExecutorReport(requestId, report.executor, report);
             return handleResponse(res, 200, "success");
         }
         else return handleResponse(res, 403, "request has already finished");
