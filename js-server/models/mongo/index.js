@@ -113,10 +113,11 @@ class MongoDb {
         try {
             const cursor = this.executorCollection
                 .find({ executor })
-                .sort({ requestId: -1 })
-                .skip(skip)
+                .sort({ requestId: -1 });
+            const count = await cursor.count();
+            const data = cursor.skip(skip)
                 .limit(limit > this.MAX_LIMIT ? this.MAX_LIMIT : limit);
-            return { data: await cursor.toArray(), count: await cursor.count() };
+            return { data: await data.toArray(), count };
         } catch (error) {
             console.log(error);
             throw error;
