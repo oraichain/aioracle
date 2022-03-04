@@ -1,4 +1,3 @@
-const db = require('../db');
 const { handleResponse } = require('../utils');
 const { MongoDb } = require('../models/mongo');
 

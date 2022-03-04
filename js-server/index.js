@@ -1,6 +1,4 @@
-require('./db');
 const { constants, env, getCors } = require('./config');
-
 const express = require('express');
 const cors = require('cors');
 const app = express()
@@ -52,6 +50,7 @@ const start = (mongoDb) => {
   // special submit report router for benchmarking
   if (env.NETWORK_TYPE === "testnet" || env.NETWORK_TYPE === "local") {
     app.use('/report-testnet', reportTestnetRouter);
+    app.use('/test', reportTestnetRouter);
   }
 
   app.use('/report', reportRouter)

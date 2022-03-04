@@ -1,5 +1,4 @@
 const { env } = require('../config');
-const db = require('../db');
 const {
     MerkleProofTree,
     sha256,
@@ -15,7 +14,6 @@ const getProof = async (req, res) => {
         // collect the root hex based on the request id to form a tree
         let { data } = await getRequest(contractAddr, requestId);
         if (!data.merkle_root) return res.status(200).send({ code: 200, message: "Waiting for the merkle root" })
-        // const leaves = JSON.parse((await db.get(Buffer.from(data.merkle_root, 'hex'))));
         const leaves = await mongoDb.findLeaves(data.merkle_root);
         const tree = new MerkleProofTree(leaves);
         const hexLeaf = sha256(JSON.stringify(leaf));
