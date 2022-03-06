@@ -13,7 +13,7 @@ services:
     volumes:
       - mongodb_data_container:/data/db
 
-  aioracle_server_stack:
+  aioracle_server:
     image: orai/aioracle-server:0.0.3
     working_dir: /workspace
     restart: on-failure
@@ -26,7 +26,7 @@ services:
     cap_add:
       - SYS_PTRACE
     env_file:
-      - .env
+      - .env.swarm
     depends_on:
       - mongodb_container
     deploy:
@@ -55,3 +55,7 @@ services:
 
 volumes:
   mongodb_data_container:
+
+networks:
+  aioracle_service:
+    driver: overlay
