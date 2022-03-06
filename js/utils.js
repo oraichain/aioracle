@@ -3,8 +3,8 @@ const fs = require('fs');
 const { env, network } = require('./config');
 const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require('./crypto');
+const { queryWasmRaw, handleFetchResponse } = require('./cosmjs');
 
-const lcdUrl = env.LCD_URL;
 const backendUrl = env.BACKEND_URL;
 
 const getRequest = async (contractAddr, requestId) => {
@@ -13,7 +13,7 @@ const getRequest = async (contractAddr, requestId) => {
             stage: requestId
         }
     })
-    return fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    return queryWasmRaw(contractAddr, input);
 }
 
 const getStageInfo = async (contractAddr) => {
@@ -21,7 +21,7 @@ const getStageInfo = async (contractAddr) => {
         stage_info: {}
     })
 
-    const data = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    const data = await queryWasmRaw(contractAddr, input);
     if (!data.data) {
         throw "No request to handle";
     }
@@ -29,7 +29,7 @@ const getStageInfo = async (contractAddr) => {
 }
 
 const checkSubmit = async (contractAddr, requestId, executor) => {
-    return fetch(`${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => data.json());
+    return fetch(`${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => handleFetchResponse(data));
 }
 
 const getServiceContracts = async (contractAddr, requestId) => {
@@ -37,7 +37,7 @@ const getServiceContracts = async (contractAddr, requestId) => {
         get_service_contracts: { stage: parseInt(requestId) }
     })
 
-    const data = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    const data = await queryWasmRaw(contractAddr, input);
     if (!data.data) {
         throw "No service contracts to execute";
     }
@@ -62,7 +62,7 @@ const submitReport = async (requestId, leaf, mnemonic) => {
         body: JSON.stringify(message),
         redirect: 'follow'
     };
-    const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => data.json());
+    const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => handleFetchResponse(data));
     console.log("result submitting report: ", result);
     console.log("Successful submission time: ", new Date().toUTCString())
 }
@@ -99,4 +99,4 @@ const initStage = async (path, contractAddr) => {
     return { requestId, latestStage, checkpointThreshold };
 }
 
-module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage };
+module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage, handleFetchResponse };

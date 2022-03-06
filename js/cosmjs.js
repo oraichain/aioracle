@@ -3,14 +3,28 @@ const { stringToPath } = require("@cosmjs/crypto");
 const { network, env } = require("./config");
 const cosmwasm = require('@cosmjs/cosmwasm-stargate');
 const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
+const fetch = require('isomorphic-fetch');
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
     return result.data;
 }
 
+const handleFetchResponse = (response) => {
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.indexOf("application/json") !== -1) {
+        return response.json();
+    } else {
+        throw { message: response.text() };
+    }
+}
+
+const queryWasmRaw = async (address, input) => {
+    return fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data));
+};
+
 const queryWasm = async (address, input) => {
-    let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data))
     return handleResult(result);
 };
 
@@ -50,4 +64,4 @@ const execute = async ({ mnemonic, address, handleMsg, memo, gasData }) => {
     }
 }
 
-module.exports = { getFirstWalletAddr, getFirstWalletPubkey, queryWasm, execute };
+module.exports = { getFirstWalletAddr, getFirstWalletPubkey, queryWasm, execute, queryWasmRaw, handleFetchResponse };

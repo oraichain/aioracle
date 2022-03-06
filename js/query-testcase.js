@@ -1,11 +1,10 @@
-const fetch = require('isomorphic-fetch');
-const { env } = require('./config')
+const { queryWasmRaw } = require('./cosmjs');
 const queryTestCases = async (addr) => {
     let testCases = [];
     let offset = null;
 
     try {
-        let { data } = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${addr}/smart/${Buffer.from(JSON.stringify({ get_test_cases: { limit: 1 } })).toString('base64')}`).then(data => data.json());
+        let { data } = await queryWasmRaw(addr, JSON.stringify({ get_test_cases: { limit: 1 } }));
         if (!data) return [];
         else if (data.test_cases.length === data.total) return data.test_cases;
         else if (data.test_cases.length < data.total) {
@@ -19,7 +18,7 @@ const queryTestCases = async (addr) => {
                         offset,
                     }
                 })
-                let { data } = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${addr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+                let { data } = await queryWasmRaw(addr, input);
                 if (data.test_cases.length > 0) {
                     testCases = testCases.concat(data.test_cases);
                     // key is the parameters in base64
