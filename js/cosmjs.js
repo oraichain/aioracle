@@ -10,12 +10,13 @@ const handleResult = (result) => {
     return result.data;
 }
 
-const handleFetchResponse = (response) => {
+const handleFetchResponse = async (response) => {
     const contentType = response.headers.get("content-type");
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.json();
     } else {
-        throw { message: response.text() };
+        let responseText = await response.text();
+        throw responseText;
     }
 }
 
