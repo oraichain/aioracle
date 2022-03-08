@@ -22,7 +22,7 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
         const { submitted } = await mongoDb.findRequest(requestId);
         if (!submitted) await mongoDb.updateReportsStatus(requestId);
     } catch (error) {
-        index('process-unsubmitted-request-errors', { error: String(error), ...getCurrentDateInfo() })
+        index('process-submitted-request-errors', { error: JSON.stringify(error), ...getCurrentDateInfo() })
     }
 }
 
@@ -45,7 +45,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
             index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
         }
     } catch (error) {
-        index('process-unsubmitted-requests-error', { error: String(error), ...getCurrentDateInfo() });
+        index('process-unsubmitted-requests-error', { error: JSON.stringify(error), ...getCurrentDateInfo() });
     }
 }
 
@@ -75,7 +75,10 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
                 continue;
             }
             requestsData.push({ requestId, root, leaves });
-            const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root } })) };
+
+            // collect the executor list from report to push to contract
+            const executors = reports.map(report => report.executor);
+            const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root, executors } })) };
             msgs.push(msg)
         } else if (reportCount < threshold) {
             // in case report length is smaller than threshold, consider removing it if there exists a finished request in db
@@ -87,6 +90,7 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
             await mongoDb.updateReports(parseInt(requestId), numRedundant);
         }
     }
+    console.log("msg length: ", msgs.length);
     if (msgs.length > 0) {
         // only broadcast new txs if has unfinished reports
         // query latest block

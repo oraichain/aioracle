@@ -14,12 +14,13 @@ const updateExecutors = async () => {
     const wallet = process.env.MNEMONIC;
     const input = JSON.stringify({
         update_config: {
-            new_executors: process.env.LOCAL ? localList : process.env.TESTNET ? testnetList : process.env.MAINNET ? mainnetList : undefined
+            update_config_msg: {
+                new_executors: process.env.LOCAL ? testnetList : process.env.TESTNET ? localList : process.env.MAINNET ? mainnetList : undefined
+            }
         }
     })
-    console.log("input: ", input)
 
-    // store the merkle root on-chain
+    // // store the merkle root on-chain
     const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" } });
     console.log("update config result: ", txHash);
 }

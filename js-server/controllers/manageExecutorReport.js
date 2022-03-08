@@ -31,7 +31,7 @@ const getFinishedExecutorReports = async (req, res) => {
         const limit = nPerPage > 0 ? nPerPage : 5;
         const skip = pageNumber > 0 ? ((pageNumber - 1) * limit) : 0;
         // collect the root hex based on the request id to form a tree
-        const { data } = await mongoDb.findFinishedExecutorReports(executor, skip, limit, false);
+        const { data } = await mongoDb.findFinishedExecutorReports(Buffer.from(executor, 'hex').toString('base64'), skip, limit, false);
 
         return res.send({ code: 200, data })
     } catch (error) {

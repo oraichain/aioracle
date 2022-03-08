@@ -3,7 +3,7 @@ const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
 const fetch = require('isomorphic-fetch');
 require('dotenv').config();
 
-const backendUrl = 'http://localhost:8080';
+const backendUrl = process.env.BACKEND_URL || 'http://localhost:8080';
 // const contractAddr = process.env.CONTRACT_ADDRESS;
 // const requestId = 284;
 
@@ -13,7 +13,7 @@ const backendUrl = 'http://localhost:8080';
 // }
 
 const getFinishedReports = async (executor, contractAddr) => {
-    const { data } = await fetch(`${backendUrl}/executor/finished/${executor}?contract_addr=${contractAddr}`).then(data => data.json());
+    const { data } = await fetch(`${backendUrl}/executor/finished/${Buffer.from(executor, 'base64').toString('hex')}?contract_addr=${contractAddr}`).then(data => data.json());
     return data;
 }
 
