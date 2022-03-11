@@ -1,12 +1,12 @@
 // set node env config
 const { env } = require('./config');
 const { processRequestAwait } = require('./process-request');
-const { getStageInfo } = require('./utils');
+const { getStageInfo, parseError } = require('./utils');
 const connect = require('./ws');
 const { collectPin } = require('./prompt');
 const { evaluatePin } = require('./crypto');
 const fs = require('fs');
-const { execute, getFirstWalletAddr, queryWasm } = require('./cosmjs');
+const { execute, queryWasm, getFirstWalletPubkey } = require('./cosmjs');
 const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
     flags: 'a+'
 });
@@ -29,7 +29,7 @@ const start = async () => {
         ping(mnemonic);
     } catch (error) {
         console.log("error when starting the program: ", error);
-        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${String(error)}\n\n`, (err) => {
+        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
         console.log("the program will exit after 10 seconds...");
@@ -47,11 +47,11 @@ const processRequestWrapper = async (mnemonic) => {
                 await processRequestAwait(parseInt(i), mnemonic);
             }
         }
-        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.3.1\n")
+        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.3.3\n")
         connect(mnemonic);
     } catch (error) {
         console.log("Error while trying to run the program: ", error);
-        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${String(error)}\n\n`, (err) => {
+        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
         // sleep 5s then start again
@@ -64,25 +64,25 @@ const ping = async (mnemonic) => {
     const contract = env.PING_CONTRACT;
     while (true) {
         try {
-            const walletAddr = await getFirstWalletAddr(mnemonic);
-            // collect info about round and round jump, ok to ping => ping
-            const round = await queryWasm(contract, JSON.stringify({
-                get_round: walletAddr
+            const walletPubkey = await getFirstWalletPubkey(mnemonic);
+            // collect info about ping and ping jump, ok to ping => ping
+            const ping = await queryWasm(contract, JSON.stringify({
+                get_ping_info: walletPubkey
             }));
             // valid case
             if (
-                round.current_height - round.round_info.height >= round.round_jump ||
-                round.round_info.height === 0
+                ping.current_height - ping.ping_info.latest_ping_height >= ping.ping_jump ||
+                round.ping_info.latest_ping_height === 0
             ) {
                 console.log('ready to ping');
                 const pingMsg = {
-                    ping: {}
+                    ping: { pubkey: walletPubkey }
                 }
                 const result = await execute({ mnemonic, address: contract, handleMsg: pingMsg, gasData: { gasAmount: '0', denom: 'orai' } });
                 console.log("ping result: ", result);
             }
         } catch (error) {
-            writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${String(error)}\n\n`, (err) => {
+            writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
                 if (err) console.log("error when appending error to log file: ", err);
             })
         } finally {

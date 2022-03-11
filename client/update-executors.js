@@ -15,7 +15,7 @@ const updateExecutors = async () => {
     const input = JSON.stringify({
         update_config: {
             update_config_msg: {
-                new_executors: process.env.LOCAL ? testnetList : process.env.TESTNET ? localList : process.env.MAINNET ? mainnetList : undefined
+                new_executors: process.env.LOCAL ? localList : process.env.TESTNET ? testnetList : process.env.MAINNET ? mainnetList : undefined
             }
         }
     })

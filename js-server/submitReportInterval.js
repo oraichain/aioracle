@@ -90,7 +90,6 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
             await mongoDb.updateReports(parseInt(requestId), numRedundant);
         }
     }
-    console.log("msg length: ", msgs.length);
     if (msgs.length > 0) {
         // only broadcast new txs if has unfinished reports
         // query latest block

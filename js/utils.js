@@ -7,6 +7,12 @@ const { queryWasmRaw, handleFetchResponse } = require('./cosmjs');
 
 const backendUrl = env.BACKEND_URL;
 
+const parseError = (error) => {
+    if (typeof error === 'string' || error instanceof String) {
+        return error;
+    } else return JSON.stringify({ message: error });
+}
+
 const getRequest = async (contractAddr, requestId) => {
     const input = JSON.stringify({
         request: {
@@ -99,4 +105,4 @@ const initStage = async (path, contractAddr) => {
     return { requestId, latestStage, checkpointThreshold };
 }
 
-module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage, handleFetchResponse };
+module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage, handleFetchResponse, parseError };
