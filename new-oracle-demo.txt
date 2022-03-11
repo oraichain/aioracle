@@ -6,7 +6,7 @@ service fees contract: orai1qgae072t5tak83kg5xt8um0q2vclr9y5mah23z
 
 service provider bridge demo: orai1q7t6qltupd7jt6wyenggz62xutjlel0etuu5hw
 
-ai oracle contract demo: orai1nm7u5pmsq8439j2rnffxgwrqe2mhqa902tjagd
+ai oracle contract demo: orai1s60a2vntfuv2ps6fs75fcrlrmea9xzr4k65zlg
 
 executors: AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn, AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX
 
@@ -24,4 +24,4 @@ dsource flower classification: orai1pdgzqucp7fwjvf5q0enfes2ev5fsh9pujps6uh
 
 oscript flower classification: orai1qkrp53m75q2qglkhr0v7ftwu2x7rjv95gz0xgq
 
-ping address: orai1hw6qsnd4gv0rcexu5ga8dgznkut3k9q642vc6x
+ping address: orai1u2pftkrzgyxhkpqphlz323a0hv5r2je7q8cx8m
