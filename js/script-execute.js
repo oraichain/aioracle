@@ -70,7 +70,6 @@ const handleScript = async (contracts, requestInput) => {
 
         validDSources.push(dsource);
     }
-    console.log("results: ", results);
     // aggregate results
     let input = JSON.stringify({
         aggregate: {

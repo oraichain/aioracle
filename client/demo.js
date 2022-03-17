@@ -7,10 +7,11 @@ const { report } = require('process');
 
 const demo = async () => {
     const contractAddr = process.env.CONTRACT_ADDRESS;
+    console.log("contract addr: ", contractAddr)
     const wallet = process.env.MNEMONIC;
     const threshold = process.env.THRESHOLD || 1;
     const service = process.env.SERVICE || "price";
-    const lcdUrl = process.env.LCD_URL || "https://testnet-lcd.orai.io";
+    const lcdUrl = process.env.LCD_URL || "https://lcd.orai.io";
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const [feeAmount, boundExecutorFee] = await getServiceFees(contractAddr, lcdUrl, service, threshold);
     // const feeAmount = [{ denom: "orai", amount: "1000" }]
@@ -41,9 +42,11 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
     const boundExecutorFeeMsg = JSON.stringify({
         get_bound_executor_fee: {}
     })
-    let { data } = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
+    let rawData = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
+    let data = rawData.data;
     let boundFee = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
     let boundExecutorFee = boundFee.data;
+    console.log("data: ", rawData);
     data.push(["placeholder", boundExecutorFee.denom, boundExecutorFee.amount]);
     // let data = [
     //     ['orai1y88tlgddntj66sn46qqlvtx3tp7tgl8sxxx6uk', 'orai', '1'],

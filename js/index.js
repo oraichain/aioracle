@@ -47,7 +47,7 @@ const processRequestWrapper = async (mnemonic) => {
                 await processRequestAwait(parseInt(i), mnemonic);
             }
         }
-        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.3.3\n")
+        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.3.4\n")
         connect(mnemonic);
     } catch (error) {
         console.log("Error while trying to run the program: ", error);
@@ -72,7 +72,7 @@ const ping = async (mnemonic) => {
             // valid case
             if (
                 ping.current_height - ping.ping_info.latest_ping_height >= ping.ping_jump ||
-                round.ping_info.latest_ping_height === 0
+                ping.ping_info.latest_ping_height === 0
             ) {
                 console.log('ready to ping');
                 const pingMsg = {

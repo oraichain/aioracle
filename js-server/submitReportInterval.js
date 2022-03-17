@@ -45,6 +45,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
             index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
         }
     } catch (error) {
+        console.log("error: ", error);
         index('process-unsubmitted-requests-error', { error: JSON.stringify(error), ...getCurrentDateInfo() });
     }
 }

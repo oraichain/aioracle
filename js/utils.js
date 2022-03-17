@@ -10,7 +10,11 @@ const backendUrl = env.BACKEND_URL;
 const parseError = (error) => {
     if (typeof error === 'string' || error instanceof String) {
         return error;
-    } else return JSON.stringify({ message: error });
+    } else if (typeof yourVariable === 'object' && yourVariable !== null) {
+        return JSON.stringify({ message: error });
+    } else {
+        return String(error)
+    }
 }
 
 const getRequest = async (contractAddr, requestId) => {
