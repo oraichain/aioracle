@@ -28,16 +28,22 @@ const getReport = async (req, res) => {
     }
 }
 
-// const getReports = async (req, res) => {
-//     let data = req.query;
-//     const mongoDb = new MongoDb(data.contract_addr);
-//     try {
-//         let reports = await mongoDb.findReports(parseInt(data.request_id));
-//         if (reports) return handleResponse(res, 200, "successfully retrieved the reports", reports);
-//         return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
-//     } catch (error) {
-//         return handleResponse(res, 500, error);
-//     }
-// }
+const getReports = async (req, res) => {
+    let { contract_addr, request_id, page_number, limit_per_page } = req.query;
 
-module.exports = { checkSubmit, getReport };
+    const mongoDb = new MongoDb(contract_addr);
+    try {
+        limit_per_page = parseInt(limit_per_page);
+        page_number = parseInt(page_number);
+        const limit = limit_per_page > 0 ? limit_per_page : 5;
+        const skip = page_number > 0 ? ((page_number - 1) * limit) : 0;
+        // collect the root hex based on the request id to form a tree
+        let reports = await mongoDb.findReports(parseInt(request_id), skip, limit);
+        if (reports) return handleResponse(res, 200, "successfully retrieved the reports", reports);
+        return handleResponse(res, 404, "cannot find the reports with the given request id and contract address");
+    } catch (error) {
+        return handleResponse(res, 500, error);
+    }
+}
+
+module.exports = { checkSubmit, getReport, getReports };

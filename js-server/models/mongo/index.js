@@ -96,12 +96,14 @@ class MongoDb {
         return merkleTreeData ? merkleTreeData.merkleRoot : null;
     }
 
-    findReports = async (requestId) => {
+    findReports = async (requestId, skip, limit) => {
         try {
-            const query = { _id: requestId, requestId };
-            const request = await this.requestCollections.findOne(query, { projection: { _id: 0 } });
-            if (request && request.reports) return request.reports;
-            return null;
+            const query = { requestId };
+            const cursor = this.executorCollection.find(query, { projection: { _id: 0 } });
+            const count = await cursor.count();
+            const data = cursor.skip(skip)
+                .limit(limit > this.MAX_LIMIT ? this.MAX_LIMIT : limit);
+            return { data: await data.toArray(), count };
         } catch (error) {
             console.log(error);
             throw error;
