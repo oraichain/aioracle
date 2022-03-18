@@ -1,6 +1,6 @@
 const crypto = require('crypto');
+const { queryWasmRaw } = require('./cosmjs');
 const sha256 = (data) => crypto.createHash('sha256').update(data).digest();
-const { env } = require('./config');
 
 const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {
     let finalLeaf = { ...leaf, data: sha256(leaf.data).toString('hex') };
@@ -12,7 +12,7 @@ const verifyLeaf = async (contractAddr, requestId, leaf, proofs) => {
             proof: proofs
         }
     })
-    return fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    return queryWasmRaw(contractAddr, input);
 }
 
 module.exports = { verifyLeaf }

@@ -9,6 +9,7 @@ const env = {
     MNEMONIC: process.env.MNEMONIC,
     RPC_URL: process.env.NETWORK_RPC,
     LCD_URL: process.env.NETWORK_LCD || "https://testnet-lcd.orai.io",
+    CHAIN_ID: process.env.CHAIN_ID || "Oraichain-testnet",
     MONGO_URL: process.env.MONGO_URL || "mongodb://foo:bar@localhost:27017/",
     ELASTICSEARCH_NODE: process.env.ELASTICSEARCH_NODE || "http://localhost:9200",
     ELASTIC_USERNAME: process.env.ELASTIC_USERNAME || "elastic",
@@ -26,8 +27,8 @@ const constants = {
         MERKLE_ROOTS_COLLECTION: "merkle_roots",
         EXECUTORS_COLLECTION: "executors",
     },
-    TIMEOUT_HEIGHT: 30,
-    TIMEOUT_INTERVAL_CHECK: 3000,
+    TIMEOUT_HEIGHT: 100,
+    TIMEOUT_INTERVAL_CHECK: 5000,
     BASE_GAS_PRICES: 0,
     GAS_LIMITS: 20000000
 }

@@ -31,16 +31,16 @@ const claim = async () => {
 
     // store the merkle root on-chain
     try {
-        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(wallet), rawInputs: msgs, gasLimits: 'auto', broadcastMode: 'BROADCAST_MODE_BLOCK' });
+        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(wallet), rawInputs: msgs, gasLimits: 2000000, broadcastMode: 'BROADCAST_MODE_BLOCK' });
         console.log("execute result: ", executeResult);
+        const data = listProofs.map(proof => ({ executor, request_id: proof.requestId }));
+
+        // update claim to true to mark claim as true
+        const claimResult = await updateClaim(data, contractAddr);
+        console.log("claim result: ", claimResult);
     } catch (error) {
         console.log("error: ", error)
     }
-    const data = listProofs.map(proof => ({ executor, request_id: proof.requestId }));
-
-    // update claim to true to mark claim as true
-    const claimResult = await updateClaim(data, contractAddr);
-    console.log("claim result: ", claimResult);
 
 }
 

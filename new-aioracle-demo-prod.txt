@@ -1,0 +1,22 @@
+data source pricefeed:
+
+binance: orai1frwvae23nqck79pukk69dhe567068pmdd85grt
+coinbase: orai1wrgvckj0wrdvythtv64p7404sddz0wdgjxp6la
+
+test case price: orai14htnzusw34jm2hr67elq0th9hw78tc2xqshaw0
+
+oscript price: orai1rql43z3xcm3exu2xnryq3klcxr55t6vye8gfrg
+
+dsource flower classification: orai1nqwxqgdg9dsppny2s8zrp2ner2yugxvmmjts3t
+
+test case flower classification: orai1u68mjw24mm0y9a9afkxgt9rk0xsq6apeq3m4vx
+
+oscript flower classification: orai10z5uaamhpkfldpgccn9he5cnpgemeekcspmgzu
+
+service fees addr: orai1vuldmz9kgryg3cwekyn65xfaku4meqaln2zs06
+
+provider bridge: orai10ndrne6ca2fzwj7z0c7kt30u3kw4cz5sh2n7nd
+
+aioracle v2: orai13uqu3yl4tkcp2ye6gl43rxp2ygzyr4clf80q7e
+
+ping addr: orai1enp2zauur6hatpmuqs4h9avafezuyxnek4rzz6

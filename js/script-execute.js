@@ -1,7 +1,5 @@
 const { spawn, execSync } = require('child_process');
-const fetch = require('isomorphic-fetch');
-const { env } = require('./config');
-const { queryWasm } = require('./cosmjs');
+const { queryWasm, queryWasmRaw } = require('./cosmjs');
 const queryTestCases = require('./query-testcase');
 const { getServiceContracts } = require('./utils');
 
@@ -72,14 +70,13 @@ const handleScript = async (contracts, requestInput) => {
 
         validDSources.push(dsource);
     }
-    console.log("results: ", results);
     // aggregate results
     let input = JSON.stringify({
         aggregate: {
             results
         }
     });
-    let { data } = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${oscript}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json())
+    let { data } = await queryWasmRaw(oscript, input);
     return [JSON.stringify(data), [... new Set(validDSources)], [... new Set(validTestCases)]];
 }
 

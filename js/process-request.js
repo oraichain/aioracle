@@ -1,8 +1,28 @@
-const { submitReport, checkSubmit, getRequest } = require('./utils');
+const { submitReport, checkSubmit, getRequest, parseError } = require('./utils');
 // set node env config
 const { env } = require('./config');
-const { getFirstWalletPubkey } = require('./cosmjs');
+const { getFirstWalletPubkey, queryWasm } = require('./cosmjs');
 const { getData } = require('./script-execute');
+const fs = require('fs');
+const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
+    flags: 'a+'
+});
+
+const filterRequest = async (pubkey, { data: request }) => {
+    if (request && request.merkle_root) {
+        return [false, `request already has merkle root`];
+    }
+    let executorFee = await queryWasm(env.CONTRACT_ADDRESS, JSON.stringify({
+        get_participant_fee: {
+            pubkey
+        }
+    }))
+
+    if (request.preference_executor_fee.denom !== executorFee.denom || parseInt(request.preference_executor_fee.amount) < parseInt(executorFee.denom)) {
+        return [false, `the request fee is too low. Skip this request`];
+    }
+    return [true, 'valid request'];
+}
 
 const processRequest = async (requestId, mnemonic) => {
     console.log("request id: ", requestId);
@@ -10,8 +30,9 @@ const processRequest = async (requestId, mnemonic) => {
     const executor = await getFirstWalletPubkey(mnemonic);
     // try to collect leaf from backend
     const request = await getRequest(contractAddr, requestId);
-    if (request.data && request.data.merkle_root) {
-        console.log(`request ${requestId} already has merkle root`);
+    let [filterResult, message] = await filterRequest(executor, request);
+    if (!filterResult) {
+        console.log(message);
         return;
     }
     else {
@@ -28,8 +49,9 @@ const processRequestAwait = async (requestId, mnemonic) => {
     const executor = await getFirstWalletPubkey(mnemonic);
     // try to collect leaf from backend
     const request = await getRequest(contractAddr, requestId);
-    if (request.data && request.data.merkle_root) {
-        console.log(`request ${requestId} already has merkle root`);
+    let [filterResult, message] = await filterRequest(executor, request);
+    if (!filterResult) {
+        console.log(message);
         return;
     }
     else {
@@ -57,7 +79,11 @@ const processData = async ({ contractAddr, requestId, input, executor, mnemonic 
         if (!submitted) {
             await submitReport(reqId, leaf, mnemonic);
         }
-    }).catch(error => console.log("error in getting data: ", error));
+    }).catch(error => {
+        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
+            if (err) console.log("error when appending error to log file: ", err);
+        })
+    });
 }
 
 module.exports = { processRequest, processRequestAwait };
