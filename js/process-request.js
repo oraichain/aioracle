@@ -18,7 +18,7 @@ const filterRequest = async (pubkey, { data: request }) => {
         }
     }))
 
-    if (request.preference_executor_fee.denom !== executorFee.denom || parseInt(request.preference_executor_fee.amount) < parseInt(executorFee.denom)) {
+    if (request.preference_executor_fee.denom !== executorFee.denom || parseInt(request.preference_executor_fee.amount) < parseInt(executorFee.amount)) {
         return [false, `the request fee is too low. Skip this request`];
     }
     return [true, 'valid request'];

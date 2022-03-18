@@ -15,6 +15,8 @@ const demo = async () => {
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const [feeAmount, boundExecutorFee] = await getServiceFees(contractAddr, lcdUrl, service, threshold);
     // const feeAmount = [{ denom: "orai", amount: "1000" }]
+    let finalFeeAmount = feeAmount.filter(fee => fee.amount !== '0');
+    if (finalFeeAmount.length === 0) finalFeeAmount = undefined;
     const input = JSON.stringify({
         request: {
             threshold: parseInt(threshold),
@@ -25,7 +27,7 @@ const demo = async () => {
     console.log("input: ", input)
 
     // store the merkle root on-chain
-    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: feeAmount });
+    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: finalFeeAmount });
     console.log("execute result: ", txHash);
     const requestId = await collectRequestId(lcdUrl, txHash);
     console.log("request id: ", requestId);
