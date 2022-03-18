@@ -2,12 +2,13 @@ version: '3.3'
 services:
 
   mongodb_container:
-    image: mongo
+    image: mongo # https://hub.docker.com/_/mongo
     env_file:
       - .env.mongo
     environment:
       MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
       MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+    command: --noscripting # disable JS scripting (because we dont use JS code in mongo ops)
     ports:
       - 27017:27017
     volumes:
