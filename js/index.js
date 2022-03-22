@@ -1,7 +1,7 @@
 // set node env config
 const { env } = require('./config');
 const { processRequestAwait } = require('./process-request');
-const { getStageInfo, parseError } = require('./utils');
+const { getStageInfo, writeErrorMessage } = require('./utils');
 const connect = require('./ws');
 const { collectPin } = require('./prompt');
 const { evaluatePin } = require('./crypto');
@@ -29,7 +29,7 @@ const start = async () => {
         ping(mnemonic);
     } catch (error) {
         console.log("error when starting the program: ", error);
-        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
+        writeStream.write(writeErrorMessage(error), (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
         console.log("the program will exit after 10 seconds...");
@@ -47,11 +47,11 @@ const processRequestWrapper = async (mnemonic) => {
                 await processRequestAwait(parseInt(i), mnemonic);
             }
         }
-        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.3.4.1\n")
+        console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.3.4.2\n")
         connect(mnemonic);
     } catch (error) {
         console.log("Error while trying to run the program: ", error);
-        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
+        writeStream.write(writeErrorMessage(error), (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
         // sleep 5s then start again
@@ -82,7 +82,7 @@ const ping = async (mnemonic) => {
                 console.log("ping result: ", result);
             }
         } catch (error) {
-            writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
+            writeStream.write(writeErrorMessage(error), (err) => {
                 if (err) console.log("error when appending error to log file: ", err);
             })
         } finally {

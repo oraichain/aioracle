@@ -1,4 +1,4 @@
-const { submitReport, checkSubmit, getRequest, parseError } = require('./utils');
+const { submitReport, checkSubmit, getRequest, writeErrorMessage } = require('./utils');
 // set node env config
 const { env } = require('./config');
 const { getFirstWalletPubkey, queryWasm } = require('./cosmjs');
@@ -80,7 +80,7 @@ const processData = async ({ contractAddr, requestId, input, executor, mnemonic 
             await submitReport(reqId, leaf, mnemonic);
         }
     }).catch(error => {
-        writeStream.write(`Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`, (err) => {
+        writeStream.write(writeErrorMessage(error), (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
     });

@@ -1,6 +1,11 @@
 const { env } = require('./config');
 const WebSocket = require('ws');
 const { processRequest } = require('./process-request');
+const { writeErrorMessage } = require('./utils');
+const fs = require('fs');
+const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
+    flags: 'a+'
+});
 
 const connect = (mnemonic) => {
     const ws = new WebSocket(`${env.WEBSOCKET_URL}/websocket`);
@@ -31,7 +36,9 @@ const connect = (mnemonic) => {
                 if (events['wasm.contract_address'][0] === env.CONTRACT_ADDRESS) processRequest(parseInt(requestId), mnemonic);
             }
         } catch (error) {
-            console.error("error: ", error);
+            writeStream.write(writeErrorMessage(error), (err) => {
+                if (err) console.log("error when appending error to log file: ", err);
+            })
         }
     });
 

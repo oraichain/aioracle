@@ -10,11 +10,15 @@ const backendUrl = env.BACKEND_URL;
 const parseError = (error) => {
     if (typeof error === 'string' || error instanceof String) {
         return error;
-    } else if (typeof yourVariable === 'object' && yourVariable !== null) {
-        return JSON.stringify({ message: error });
+    } else if (typeof error === 'object' && !Array.isArray(error) && error !== null) {
+        return JSON.stringify(error);
     } else {
         return String(error)
     }
+}
+
+const writeErrorMessage = (error) => {
+    return `Date: ${new Date().toUTCString()}\nError: ${parseError(error)}\n\n`;
 }
 
 const getRequest = async (contractAddr, requestId) => {
@@ -77,36 +81,4 @@ const submitReport = async (requestId, leaf, mnemonic) => {
     console.log("Successful submission time: ", new Date().toUTCString())
 }
 
-const initStage = async (path, contractAddr) => {
-    let requestId = 1;
-    let latestStage = 1;
-    let checkpointThreshold = 5;
-    try {
-        if (!fs.existsSync(path)) {
-            let data = await getStageInfo(contractAddr);
-            requestId = data.checkpoint;
-            latestStage = data.latest_stage;
-            checkpointThreshold = data.checkpoint_threshold;
-            // write file to dir
-            fs.writeFile(path, JSON.stringify(data), 'utf8', (error, data) => {
-                if (error) {
-                    console.log("error writing file: ", error);
-                    return;
-                }
-                console.log("finish writing file")
-            });
-        } else {
-            // read from file
-            const buffer = fs.readFileSync(path, 'utf-8');
-            const data = JSON.parse(buffer);
-            requestId = data.checkpoint;
-            latestStage = data.latest_stage;
-            checkpointThreshold = data.checkpoint_threshold;
-        }
-    } catch (error) {
-        return { requestId, latestStage, checkpointThreshold };
-    }
-    return { requestId, latestStage, checkpointThreshold };
-}
-
-module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, initStage, handleFetchResponse, parseError };
+module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, handleFetchResponse, parseError, writeErrorMessage };

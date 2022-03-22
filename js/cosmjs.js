@@ -20,12 +20,26 @@ const handleFetchResponse = async (response) => {
     }
 }
 
+const queryWasmRetry = async (address, input, retryCount) => {
+    try {
+        let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data));
+        return result;
+    } catch (error) {
+        console.log("error: ", error);
+        console.log("retry count: ", retryCount)
+        if (retryCount > 10) throw error;
+        // await about 5 seconds
+        await new Promise(r => setTimeout(r, 5000));
+        return queryWasmRetry(address, input, retryCount + 1);
+    }
+}
+
 const queryWasmRaw = async (address, input) => {
-    return fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data));
+    return queryWasmRetry(address, input, 0);
 };
 
 const queryWasm = async (address, input) => {
-    let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data))
+    let result = await queryWasmRetry(address, input, 0);
     return handleResult(result);
 };
 
