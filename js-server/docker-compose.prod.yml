@@ -11,6 +11,11 @@ services:
     command: --noscripting # disable JS scripting (because we dont use JS code in mongo ops)
     ports:
       - 27017:27017
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+        max-file: "2"
     volumes:
       - mongodb_data_container:/data/db
 
@@ -29,8 +34,14 @@ services:
       - SYS_PTRACE
     env_file:
       - .env
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+        max-file: "2"
     depends_on:
       - mongodb_container
+      - elasticsearch
 
   elasticsearch:
     build:
