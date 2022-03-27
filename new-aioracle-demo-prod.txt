@@ -2,6 +2,7 @@ data source pricefeed:
 
 binance: orai1frwvae23nqck79pukk69dhe567068pmdd85grt
 coinbase: orai1wrgvckj0wrdvythtv64p7404sddz0wdgjxp6la
+kucoin: orai1zwj2h6gdhwllpt7ylnweqewksfus6grxq50amj
 
 test case price: orai14htnzusw34jm2hr67elq0th9hw78tc2xqshaw0
 
