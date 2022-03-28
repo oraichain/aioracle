@@ -22,14 +22,18 @@ const isWhiteListed = async (contractAddr, executor) => {
         }
     })
 
-    const data = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
-    if (!data) {
-        throw "Cannot verify executor";
+    try {
+        const data = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+        if (!data) {
+            throw "Cannot verify executor";
+        }
+        if (data.data && data.data.is_active) {
+            return true;
+        }
+        return false;
+    } catch (error) {
+        return false;
     }
-    if (data.data) {
-        return true;
-    }
-    return false;
 }
 
 const handleResponse = (res, status, message, data = undefined) => {
