@@ -8,7 +8,7 @@ const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
 });
 
 const connect = (mnemonic) => {
-    const ws = new WebSocket(`${env.WEBSOCKET_URL}/websocket`);
+    const ws = new WebSocket(`${env.WEBSOCKET_URL}/websocket`, { handshakeTimeout: 10000 });
     ws.on('open', function open() {
         ws.send(
             JSON.stringify({
@@ -44,6 +44,9 @@ const connect = (mnemonic) => {
 
     ws.on('error', (error) => {
         console.error("on error: ", error);
+        writeStream.write(writeErrorMessage(error), (err) => {
+            if (err) console.log("error when appending error to log file: ", err);
+        })
         ws.close(1005, JSON.stringify(error))
     })
 

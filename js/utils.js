@@ -1,5 +1,6 @@
 const fetch = require('isomorphic-fetch');
 const fs = require('fs');
+const _ = require('lodash');
 const { env, network } = require('./config');
 const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require('./crypto');
@@ -11,7 +12,11 @@ const parseError = (error) => {
     if (typeof error === 'string' || error instanceof String) {
         return error;
     } else if (typeof error === 'object' && !Array.isArray(error) && error !== null) {
+        const errorStringtify = JSON.stringify(error);
+        if (_.isEmpty(JSON.parse(errorStringtify))) return error; // has to parse again into object to check if it's empty after stringtify. if yes then we return error directly instead of stringtify
         return JSON.stringify(error);
+    } else if (error.constructor === Error) {
+        return error;
     } else {
         return String(error)
     }
