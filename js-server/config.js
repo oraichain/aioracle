@@ -34,28 +34,25 @@ const constants = {
 }
 
 const getCors = () => {
-    if (env.NETWORK_TYPE === 'testnet') {
-        return {
-            "origin": "*",
-            "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-            "preflightContinue": true,
-            "optionsSuccessStatus": 204
-        }
-    }
-    if (env.NETWORK_TYPE === 'local') {
-        return {
-            "origin": "*",
-            "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-            "preflightContinue": true,
-            "optionsSuccessStatus": 204
-        }
-    }
-    return {
-        "origin": ["https://scan.orai.io", "https://api.wallet.orai.io", /\.localhost$/],
+
+    let cors = {
+        "origin": "*",
         "methods": "GET,HEAD,PUT,PATCH,POST,DELETE",
-        "preflightContinue": false,
+        "preflightContinue": true,
         "optionsSuccessStatus": 204
+    };
+
+    switch (env.NETWORK_TYPE) {
+        case 'testnet':
+        case 'local':
+            break;
+        default:
+            cors.origin = ["https://scan.orai.io", "https://api.wallet.orai.io", /\.localhost$/];
+            cors.preflightContinue = false;
+            cors.methods = "GET,POST";
+            break;
     }
+    return cors;
 }
 
 module.exports = { config, env, constants, getCors };

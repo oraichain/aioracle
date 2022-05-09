@@ -3,15 +3,34 @@
 Deploy:
 
 ```bash
-yarn oraicli wasm deploy ../oraiwasm/package/aioracle/aioracle_v2/artifacts/aioracle_v2.wasm --input '{"contract_fee":{"amount":"0","denom":"orai"},"executors":["AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn","AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX"],"service_addr":"orai1ugq8erz3hz323yatueze5ageg2jywpfq3le794"}' --label 'production ow1155 nft for aiRight' --gas 3000000
+yarn oraicli wasm deploy ../oraiwasm/package/aioracle/aioracle_v2/artifacts/aioracle_v2.wasm --input '{"contract_fee":{"amount":"0","denom":"orai"},"executors":["AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn","AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX"],"service_addr":"orai1q7t6qltupd7jt6wyenggz62xutjlel0etuu5hw"}' --label 'aioracle contract' --gas 3000000
+
+# contract: orai1s60a2vntfuv2ps6fs75fcrlrmea9xzr4k65zlg
 ```
 
 Run test:
 
 ### 1. Run server side
 
+Enter the js-server directory: ```cd js-server```
+
+Create a new .env.mongo file with the below content:
+
 ```bash
-cd js-server && node index.js
+ROOT_USERNAME=foo
+ROOT_PASSWORD=bar
+```
+
+then start mongodb container
+
+```bash
+docker-compose -f docker-compose.mongo.yml up -d
+```
+
+next, start the server locally:
+
+```bash
+node index.js
 ```
 
 ### 2. Run client side
@@ -26,7 +45,7 @@ cd js && NODE_ENV=dev2 node index.js
 ```
 oscript_demo: orai1svngf2re7ze3259h2lqt98jatsma2kpjpw4ldl. Source: https://github.com/oraichain/oraiwasm/tree/master/package/price/oscript_price_special
 
-dsources: binance: orai1hmwh6rwtlyqd3pqnkze7y6hwpxsccq3ya7exez, coinbase: orai19j4c20352peuvvdgwswymf9jaud8pzjyezzzkt, coincap: orai19r36yr4v30ug7zl9rcgx2txdyyr357xc9rmpw9, coingecko: orai1nc6eqvnczmtqq8keplyrha9z7vnd5v9vvsxxgj,orai16usahha827ushfxrt26q27nshsxq6qd0xycwfn
+dsources: binance: orai1y88tlgddntj66sn46qqlvtx3tp7tgl8sxxx6uk, coinbase: orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f, coincap: orai19r36yr4v30ug7zl9rcgx2txdyyr357xc9rmpw9, coingecko: orai1nc6eqvnczmtqq8keplyrha9z7vnd5v9vvsxxgj,orai16usahha827ushfxrt26q27nshsxq6qd0xycwfn
 
 Sources: https://github.com/oraichain/oraiwasm/tree/master/package/price/price_provider
 
@@ -38,5 +57,5 @@ service name: price
 ### 4. Create a new request
 
 ```bash
-yarn oraicli wasm execute orai15vjakfu32q27cvyq7hx32nqylsy7kzf96f7j8t --input '{"request":{"threshold":2},"service":"price"}' --amount 4
+cd client && node demo
 ```
