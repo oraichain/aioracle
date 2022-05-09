@@ -1,6 +1,6 @@
-const fetch = require('isomorphic-fetch');
 const { sha256 } = require('js-sha256');
 const secp256k1 = require('secp256k1');
+const { default: axios } = require('./axios');
 const { env } = require('./config')
 
 const getRequest = async (contractAddr, requestId) => {
@@ -11,7 +11,7 @@ const getRequest = async (contractAddr, requestId) => {
         }
     })
 
-    return fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    return axios.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data);
 }
 
 const isWhiteListed = async (contractAddr, executor) => {
@@ -23,7 +23,7 @@ const isWhiteListed = async (contractAddr, executor) => {
     })
 
     try {
-        const data = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+        const data = (await axios.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).data);
         if (!data) {
             throw "Cannot verify executor";
         }
