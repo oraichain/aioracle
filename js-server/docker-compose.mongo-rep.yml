@@ -1,0 +1,97 @@
+version: '3.3'
+
+services:
+  mongo1:
+    container_name: mongo1
+    image: mongo
+    volumes:
+      - mongo1_vol:/data/db
+      - ./rs-init.sh:/scripts/rs-init.sh
+      # keyfiles or certificate is needed for internal authentication between the replica set. When we enable user access control with the client (db user role), we also need to enable internal auth
+      - ./keyfiles/mongo1-keyfiles:/data/db/mongo1-keyfiles # an option to gen keyfiles: openssl rand -base64 756 > <path-to-keyfile> && chmod 400 <path-to-keyfile>
+      # prod env use x.509 certs instead of keyfiles
+    networks:
+      - mongors-network
+    ports:
+      - 27021:27017
+    env_file:
+      - .env.mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+    depends_on:
+      - mongo2
+      - mongo3
+    restart: always
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--auth",
+        "--keyFile",
+        "/data/db/mongo1-keyfiles",
+        "--replSet",
+        "dbrs"
+      ]
+  mongo2:
+    container_name: mongo2
+    image: mongo
+    volumes:
+      - mongo2_vol:/data/db
+      - ./keyfiles/mongo2-keyfiles:/data/db/mongo2-keyfiles
+    networks:
+      - mongors-network
+    ports:
+      - 27022:27017
+    env_file:
+      - .env.mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+    restart: always
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--auth",
+        "--keyFile",
+        "/data/db/mongo2-keyfiles",
+        "--replSet",
+        "dbrs"
+      ]
+  mongo3:
+    container_name: mongo3
+    image: mongo
+    volumes:
+      - mongo3_vol:/data/db
+      - ./keyfiles/mongo3-keyfiles:/data/db/mongo3-keyfiles
+    networks:
+      - mongors-network
+    ports:
+      - 27023:27017
+    env_file:
+      - .env.mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+    restart: always
+    entrypoint:
+      [
+        "/usr/bin/mongod",
+        "--bind_ip_all",
+        "--auth",
+        "--keyFile",
+        "/data/db/mongo3-keyfiles",
+        "--replSet",
+        "dbrs"
+      ]
+
+volumes:
+  mongo1_vol:
+  mongo2_vol:
+  mongo3_vol:
+
+
+networks:
+  mongors-network:
+    driver: bridge
