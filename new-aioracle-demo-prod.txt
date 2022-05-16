@@ -18,6 +18,6 @@ service fees addr: orai1vuldmz9kgryg3cwekyn65xfaku4meqaln2zs06
 
 provider bridge: orai10ndrne6ca2fzwj7z0c7kt30u3kw4cz5sh2n7nd
 
-aioracle v2: orai13uqu3yl4tkcp2ye6gl43rxp2ygzyr4clf80q7e - code id 319
+aioracle v2: orai13uqu3yl4tkcp2ye6gl43rxp2ygzyr4clf80q7e - code id: 366 (old code id: 319)
 
 ping addr: orai1enp2zauur6hatpmuqs4h9avafezuyxnek4rzz6 - code id 353
