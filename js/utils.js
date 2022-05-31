@@ -5,6 +5,7 @@ const { env, network } = require('./config');
 const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require('./crypto');
 const { queryWasmRaw, handleFetchResponse } = require('./cosmjs');
+const { http } = require('./axios');
 
 const backendUrl = env.BACKEND_URL;
 
@@ -48,7 +49,9 @@ const getStageInfo = async (contractAddr) => {
 }
 
 const checkSubmit = async (contractAddr, requestId, executor) => {
-    return fetch(`${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => handleFetchResponse(data));
+    let result = http.get(`/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`);
+    return await handleFetchResponse(result);
+    // return http.get(`/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => handleFetchResponse(data));
 }
 
 const getServiceContracts = async (contractAddr, requestId) => {
@@ -81,8 +84,9 @@ const submitReport = async (requestId, leaf, mnemonic) => {
         body: JSON.stringify(message),
         redirect: 'follow'
     };
-    const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => handleFetchResponse(data));
-    console.log("result submitting report: ", result);
+    const result = await http.get(`${backendUrl}/report`, requestOptions);
+    const fetchResultResponse = await handleFetchResponse(result);
+    console.log("result submitting report: ", fetchResultResponse);
     console.log("Successful submission time: ", new Date().toUTCString())
 }
 

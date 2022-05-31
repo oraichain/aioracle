@@ -4,7 +4,7 @@ dsources: binance: orai1hmwh6rwtlyqd3pqnkze7y6hwpxsccq3ya7exez, coinbase: orai19
 
 service fees contract: orai1qgae072t5tak83kg5xt8um0q2vclr9y5mah23z
 
-service provider bridge demo: orai1q7t6qltupd7jt6wyenggz62xutjlel0etuu5hw
+service provider bridge demo: orai1q7t6qltupd7jt6wyenggz62xutjlel0etuu5hw // temp comment using this contract as service_addr.
 
 ai oracle contract demo: orai1s60a2vntfuv2ps6fs75fcrlrmea9xzr4k65zlg
 

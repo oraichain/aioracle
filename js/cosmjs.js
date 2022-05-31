@@ -4,6 +4,7 @@ const { network, env } = require("./config");
 const cosmwasm = require('@cosmjs/cosmwasm-stargate');
 const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
 const fetch = require('isomorphic-fetch');
+const { http } = require("./axios");
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
@@ -11,19 +12,21 @@ const handleResult = (result) => {
 }
 
 const handleFetchResponse = async (response) => {
-    const contentType = response.headers.get("content-type");
+    const contentType = response.headers["content-type"];
     if (contentType && contentType.indexOf("application/json") !== -1) {
-        return response.json();
+        return response.data;
     } else {
-        let responseText = await response.text();
+        let responseText = JSON.stringify(response.data);
         throw responseText;
     }
 }
 
 const queryWasmRetry = async (address, input, retryCount) => {
     try {
-        let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data));
-        return result;
+        let result = await http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`);
+        return await handleFetchResponse(result);
+        // return result;
+        // let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data));
     } catch (error) {
         console.log("error: ", error);
         console.log("retry count: ", retryCount)

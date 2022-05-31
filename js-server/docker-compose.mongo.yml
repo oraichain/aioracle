@@ -5,8 +5,8 @@ services:
     env_file:
       - .env.mongo
     environment:
-      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+      MONGO_INITDB_ROOT_USERNAME: foo
+      MONGO_INITDB_ROOT_PASSWORD: bar
     ports:
       - 27017:27017
     volumes:

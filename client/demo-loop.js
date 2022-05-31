@@ -4,6 +4,7 @@ require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? 
 
 const { execute } = require('./cosmjs');
 const { report } = require('process');
+const { http } = require('./axios');
 
 const demo = async () => {
     const contractAddr = process.env.CONTRACT_ADDRESS;
@@ -38,8 +39,8 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
     const boundExecutorFeeMsg = JSON.stringify({
         get_bound_executor_fee: {}
     })
-    let { data } = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
-    let boundFee = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
+    let { data } = await http.get(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
+    let boundFee = await http.get(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
     let boundExecutorFee = boundFee.data;
     data.push(["placeholder", boundExecutorFee.denom, boundExecutorFee.amount]);
     // let data = [
@@ -78,7 +79,7 @@ const collectRequestId = async (lcdUrl, txHash) => {
     do {
         hasRequestId = true;
         try {
-            const result = await fetch(`${lcdUrl}/cosmos/tx/v1beta1/txs/${txHash}`).then(data => data.json());
+            const result = await http.get(`${lcdUrl}/cosmos/tx/v1beta1/txs/${txHash}`).then(data => data.json());
             const wasmEvent = result.tx_response.events.filter(event => event.type === "wasm")[0].attributes.filter(attr => attr.key === Buffer.from('stage').toString('base64'))[0].value;
             requestId = Buffer.from(wasmEvent, 'base64').toString('ascii');
         } catch (error) {
@@ -97,7 +98,7 @@ const collectReports = async (url, contractAddr, requestId) => {
     let reports = {};
     do {
         try {
-            reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
+            reports = await http.get(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
             if (!reports.data) throw "error";
         } catch (error) {
             count++;
