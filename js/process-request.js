@@ -58,7 +58,7 @@ const processRequestAwait = async (requestId, mnemonic) => {
         const { submitted } = await checkSubmit(contractAddr, requestId, executor);
         if (submitted) return; // no need to submit again. Wait for other executors
         // get service contracts to get data from the scripts, then submit report
-        await processData({ contractAddr, requestId, input: request.input, executor, mnemonic });
+        const resultProcessData = await processData({ contractAddr, requestId, input: request.input, executor, mnemonic });
     }
 };
 

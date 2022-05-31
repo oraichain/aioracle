@@ -12,7 +12,7 @@ const handleResult = (result) => {
 }
 
 const handleFetchResponse = async (response) => {
-    const contentType = response.headers["content-type"];
+    const contentType = response.headers?.["content-type"];
     if (contentType && contentType.indexOf("application/json") !== -1) {
         return response.data;
     } else {

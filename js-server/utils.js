@@ -12,7 +12,9 @@ const getRequest = async (contractAddr, requestId) => {
         }
     })
 
-    return http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+    return await http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(response => {
+        return response.data; 
+    });
 }
 
 const isWhiteListed = async (contractAddr, executor) => {
@@ -24,7 +26,9 @@ const isWhiteListed = async (contractAddr, executor) => {
     })
 
     try {
-        const data = await http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+        const data = await http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(response => {
+            return response.data; 
+        });
         if (!data) {
             throw "Cannot verify executor";
         }

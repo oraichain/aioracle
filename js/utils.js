@@ -16,7 +16,7 @@ const parseError = (error) => {
         const errorStringtify = JSON.stringify(error);
         if (_.isEmpty(JSON.parse(errorStringtify))) return error; // has to parse again into object to check if it's empty after stringtify. if yes then we return error directly instead of stringtify
         return JSON.stringify(error);
-    } else if (error.constructor === Error) {
+    } else if (error?.constructor === Error) {
         return error;
     } else {
         return String(error)
@@ -49,9 +49,14 @@ const getStageInfo = async (contractAddr) => {
 }
 
 const checkSubmit = async (contractAddr, requestId, executor) => {
-    let result = http.get(`/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`);
-    return await handleFetchResponse(result);
-    // return http.get(`/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => handleFetchResponse(data));
+    try {
+        let result = await http.get(`${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`);
+        return await handleFetchResponse(result);
+    } catch (error) {
+        // return 404 error but with { submitted } = false
+        return error?.response?.data;
+    }
+    // return http.get(`${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => handleFetchResponse(data));
 }
 
 const getServiceContracts = async (contractAddr, requestId) => {
@@ -67,7 +72,6 @@ const getServiceContracts = async (contractAddr, requestId) => {
 }
 
 const submitReport = async (requestId, leaf, mnemonic) => {
-
     // sign report for future verification
     const childKey = Cosmos.getChildKeyStatic(mnemonic, network.path, true);
     const pubKey = childKey.publicKey;
@@ -84,10 +88,11 @@ const submitReport = async (requestId, leaf, mnemonic) => {
         body: JSON.stringify(message),
         redirect: 'follow'
     };
-    const result = await http.get(`${backendUrl}/report`, requestOptions);
-    const fetchResultResponse = await handleFetchResponse(result);
-    console.log("result submitting report: ", fetchResultResponse);
+    const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => handleFetchResponse(data));
+    // const fetchResultResponse = await handleFetchResponse(result);
+    console.log("result submitting report: ", result);
     console.log("Successful submission time: ", new Date().toUTCString())
+    return result;
 }
 
 module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, handleFetchResponse, parseError, writeErrorMessage };
