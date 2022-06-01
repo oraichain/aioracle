@@ -5,16 +5,20 @@ const { http } = require('./axios');
 const { env } = require('./config')
 
 const getRequest = async (contractAddr, requestId) => {
+    try {
+        const input = JSON.stringify({
+            request: {
+                stage: requestId
+            }
+        })
 
-    const input = JSON.stringify({
-        request: {
-            stage: requestId
-        }
-    })
-
-    return await http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(response => {
-        return response.data; 
-    });
+        return await http.get(`${env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(response => {
+            return response.data; 
+        });
+    } catch (error) {
+        console.log("Error on getting request:", error);
+    }
+    
 }
 
 const isWhiteListed = async (contractAddr, executor) => {

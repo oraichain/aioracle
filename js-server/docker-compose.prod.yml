@@ -21,7 +21,7 @@ services:
 
   aioracle_server:
     container_name: aioracle_server
-    image: orai/aioracle-server:0.0.3
+    image: orai/aioracle-server:0.0.4
     working_dir: /workspace
     restart: on-failure
     ulimits:

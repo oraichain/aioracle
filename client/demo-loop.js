@@ -39,9 +39,10 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
     const boundExecutorFeeMsg = JSON.stringify({
         get_bound_executor_fee: {}
     })
-    let { data } = await http.get(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
-    let boundFee = await http.get(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
-    let boundExecutorFee = boundFee.data;
+    let rawData = await http.get(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`);
+    let data = rawData.data.data;
+    let boundFee = await http.get(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`);
+    let boundExecutorFee = boundFee.data.data;
     data.push(["placeholder", boundExecutorFee.denom, boundExecutorFee.amount]);
     // let data = [
     //     ['orai1y88tlgddntj66sn46qqlvtx3tp7tgl8sxxx6uk', 'orai', '1'],
@@ -53,7 +54,7 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
     //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'foobar', '1'],
     //     ['orai1v7ae3ptzqvztcx83fheafltq88hvdp2m5zas6f', 'xyz', '1'],
     // ];
-    data = data.map(reward => ({ denom: reward[1], amount: parseInt(reward[2]) })).reduce((prev, curr) => {
+    data = Object.values(data).map(reward => ({ denom: reward[1], amount: parseInt(reward[2]) })).reduce((prev, curr) => {
         if (prev.constructor === Array) {
             // find if the current denom exists already in the accumulator
             const index = prev.findIndex(prevElement => prevElement.denom === curr.denom);
@@ -79,7 +80,7 @@ const collectRequestId = async (lcdUrl, txHash) => {
     do {
         hasRequestId = true;
         try {
-            const result = await http.get(`${lcdUrl}/cosmos/tx/v1beta1/txs/${txHash}`).then(data => data.json());
+            const result = await http.get(`${lcdUrl}/cosmos/tx/v1beta1/txs/${txHash}`);
             const wasmEvent = result.tx_response.events.filter(event => event.type === "wasm")[0].attributes.filter(attr => attr.key === Buffer.from('stage').toString('base64'))[0].value;
             requestId = Buffer.from(wasmEvent, 'base64').toString('ascii');
         } catch (error) {
@@ -98,7 +99,7 @@ const collectReports = async (url, contractAddr, requestId) => {
     let reports = {};
     do {
         try {
-            reports = await http.get(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
+            reports = await http.get(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`);
             if (!reports.data) throw "error";
         } catch (error) {
             count++;

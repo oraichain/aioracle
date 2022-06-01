@@ -79,16 +79,22 @@ const submitReport = async (requestId, leaf, mnemonic) => {
     const signature = Buffer.from(signSignature(Buffer.from(JSON.stringify(message), 'ascii'), childKey.privateKey, pubKey)).toString('base64');
     message = { request_id: requestId, report: { ...leaf, signature } };
 
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': "application/json"
-        },
-        body: JSON.stringify(message),
-        redirect: 'follow'
-    };
-    const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => handleFetchResponse(data));
+    // const requestOptions = {
+    //     method: 'POST',
+    //     url: `${backendUrl}/report`,
+    //     headers: {
+    //         'Accept': 'application/json',
+    //         'Content-Type': "application/json"
+    //     },
+    //     body: message,
+    //     redirect: 'follow'
+    // };
+    const result = await http.post(`${backendUrl}/report`, message, { headers: {
+        // 'application/json' is the modern content-type for JSON, but some
+        // older servers may use 'text/json'.
+        // See: http://bit.ly/text-json
+        'content-type': 'application/json'
+    }});
     // const fetchResultResponse = await handleFetchResponse(result);
     console.log("result submitting report: ", result);
     console.log("Successful submission time: ", new Date().toUTCString())
