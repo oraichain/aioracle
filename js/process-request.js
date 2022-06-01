@@ -76,13 +76,10 @@ const processData = async ({ contractAddr, requestId, input, executor, mnemonic 
         // check again if has submitted. This is because getting data takes a long time. During this period, another process may have finished already
         // try to collect leaf from backend
         const { submitted } = await checkSubmit(contractAddr, requestId, executor);
-        console.log(submitted,'Submitted!')
         if (!submitted) {
             await submitReport(reqId, leaf, mnemonic);
         }
     }).catch(error => {
-        console.log(error,"ERROR on SUBMIT NEW REPORT1111111111")
-        console.log(error.response.data,"ERROR on SUBMIT NEW REPORT1122222222222")
         writeStream.write(writeErrorMessage(error), (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })

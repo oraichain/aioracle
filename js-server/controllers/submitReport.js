@@ -14,7 +14,6 @@ const submitReport = async (req, res) => {
 
     try {
         const requestData = await getRequest(contractAddr, requestId);
-        console.log(requestData,"=========================")
         const threshold = requestData.data.threshold;
         // verify executor not in list
         if (!(await isWhiteListed(contractAddr, report.executor))) return handleResponse(res, 401, "not in list");
