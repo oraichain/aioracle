@@ -39,6 +39,7 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
         get_bound_executor_fee: {}
     })
     let { data } = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
+    console.log("data: ", data);
     let boundFee = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
     let boundExecutorFee = boundFee.data;
     data.push(["placeholder", boundExecutorFee.denom, boundExecutorFee.amount]);

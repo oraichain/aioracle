@@ -31,6 +31,7 @@ const demo = async () => {
     console.log("execute result: ", txHash);
     const requestId = await collectRequestId(lcdUrl, txHash);
     console.log("request id: ", requestId);
+    console.log("Collecting the reports, please wait...")
     const reports = await collectReports(backendUrl, contractAddr, requestId);
     console.log("reports: ", reports);
 }
@@ -104,17 +105,16 @@ const collectReports = async (url, contractAddr, requestId) => {
     let count = 0;
     let reports = {};
     do {
-        try {
-            reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
-            if (!reports.data) throw "error";
-        } catch (error) {
+        reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
+        console.log("reports.data.data.length: ", reports.data.data.length)
+        if (!reports.data || reports.data.data.length === 0) {
             count++;
-            if (count > 15) break; // break the loop and return the request id.
+            if (count > 20) break; // break the loop and return the request id.
             // sleep for a few seconds then repeat
             await new Promise(r => setTimeout(r, 5000));
         }
 
-    } while (!reports.data);
+    } while (!reports.data || reports.data.data.length === 0);
     return reports.data;
 }
 
