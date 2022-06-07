@@ -2,8 +2,50 @@ const path = require('path');
 const fetch = require('isomorphic-fetch');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : ".env") })
 
-const { execute } = require('./cosmjs');
-const { report } = require('process');
+// .env file
+
+/**
+ * MNEMONIC=""
+WEBSOCKET_URL=ws://3.143.254.222:26657 // testnet ip
+LCD_URL=http://3.143.254.222:1317
+CONTRACT_ADDRESS=orai1s60a2vntfuv2ps6fs75fcrlrmea9xzr4k65zlg // testnet contract
+BACKEND_URL=https://testnet-aioracle-svr.orai.io
+ */
+
+const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
+const { stringToPath } = require("@cosmjs/crypto");
+const cosmwasm = require('@cosmjs/cosmwasm-stargate');
+const { GasPrice } = require('@cosmjs/cosmwasm-stargate/node_modules/@cosmjs/stargate/build');
+
+const network = {
+    rpc: process.env.NETWORK_RPC || "https://testnet-rpc.orai.io",
+    prefix: "orai",
+}
+
+const collectWallet = async (mnemonic) => {
+    const wallet = await DirectSecp256k1HdWallet.fromMnemonic(
+        mnemonic,
+        {
+            hdPaths: [stringToPath("m/44'/118'/0'/0/0")],
+            prefix: network.prefix,
+        }
+    );
+    return wallet;
+}
+
+const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = undefined }) => {
+    try {
+        const wallet = await collectWallet(mnemonic);
+        const [firstAccount] = await wallet.getAccounts();
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix, gasLimits: { exec: 20000000 } });
+        const input = JSON.parse(handleMsg);
+        const result = await client.execute(firstAccount.address, address, input, memo, amount);
+        return result.transactionHash;
+    } catch (error) {
+        console.log("error in executing contract: ", error);
+        throw error;
+    }
+}
 
 const demo = async () => {
     const contractAddr = process.env.CONTRACT_ADDRESS;
@@ -33,7 +75,7 @@ const demo = async () => {
     console.log("request id: ", requestId);
     console.log("Collecting the reports, please wait...")
     const reports = await collectReports(backendUrl, contractAddr, requestId);
-    console.log("reports: ", reports);
+    console.log("reports: ", JSON.stringify(reports));
 }
 
 const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
@@ -104,8 +146,10 @@ const collectRequestId = async (lcdUrl, txHash) => {
 const collectReports = async (url, contractAddr, requestId) => {
     let count = 0;
     let reports = {};
+    const reportUrl = `${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`;
+    console.log("report url: ", reportUrl)
     do {
-        reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
+        reports = await fetch(reportUrl).then(data => data.json());
         console.log("reports.data.data.length: ", reports.data.data.length)
         if (!reports.data || reports.data.data.length === 0) {
             count++;
