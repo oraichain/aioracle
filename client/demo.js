@@ -63,7 +63,8 @@ const demo = async () => {
         request: {
             threshold: parseInt(threshold),
             service,
-            preference_executor_fee: boundExecutorFee
+            preference_executor_fee: boundExecutorFee,
+            input: "39734.png"
         }
     })
     console.log("input: ", input)

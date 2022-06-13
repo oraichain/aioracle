@@ -32,7 +32,8 @@ const getRequest = async (contractAddr, requestId) => {
             stage: requestId
         }
     })
-    return queryWasmRaw(contractAddr, input);
+    const { data: request } = await queryWasmRaw(contractAddr, input);
+    return request;
 }
 
 const getStageInfo = async (contractAddr) => {

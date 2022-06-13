@@ -8,7 +8,7 @@ const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
     flags: 'a+'
 });
 
-const filterRequest = async (pubkey, { data: request }) => {
+const filterRequest = async (pubkey, request) => {
     if (request && request.merkle_root) {
         return [false, `request already has merkle root`];
     }
