@@ -1,11 +1,13 @@
 const { constants, env, getCors } = require('./config');
 const express = require('express');
 const cors = require('cors');
+const helmet = require('helmet');
 const app = express()
 const port = env.PORT
 const host = env.HOST
 app.use(express.json()); // built-in middleware for express
 app.use(cors(getCors())) // custom cors
+app.use(helmet()); // secure http headers
 const client = require('./mongo');
 const proofRouter = require('./routes/proof.info.route');
 const reportRouter = require('./routes/report.route');
