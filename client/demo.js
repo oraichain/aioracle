@@ -14,6 +14,7 @@ const demo = async () => {
     const lcdUrl = process.env.LCD_URL || "https://lcd.orai.io";
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const [feeAmount, boundExecutorFee] = await getServiceFees(contractAddr, lcdUrl, service, threshold);
+    // console.log("bound executor fee: ", boundExecutorFee)
     // const feeAmount = [{ denom: "orai", amount: "1000" }]
     let finalFeeAmount = feeAmount.filter(fee => fee.amount !== '0');
     if (finalFeeAmount.length === 0) finalFeeAmount = undefined;
@@ -21,7 +22,7 @@ const demo = async () => {
         request: {
             threshold: parseInt(threshold),
             service,
-            preference_executor_fee: boundExecutorFee
+            preference_executor_fee: { denom: 'orai', amount: '10' }
         }
     })
     console.log("input: ", input)
