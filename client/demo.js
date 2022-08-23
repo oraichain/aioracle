@@ -31,8 +31,8 @@ const demo = async () => {
     console.log("execute result: ", txHash);
     const requestId = await collectRequestId(lcdUrl, txHash);
     console.log("request id: ", requestId);
-    const reports = await collectReports(backendUrl, contractAddr, requestId);
-    console.log("reports: ", reports);
+    const reports = await collectReports(backendUrl, contractAddr, requestId, threshold);
+    console.log("reports: ", JSON.stringify(reports));
 }
 
 const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
@@ -100,21 +100,22 @@ const collectRequestId = async (lcdUrl, txHash) => {
     return requestId;
 }
 
-const collectReports = async (url, contractAddr, requestId) => {
+const collectReports = async (url, contractAddr, requestId, threshold) => {
     let count = 0;
     let reports = {};
     do {
         try {
             reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
-            if (!reports.data) throw "error";
+            console.log("reports: ", reports)
+            if (!reports.data || reports.data.data.length < threshold) throw "error";
         } catch (error) {
             count++;
-            if (count > 15) break; // break the loop and return the request id.
+            if (count > 100) break; // break the loop and return the request id.
             // sleep for a few seconds then repeat
             await new Promise(r => setTimeout(r, 5000));
         }
 
-    } while (!reports.data);
+    } while (!reports.data || reports.data.data.length < threshold);
     return reports.data;
 }
 
