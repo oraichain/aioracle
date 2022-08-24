@@ -1,21 +1,21 @@
 version: '3.3'
 services:
 
-  mongodb_container_testnet:
-    image: mongo
-    env_file:
-      - .env.mongo.testnet
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
-    ports:
-      - 27018:27017
-    volumes:
-      - mongodb_data_container_testnet:/data/db
+  # mongodb_container_testnet:
+  #   image: mongo
+  #   env_file:
+  #     - .env.mongo.testnet
+  #   environment:
+  #     MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
+  #     MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+  #   ports:
+  #     - 27018:27017
+  #   volumes:
+  #     - mongodb_data_container_testnet:/data/db
 
   aioracle_server_testnet:
     container_name: aioracle_server_testnet
-    image: orai/aioracle-server:0.0.2
+    image: oraichain/foundation-aioracle-server:0.0.2
     working_dir: /workspace
     restart: on-failure
     ulimits:
@@ -27,9 +27,9 @@ services:
     cap_add:
       - SYS_PTRACE
     env_file:
-      - .env.testnet
-    depends_on:
-      - mongodb_container_testnet
+      - .env
+    # depends_on:
+    #   - mongodb_container_testnet
 
 volumes:
   mongodb_data_container_testnet:

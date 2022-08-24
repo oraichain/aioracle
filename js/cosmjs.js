@@ -66,6 +66,7 @@ const execute = async ({ mnemonic, address, handleMsg, memo, gasData }) => {
         }]
         const result = await cosmos.execute({ signerOrChild: childKey, rawInputs, gasLimits: 'auto', memo });
         console.log("result: ", result);
+        return result;
     } catch (error) {
         console.log("error in executing contract: ", error);
         throw error;

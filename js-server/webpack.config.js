@@ -1,4 +1,5 @@
 const path = require('path');
+const nodeExternals = require('webpack-node-externals')
 const isProduction = true;
 const mode = isProduction ? 'production' : 'development';
 const devtool = isProduction ? false : 'inline-source-map';
@@ -12,11 +13,7 @@ module.exports = {
             {
                 test: /\.js$/,
                 exclude: /node_modules/,
-                use: [
-                    {
-                        loader: 'babel-loader',
-                    }
-                ]
+
             }
         ]
     },
@@ -30,9 +27,7 @@ module.exports = {
         libraryTarget: 'umd',    // very important line
         umdNamedDefine: true     // very important line
     },
-    externals: {
-        express: 'express',
-    },
+    externals: [nodeExternals()], // skip bundle external libraries
     node: {
         __dirname: false,
         __filename: false,
