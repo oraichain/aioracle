@@ -114,3 +114,5 @@ js/aioracle*
 js-server/config/default.json
 
 js/*.zip
+
+*/build

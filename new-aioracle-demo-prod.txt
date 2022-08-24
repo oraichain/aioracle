@@ -14,10 +14,10 @@ test case flower classification: orai1u68mjw24mm0y9a9afkxgt9rk0xsq6apeq3m4vx
 
 oscript flower classification: orai10z5uaamhpkfldpgccn9he5cnpgemeekcspmgzu
 
-service fees addr: orai1vuldmz9kgryg3cwekyn65xfaku4meqaln2zs06
+service fees addr: orai1lye9kag2thm0sff6hx0apm58k5r8em8h2xeyrr - code id: 300
 
-provider bridge: orai10ndrne6ca2fzwj7z0c7kt30u3kw4cz5sh2n7nd
+provider bridge: orai1ltuwuyfh5ku67p564hp0wnjd2fgsdp6ec9sk6x - code id: 301
 
-aioracle v2: orai13uqu3yl4tkcp2ye6gl43rxp2ygzyr4clf80q7e - code id: 366 (old code id: 319)
+aioracle v2: orai19aczly33fr3s23030qeu0dexyu8vcrwwdpva9v - code id: 387
 
-ping addr: orai1enp2zauur6hatpmuqs4h9avafezuyxnek4rzz6 - code id 353
+ping addr: orai1t7eas2xzj5q3yxuzuwjadl3rsdh07fw5037wr3 - code id 353

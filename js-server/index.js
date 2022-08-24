@@ -14,8 +14,8 @@ const reportRouter = require('./routes/report.route');
 const reportTestnetRouter = require('./routes/report-testnet.route');
 const executorInfoRouter = require('./routes/executor.info.route');
 const submitReportInterval = require('./submitReportInterval');
-const { index } = require('./models/elasticsearch/index');
-const { getCurrentDateInfo } = require('./utils');
+// const { index } = require('./models/elasticsearch/index');
+// const { getCurrentDateInfo } = require('./utils');
 const { MongoDb } = require('./models/mongo');
 //const { mongoDb } = require('./models/mongo');
 
@@ -77,9 +77,9 @@ const intervalProcess = async () => {
       console.log("gas prices: ", gasPrices);
       await submitReportInterval(gasPrices, env.MNEMONIC, mongoDb);
     } catch (error) {
-      console.log("error: ", error);
+      console.log("error in interval process: ", error);
       // index the error to elasticsearch
-      index('interval-errors', { error: String(error), ...getCurrentDateInfo() });
+      // index('interval-errors', { error: String(error), ...getCurrentDateInfo() });
       if (error.status === 400) {
         // increase tx fees
         gasPrices += 0.002;

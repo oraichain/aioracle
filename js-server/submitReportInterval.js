@@ -22,7 +22,8 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
         const { submitted } = await mongoDb.findRequest(requestId);
         if (!submitted) await mongoDb.updateReportsStatus(requestId);
     } catch (error) {
-        index('process-submitted-request-errors', { error: JSON.stringify(error), ...getCurrentDateInfo() })
+        console.log("error in process submitted request: ", JSON.stringify(error));
+        // index('process-submitted-request-errors', { error: JSON.stringify(error), ...getCurrentDateInfo() })
     }
 }
 
@@ -32,7 +33,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
         const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
         // store the merkle root on-chain
-        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+        const executeResult = await oraiwasmJs.execute({ signerOrChild: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
         console.log("execute result: ", executeResult);
         // check error
         if (executeResult.tx_response.txhash) {
@@ -42,11 +43,12 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
             // update the requests that have been handled in the database
             await mongoDb.bulkUpdateRequests(requestsData, executeResult.tx_response.txhash);
         } else {
-            index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
+            console.log("error in submitting merkle root: ", executeResult.message);
+            // index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
         }
     } catch (error) {
-        console.log("error: ", error);
-        index('process-unsubmitted-requests-error', { error: JSON.stringify(error), ...getCurrentDateInfo() });
+        console.log("error in process unsubmitted requests: ", error);
+        // index('process-unsubmitted-requests-error', { error: JSON.stringify(error), ...getCurrentDateInfo() });
     }
 }
 
