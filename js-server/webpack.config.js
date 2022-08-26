@@ -27,7 +27,7 @@ module.exports = {
         libraryTarget: 'umd',    // very important line
         umdNamedDefine: true     // very important line
     },
-    externals: [nodeExternals()], // skip bundle external libraries
+    externals: [nodeExternals()], // skip bundle external libraries (node_modules)
     node: {
         __dirname: false,
         __filename: false,

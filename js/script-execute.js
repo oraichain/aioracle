@@ -5,6 +5,7 @@ const { getServiceContracts } = require('./utils');
 
 const getData = async (contractAddr, requestId, requestInput) => {
     const serviceContracts = await getServiceContracts(contractAddr, requestId);
+    console.log("request input is: ", requestInput);
     let [data, validDSources, validTestCases] = await handleScript(serviceContracts, requestInput);
     input = JSON.stringify({
         request: {
