@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const app = express()
 const port = env.PORT
 const host = env.HOST
+
 app.use(express.json()); // built-in middleware for express
 app.use(cors(getCors())) // custom cors
 app.use(helmet()); // secure http headers
@@ -17,7 +18,14 @@ const submitReportInterval = require('./submitReportInterval');
 // const { index } = require('./models/elasticsearch/index');
 // const { getCurrentDateInfo } = require('./utils');
 const { MongoDb } = require('./models/mongo');
+const { wss } = require('./ws');
 //const { mongoDb } = require('./models/mongo');
+
+//when a websocket connection is established
+wss.on('connection', (webSocketClient) => {
+  //send feedback to the incoming connection
+  webSocketClient.send('{ "connection" : "ok"}');
+});
 
 const start = (mongoDb) => {
 
