@@ -20,7 +20,7 @@ const env = {
     NETWORK_TYPE: process.env.NETWORK_TYPE,
     CONTRACT_ADDR_BENCHMARKING: process.env.CONTRACT_ADDR_BENCHMARKING,
     WS_PORT: process.env.WS_PORT || 7071,
-    WS_HOST: process.env.WS_HOST || 'localhost'
+    WS_HOST: process.env.WS_HOST || '0.0.0.0'
 }
 
 const constants = {
