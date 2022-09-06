@@ -1,7 +1,8 @@
 const WebSocket = require('ws');
+const { env } = require('./config');
 
 const connect = () => {
-    const ws = new WebSocket(`ws://localhost:7071/websocket`, { handshakeTimeout: 10000 });
+    const ws = new WebSocket(`ws://${env.WS_HOST}:${env.WS_PORT}/websocket`, { handshakeTimeout: 10000 });
     ws.on('open', function open() {
     });
 
