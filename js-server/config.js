@@ -18,7 +18,9 @@ const env = {
     PORT: parseInt(process.env.PORT) || 8080,
     HOST: process.env.HOST || '0.0.0.0',
     NETWORK_TYPE: process.env.NETWORK_TYPE,
-    CONTRACT_ADDR_BENCHMARKING: process.env.CONTRACT_ADDR_BENCHMARKING
+    CONTRACT_ADDR_BENCHMARKING: process.env.CONTRACT_ADDR_BENCHMARKING,
+    WS_PORT: process.env.WS_PORT || 7071,
+    WS_HOST: process.env.WS_HOST || 'localhost'
 }
 
 const constants = {

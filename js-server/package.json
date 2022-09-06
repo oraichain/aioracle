@@ -22,7 +22,8 @@
     "merkletreejs": "^0.2.27",
     "mongodb": "^4.3.1",
     "secp256k1": "^4.0.3",
-    "webpack": "^5.74.0"
+    "webpack": "^5.74.0",
+    "ws": "^8.8.1"
   },
   "devDependencies": {
     "webpack-cli": "^4.10.0",

@@ -2,7 +2,8 @@ const { env, constants } = require('./config');
 const { formTree } = require('./models/merkleTree');
 const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest, getCurrentDateInfo } = require('./utils');
-const { index } = require('./models/elasticsearch/index')
+const { index } = require('./models/elasticsearch/index');
+const { broadcastMerkleRoot } = require('./ws');
 
 const getLatestBlock = () => {
     return oraiwasmJs.get('/blocks/latest');
@@ -31,6 +32,9 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
     try {
         const latestBlockData = await getLatestBlock();
         const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
+
+        // broadcast merkle root to all ws clients. ws is used to reduce time waiting for merkle root to be submitted on-chain
+        broadcastMerkleRoot(msgs);
 
         // store the merkle root on-chain
         const executeResult = await oraiwasmJs.execute({ signerOrChild: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
