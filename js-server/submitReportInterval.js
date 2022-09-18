@@ -34,7 +34,7 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
         const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
         // broadcast merkle root to all ws clients. ws is used to reduce time waiting for merkle root to be submitted on-chain
-        broadcastMerkleRoot(msgs);
+        broadcastMerkleRoot(requestsData);
 
         // store the merkle root on-chain
         const executeResult = await oraiwasmJs.execute({ signerOrChild: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
