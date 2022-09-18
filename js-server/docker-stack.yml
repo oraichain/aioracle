@@ -1,108 +1,59 @@
-version: '3.7'
-
+version: '3.3'
 services:
-  mongodb_container:
-    image: mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
-    ports:
-      - 27017:27017
-    networks:
-      - aioracle_service
-    volumes:
-      - mongodb_data_container:/data/db
-
-  aioracle_server:
-    image: orai/aioracle-server:0.0.3
+  aioracle_server_mainnet:
+    image: oraichain/foundation-aioracle-server:0.0.5
     working_dir: /workspace
     restart: on-failure
     ulimits:
       nofile:
         soft: 65536
         hard: 65536
-    ports:
-      - 8080:8080
-    networks:
-      - aioracle_service
     cap_add:
       - SYS_PTRACE
+    logging:
+      driver: gelf
+      options:
+        gelf-address: foo
+        tag: "aioracle-server"
+    environment:
+      - NODE_ENV=mainnet
+      - MONGO_URL=
+      - CONTRACT_ADDRESS=orai19aczly33fr3s23030qeu0dexyu8vcrwwdpva9v
+      - NETWORK_LCD=https://lcd.orai.io
+      - CHAIN_ID=Oraichain
+      - NETWORK_RPC=https://rpc.orai.io
+      - MNEMONIC=
+      - PORT=8080
+      - HOST=0.0.0.0
+      - WS_PORT=7071
     depends_on:
       - mongodb_container
     deploy:
-      replicas: 4
-      # update_config:
-      #   parallelism: 2
-      #   order: start-first
-      #   failure_action: rollback
-      #   delay: 10s
-      # rollback_config:
-      #   parallelism: 0
-      #   order: stop-first
-      # restart_policy:
-      #   condition: any
-      #   delay: 5s
-      #   max_attempts: 3
-      #   window: 120s
-    healthcheck:
-      test:
-        [
-          "CMD",
-          "curl",
-          "-f",
-          "http://localhost:8080 || exit 1"
-        ]
-
-  elasticsearch:
-    image: docker.elastic.co/elasticsearch/elasticsearch:7.16.3
-    ports:
-      - "9200:9200"
-      - "9300:9300"
-    configs:
-      - source: elastic_config
-        target: /usr/share/elasticsearch/config/elasticsearch.yml
+      replicas: 1
+      placement: 
+        constraints: 
+          - node.labels.name == worker2
+    networks:
+      - net
+      - default
+ 
+  mongodb_container:
+    image: mongo
     environment:
-      ES_JAVA_OPTS: "-Xmx256m -Xms256m"
-      ELASTIC_PASSWORD: $ELASTIC
-      # Use single node discovery in order to disable production mode and avoid bootstrap checks.
-      # see: https://www.elastic.co/guide/en/elasticsearch/reference/current/bootstrap-checks.html
-      discovery.type: single-node
-      # Force publishing on the 'elk' overlay.
-      network.publish_host: _eth0_
-    networks:
-      - aioracle_service
+      MONGO_INITDB_ROOT_USERNAME:bar
+      MONGO_INITDB_ROOT_PASSWORD:foo
+    volumes:
+      - mongodb_data_container:/data/db
     deploy:
-      mode: replicated
       replicas: 1
+      placement: 
+        constraints: 
+          - node.labels.name == worker2
 
-  kibana:
-    image: docker.elastic.co/kibana/kibana:7.16.3
-    ports:
-      - "5601:5601"
-    configs:
-      - source: kibana_config
-        target: /usr/share/kibana/config/kibana.yml
-    networks:
-      - aioracle_service
-    deploy:
-      mode: replicated
-      replicas: 1
-
-configs:
-
-  elastic_config:
-    file: ../../docker-elk/elasticsearch/config/elasticsearch.yml
-  logstash_config:
-    file: ../../docker-elk/logstash/config/logstash.yml
-  logstash_pipeline:
-    file: ../../docker-elk/logstash/pipeline/logstash.conf
-  kibana_config:
-    file: ../../docker-elk/kibana/config/kibana.yml
+networks:
+  net:
+    external:
+      name: portainer_default
 
 volumes:
   mongodb_data_container:
-  elasticsearch:
-
-networks:
-  aioracle_service:
-    driver: overlay
