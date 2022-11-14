@@ -1,9 +1,8 @@
 const { network, env } = require("./config");
 const fetch = require('isomorphic-fetch');
 
-const OraiWasmJs = require('@oraichain/oraiwasm-js').default;
-const cosmos = new OraiWasmJs(network.lcd, network.chainId);
-cosmos.bech32MainPrefix = network.prefix;
+const { DirectSecp256k1HdWallet } = require('@cosmjs/proto-signing');
+const cosmwasm = require ('@cosmjs/cosmwasm-stargate');
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
@@ -43,33 +42,39 @@ const queryWasm = async (address, input) => {
     return handleResult(result);
 };
 
-const collectWallet = (mnemonic) => {
-    const childKey = cosmos.getChildKey(mnemonic);
-    return childKey;
+const collectWallet =  async (mnemonic) => {
+    const childKey = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        hdPaths: network.path,
+        prefix: network.prefix
+    });
+    return childKey
 }
 
 const getFirstWalletAddr = async (mnemonic) => {
-    let wallet = collectWallet(mnemonic);
-    return cosmos.getAddress(wallet);
+    let wallet = await collectWallet(mnemonic)
+    const [address] = await wallet.getAccounts();
+    return address;
 }
 
 const getFirstWalletPubkey = async (mnemonic) => {
-    return Buffer.from(cosmos.getPubKey(collectWallet(mnemonic).privateKey)).toString('base64');
+    const account = await getFirstWalletAddr(mnemonic);
+    return Buffer.from(account.pubkey).toString('base64');
 }
 
 const execute = async ({ mnemonic, address, handleMsg, memo, gasData }) => {
-    const childKey = collectWallet(mnemonic);
+    const wallet = await getFirstWalletAddr(mnemonic);
+    const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, {
+        gasPrice: new GasPrice(Decimal.fromUserInput('0', 6), denom),
+        prefix: network.prefix,
+    });
+
     try {
-        const rawInputs = [{
-            contractAddr: address,
-            message: Buffer.from(JSON.stringify(handleMsg)),
-        }]
-        const result = await cosmos.execute({ signerOrChild: childKey, rawInputs, gasLimits: 'auto', memo });
-        console.log("result: ", result);
+        const result = await client.execute(wallet, address, Buffer.from(JSON.stringify(handleMsg)), 'auto', memo)
+        console.log('result: ', result);
         return result;
     } catch (error) {
-        console.log("error in executing contract: ", error);
-        throw error;
+      console.error("error in executing contrac: ", error);
+      throw error;
     }
 }
 
