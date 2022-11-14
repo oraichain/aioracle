@@ -4,11 +4,11 @@
     "build": "yarn webpack --mode production"
   },
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "0.25.0",
-    "@cosmjs/crypto": "^0.26.5",
-    "@cosmjs/math": "^0.26.5",
-    "@cosmjs/proto-signing": "^0.26.5",
-    "@cosmjs/stargate": "^0.26.5",
+    "@cosmjs/cosmwasm-stargate": "^0.29.0",
+    "@cosmjs/crypto": "^0.29.0",
+    "@cosmjs/math": "^0.29.0",
+    "@cosmjs/proto-signing": "^0.29.0",
+    "@cosmjs/stargate": "^0.29.0",
     "@elastic/elasticsearch": "^7.17.0",
     "@oraichain/oraiwasm-js": "^0.0.14",
     "bech32": "^2.0.0",
