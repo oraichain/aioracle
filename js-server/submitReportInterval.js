@@ -4,12 +4,6 @@ const { getRequest, getCurrentDateInfo } = require('./utils');
 const { broadcastMerkleRoot } = require('./ws');
 const { execute } = require('./models/cosmjs')
 
-// const { index } = require('./models/elasticsearch/index');
-// const oraiwasmJs = require('./models/oraiwasm');
-// const getLatestBlock = () => {
-//     return oraiwasmJs.get('/blocks/latest');
-// }
-
 const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves, mongoDb) => {
     console.log("merkle root already exists for this request id")
     if (submittedMerkleRoot !== localMerkleRoot) {
