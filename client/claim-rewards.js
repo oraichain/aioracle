@@ -1,5 +1,5 @@
 const path = require('path');
-const { getFirstWalletPubkey } = require('./cosmjs');
+const { getFirstWalletPubkey, execute } = require('./cosmjs');
 const { handleFinishedReports, updateClaim } = require('./get-proof');
 const oraiwasmJs = require('./wasmjs');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : ".env") })
@@ -31,7 +31,14 @@ const claim = async () => {
 
     // store the merkle root on-chain
     try {
-        const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(wallet), rawInputs: msgs, gasLimits: 2000000, broadcastMode: 'BROADCAST_MODE_BLOCK' });
+        // old version
+        // const executeResult = await oraiwasmJs.execute({ childKey: oraiwasmJs.getChildKey(wallet), rawInputs: msgs, gasLimits: 2000000, broadcastMode: 'BROADCAST_MODE_BLOCK' });
+        const executeResult = await execute({
+          mnemonic: wallet,
+          address: contractAddr, 
+          handleMsg: msgs, 
+          gasData: { gasAmount: "0", denom: "orai" }
+        })
         console.log("execute result: ", executeResult);
         const data = listProofs.map(proof => ({ executor, request_id: proof.requestId }));
 
