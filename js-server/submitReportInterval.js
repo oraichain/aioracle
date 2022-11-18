@@ -1,13 +1,14 @@
 const { env, constants } = require('./config');
 const { formTree } = require('./models/merkleTree');
-const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest, getCurrentDateInfo } = require('./utils');
-const { index } = require('./models/elasticsearch/index');
 const { broadcastMerkleRoot } = require('./ws');
+const { execute } = require('./models/cosmjs')
 
-const getLatestBlock = () => {
-    return oraiwasmJs.get('/blocks/latest');
-}
+// const { index } = require('./models/elasticsearch/index');
+// const oraiwasmJs = require('./models/oraiwasm');
+// const getLatestBlock = () => {
+//     return oraiwasmJs.get('/blocks/latest');
+// }
 
 const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves, mongoDb) => {
     console.log("merkle root already exists for this request id")
@@ -30,14 +31,21 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
 
 const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemonic, mongoDb) => {
     try {
-        const latestBlockData = await getLatestBlock();
-        const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
+        // const latestBlockData = await getLatestBlock();
+        // const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
         // broadcast merkle root to all ws clients. ws is used to reduce time waiting for merkle root to be submitted on-chain
         broadcastMerkleRoot(requestsData);
 
         // store the merkle root on-chain
-        const executeResult = await oraiwasmJs.execute({ signerOrChild: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+        const executeResult = await execute({ 
+            mnemonic: mnemonic,
+            address: env.CONTRACT_ADDRESS, 
+            handleMsg: msgs, 
+            memo: "", 
+            gasData: { gasAmount: gasPrices, denom: "orai" },
+            gasLimits: 'auto' // need verify it is memo in cosmjs
+        });
         console.log("execute result: ", executeResult);
         // check error
         if (executeResult.tx_response.txhash) {
