@@ -1,10 +1,11 @@
 const fetch = require('isomorphic-fetch');
-const fs = require('fs');
 const _ = require('lodash');
 const { env, network } = require('./config');
-const Cosmos = require('@oraichain/cosmosjs').default;
 const { signSignature } = require('./crypto');
-const { queryWasmRaw, handleFetchResponse } = require('./cosmjs');
+const { queryWasmRaw, handleFetchResponse, getFirstWalletAddr } = require('./cosmjs');
+
+const bip39 = require('bip39');
+const bip32 = require('bip32');
 
 const backendUrl = env.BACKEND_URL;
 
@@ -48,8 +49,13 @@ const getStageInfo = async (contractAddr) => {
 }
 
 const checkSubmit = async (contractAddr, requestId, executor) => {
-    return fetch(`${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(executor, 'base64').toString('hex')}`).then(data => handleFetchResponse(data));
-}
+    return fetch(
+        `${backendUrl}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(
+            executor,
+            "base64"
+        ).toString("hex")}`
+    ).then((data) => handleFetchResponse(data));
+};
 
 const getServiceContracts = async (contractAddr, requestId) => {
     const input = JSON.stringify({
@@ -63,27 +69,51 @@ const getServiceContracts = async (contractAddr, requestId) => {
     return data.data;
 }
 
-const submitReport = async (requestId, leaf, mnemonic) => {
+const generateWalletFromMnemonic = (
+    mnemonic,
+    path = `m/44'/118'/0'/0/0`,
+    password = ""
+) => {
+    const seed = bip39.mnemonicToSeedSync(mnemonic, password);
+    const masterKey = bip32.fromSeed(seed);
+    const hd = masterKey.derivePath(path);
 
-    // sign report for future verification
-    const childKey = Cosmos.getChildKeyStatic(mnemonic, network.path, true);
-    const pubKey = childKey.publicKey;
+    const privateKey = hd.privateKey;
+    if (!privateKey) {
+        throw new Error("null hd key");
+    }
+    return privateKey;
+};
+
+
+const submitReport = async (requestId, leaf, mnemonic) => {
+    const walletAddress = await getFirstWalletAddr(mnemonic)
+    const pubKey = walletAddress.pubkey
+    const privateKey = generateWalletFromMnemonic(mnemonic, network.path)
     let message = { requestId, report: leaf };
-    const signature = Buffer.from(signSignature(Buffer.from(JSON.stringify(message), 'ascii'), childKey.privateKey, pubKey)).toString('base64');
+    const signature = Buffer.from(
+        signSignature(
+            Buffer.from(JSON.stringify(message), "ascii"),
+            privateKey,
+            pubKey
+        )
+    ).toString("base64");
     message = { request_id: requestId, report: { ...leaf, signature } };
 
     const requestOptions = {
-        method: 'POST',
+        method: "POST",
         headers: {
-            'Accept': 'application/json',
-            'Content-Type': "application/json"
+            Accept: "application/json",
+            "Content-Type": "application/json",
         },
         body: JSON.stringify(message),
-        redirect: 'follow'
+        redirect: "follow",
     };
-    const result = await fetch(`${backendUrl}/report`, requestOptions).then(data => handleFetchResponse(data));
+    const result = await fetch(`${backendUrl}/report`, requestOptions).then(
+        (data) => handleFetchResponse(data)
+    );
     console.log("result submitting report: ", result);
-    console.log("Successful submission time: ", new Date().toUTCString())
+    console.log("Successful submission time: ", new Date().toUTCString());
 }
 
 module.exports = { getRequest, getStageInfo, submitReport, getServiceContracts, checkSubmit, handleFetchResponse, parseError, writeErrorMessage };
