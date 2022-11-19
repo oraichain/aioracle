@@ -20,13 +20,12 @@ const collectWallet = async (mnemonic) => {
     return wallet;
 }
 
-const execute = async ({ mnemonic, address, handleMsg, memo, amount, gasData = undefined, gasLimits }) => {
+const execute = async ({ mnemonic, msgs, memo, gasData = undefined }) => {
     try {
         const wallet = await collectWallet(mnemonic);
         const [firstAccount] = await wallet.getAccounts();
-        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix, gasLimits });
-        const input = JSON.parse(handleMsg);
-        const result = await client.execute(firstAccount.address, address, input, memo, amount);
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix });
+        const result = await client.executeMultiple(firstAccount.address, msgs, 'auto', memo);
         return result.transactionHash;
     } catch (error) {
         console.log("error in executing contract: ", error);

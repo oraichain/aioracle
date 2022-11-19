@@ -32,13 +32,12 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
         broadcastMerkleRoot(requestsData);
 
         // store the merkle root on-chain
-        const executeResult = await execute({ 
-            mnemonic: mnemonic,
-            address: env.CONTRACT_ADDRESS, 
-            handleMsg: msgs, 
-            memo: "", 
+        const executeResult = await execute({
+            mnemonic,
+            address: env.CONTRACT_ADDRESS,
+            msgs,
+            memo: "",
             gasData: { gasAmount: gasPrices, denom: "orai" },
-            gasLimits: 'auto' // need verify it is memo in cosmjs
         });
         console.log("execute result: ", executeResult);
         // check error
@@ -87,7 +86,7 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
 
             // collect the executor list from report to push to contract
             const executors = reports.map(report => report.executor);
-            const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root, executors } })) };
+            const msg = { contractAddress: env.CONTRACT_ADDRESS, msg: { register_merkle_root: { stage: parseInt(requestId), merkle_root: root, executors } } };
             msgs.push(msg)
         } else if (reportCount < threshold) {
             // in case report length is smaller than threshold, consider removing it if there exists a finished request in db
