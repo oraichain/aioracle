@@ -1,13 +1,8 @@
 const { env, constants } = require('./config');
 const { formTree } = require('./models/merkleTree');
-const oraiwasmJs = require('./models/oraiwasm');
 const { getRequest, getCurrentDateInfo } = require('./utils');
-const { index } = require('./models/elasticsearch/index');
 const { broadcastMerkleRoot } = require('./ws');
-
-const getLatestBlock = () => {
-    return oraiwasmJs.get('/blocks/latest');
-}
+const { execute } = require('./models/cosmjs')
 
 const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerkleRoot, leaves, mongoDb) => {
     console.log("merkle root already exists for this request id")
@@ -30,22 +25,28 @@ const processSubmittedRequest = async (requestId, submittedMerkleRoot, localMerk
 
 const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemonic, mongoDb) => {
     try {
-        const latestBlockData = await getLatestBlock();
-        const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
+        // const latestBlockData = await getLatestBlock();
+        // const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
 
         // broadcast merkle root to all ws clients. ws is used to reduce time waiting for merkle root to be submitted on-chain
         broadcastMerkleRoot(requestsData);
 
         // store the merkle root on-chain
-        const executeResult = await oraiwasmJs.execute({ signerOrChild: oraiwasmJs.getChildKey(mnemonic), rawInputs: msgs, gasPrices, gasLimits: 'auto', timeoutHeight: timeoutHeight, timeoutIntervalCheck: constants.TIMEOUT_INTERVAL_CHECK });
+        const executeResult = await execute({
+            mnemonic,
+            address: env.CONTRACT_ADDRESS,
+            msgs,
+            memo: "",
+            gasData: { gasAmount: gasPrices, denom: "orai" },
+        });
         console.log("execute result: ", executeResult);
         // check error
-        if (executeResult.tx_response.txhash) {
+        if (executeResult.transactionHash) {
             // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
             await Promise.all(requestsData.map(async tree => mongoDb.insertMerkleRoot(tree.root, tree.leaves)));
 
             // update the requests that have been handled in the database
-            await mongoDb.bulkUpdateRequests(requestsData, executeResult.tx_response.txhash);
+            await mongoDb.bulkUpdateRequests(requestsData, executeResult.transactionHash);
         } else {
             console.log("error in submitting merkle root: ", executeResult.message);
             // index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
@@ -85,7 +86,7 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
 
             // collect the executor list from report to push to contract
             const executors = reports.map(report => report.executor);
-            const msg = { contractAddr: env.CONTRACT_ADDRESS, message: Buffer.from(JSON.stringify({ register_merkle_root: { stage: parseInt(requestId), merkle_root: root, executors } })) };
+            const msg = { contractAddress: env.CONTRACT_ADDRESS, msg: { register_merkle_root: { stage: parseInt(requestId), merkle_root: root, executors } } };
             msgs.push(msg)
         } else if (reportCount < threshold) {
             // in case report length is smaller than threshold, consider removing it if there exists a finished request in db

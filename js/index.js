@@ -78,7 +78,12 @@ const ping = async (mnemonic) => {
                 const pingMsg = {
                     ping: { pubkey: walletPubkey }
                 }
-                const result = await execute({ mnemonic, address: contract, handleMsg: pingMsg, gasData: { gasAmount: '0', denom: 'orai' } });
+                const result = await execute({
+                    mnemonic,
+                    address: contract,
+                    handleMsg: pingMsg,
+                    gasData: { gasAmount: "0", denom: "orai" },
+                });
                 console.log("ping result: ", result);
             }
         } catch (error) {

@@ -18,13 +18,13 @@ const demo = async () => {
     // const feeAmount = [{ denom: "orai", amount: "1000" }]
     let finalFeeAmount = feeAmount.filter(fee => fee.amount !== '0');
     if (finalFeeAmount.length === 0) finalFeeAmount = undefined;
-    const input = JSON.stringify({
+    const input = {
         request: {
             threshold: parseInt(threshold),
             service,
             preference_executor_fee: { denom: 'orai', amount: '10' }
         }
-    })
+    }
     console.log("input: ", input)
 
     // store the merkle root on-chain
@@ -45,9 +45,9 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
     const boundExecutorFeeMsg = JSON.stringify({
         get_bound_executor_fee: {}
     })
-    let rawData = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
+    let rawData = await fetch(`${lcdUrl}/cosmwasm/wasm/v1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
     let data = rawData.data;
-    let boundFee = await fetch(`${lcdUrl}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
+    let boundFee = await fetch(`${lcdUrl}/cosmwasm/wasm/v1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
     let boundExecutorFee = boundFee.data;
     console.log("data: ", rawData);
     data.push(["placeholder", boundExecutorFee.denom, boundExecutorFee.amount]);

@@ -1,14 +1,14 @@
 const { network, env } = require("./config");
-const fetch = require('isomorphic-fetch');
+const fetch = require("isomorphic-fetch");
 
-const OraiWasmJs = require('@oraichain/oraiwasm-js').default;
-const cosmos = new OraiWasmJs(network.lcd, network.chainId);
-cosmos.bech32MainPrefix = network.prefix;
+const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
+const cosmwasm = require("@cosmjs/cosmwasm-stargate");
+const { stringToPath } = require("@cosmjs/crypto");
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
     return result.data;
-}
+};
 
 const handleFetchResponse = async (response) => {
     const contentType = response.headers.get("content-type");
@@ -18,21 +18,23 @@ const handleFetchResponse = async (response) => {
         let responseText = await response.text();
         throw responseText;
     }
-}
+};
 
 const queryWasmRetry = async (address, input, retryCount) => {
     try {
-        let result = await fetch(`${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString('base64')}`).then(data => handleFetchResponse(data));
+        let result = await fetch(
+            `${env.LCD_URL}/cosmwasm/wasm/v1/contract/${address}/smart/${Buffer.from(input).toString("base64")}`
+        ).then((data) => handleFetchResponse(data));
         return result;
     } catch (error) {
         console.log("error: ", error);
-        console.log("retry count: ", retryCount)
+        console.log("retry count: ", retryCount);
         if (retryCount > 10) throw error;
         // await about 5 seconds
-        await new Promise(r => setTimeout(r, 5000));
+        await new Promise((r) => setTimeout(r, 5000));
         return queryWasmRetry(address, input, retryCount + 1);
     }
-}
+};
 
 const queryWasmRaw = async (address, input) => {
     return queryWasmRetry(address, input, 0);
@@ -43,34 +45,42 @@ const queryWasm = async (address, input) => {
     return handleResult(result);
 };
 
-const collectWallet = (mnemonic) => {
-    const childKey = cosmos.getChildKey(mnemonic);
-    return childKey;
-}
+const collectWallet = async (mnemonic) => {
+    const wallet = await DirectSecp256k1HdWallet.fromMnemonic(mnemonic, {
+        hdPaths: [stringToPath("m/44'/118'/0'/0/0")],
+        prefix: network.prefix,
+    });
+    return wallet;
+};
 
 const getFirstWalletAddr = async (mnemonic) => {
-    let wallet = collectWallet(mnemonic);
-    return cosmos.getAddress(wallet);
-}
+    let wallet = await collectWallet(mnemonic);
+    const [address] = await wallet.getAccounts();
+    return address;
+};
 
 const getFirstWalletPubkey = async (mnemonic) => {
-    return Buffer.from(cosmos.getPubKey(collectWallet(mnemonic).privateKey)).toString('base64');
-}
+    const account = await getFirstWalletAddr(mnemonic);
+    return Buffer.from(account.pubkey).toString("base64");
+};
 
 const execute = async ({ mnemonic, address, handleMsg, memo, gasData }) => {
-    const childKey = collectWallet(mnemonic);
     try {
-        const rawInputs = [{
-            contractAddr: address,
-            message: Buffer.from(JSON.stringify(handleMsg)),
-        }]
-        const result = await cosmos.execute({ signerOrChild: childKey, rawInputs, gasLimits: 'auto', memo });
+        const wallet = await collectWallet(mnemonic);
+        const [firstAccount] = await wallet.getAccounts();
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, {
+            gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined,
+            prefix: network.prefix,
+            gasLimits: { exec: 20000000 },
+        });
+        const input = JSON.parse(handleMsg);
+        const result = await client.execute(firstAccount.address, address, input, memo);
         console.log("result: ", result);
         return result;
     } catch (error) {
-        console.log("error in executing contract: ", error);
+        console.error("error in executing contrac: ", error);
         throw error;
     }
-}
+};
 
 module.exports = { getFirstWalletAddr, getFirstWalletPubkey, queryWasm, execute, queryWasmRaw, handleFetchResponse };

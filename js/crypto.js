@@ -1,7 +1,7 @@
 const secp256k1 = require('secp256k1');
 const sha256 = require('js-sha256').sha256;
 const { AES, enc } = require('crypto-js');
-const Cosmos = require('@oraichain/cosmosjs').default;
+// const Cosmos = require('@oraichain/cosmosjs').default;
 
 const signSignature = (message, key, pubKey) => {
     const hashedSig = sha256.update(message).digest(); // on contract, when parsing from hex string to bytes it uses from utf8 func (ascii)
