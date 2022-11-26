@@ -41,12 +41,12 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
         });
         console.log("execute result: ", executeResult);
         // check error
-        if (executeResult.tx_response.txhash) {
+        if (executeResult.transactionHash) {
             // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
             await Promise.all(requestsData.map(async tree => mongoDb.insertMerkleRoot(tree.root, tree.leaves)));
 
             // update the requests that have been handled in the database
-            await mongoDb.bulkUpdateRequests(requestsData, executeResult.tx_response.txhash);
+            await mongoDb.bulkUpdateRequests(requestsData, executeResult.transactionHash);
         } else {
             console.log("error in submitting merkle root: ", executeResult.message);
             // index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });

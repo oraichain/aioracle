@@ -3,6 +3,7 @@ const fetch = require("isomorphic-fetch");
 
 const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const cosmwasm = require("@cosmjs/cosmwasm-stargate");
+const { stringToPath } = require("@cosmjs/crypto");
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
@@ -22,7 +23,7 @@ const handleFetchResponse = async (response) => {
 const queryWasmRetry = async (address, input, retryCount) => {
     try {
         let result = await fetch(
-            `${env.LCD_URL}/wasm/v1beta1/contract/${address}/smart/${Buffer.from(input).toString("base64")}`
+            `${env.LCD_URL}/cosmwasm/wasm/v1/contract/${address}/smart/${Buffer.from(input).toString("base64")}`
         ).then((data) => handleFetchResponse(data));
         return result;
     } catch (error) {

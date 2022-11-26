@@ -66,7 +66,7 @@ const verify = async (contractAddr, listProofs) => {
                 proof: proof.proofs.proofs
             }
         })
-        const result = await fetch(`${process.env.LCD_URL}/wasm/v1beta1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
+        const result = await fetch(`${process.env.LCD_URL}/cosmwasm/wasm/v1/contract/${contractAddr}/smart/${Buffer.from(input).toString('base64')}`).then(data => data.json());
         console.log("result: ", result)
     }
 }

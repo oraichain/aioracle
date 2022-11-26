@@ -32,8 +32,8 @@ const connect = (mnemonic) => {
                 console.log('events: ', events);
                 const requestId = events['wasm.stage'];
                 console.log("request id: ", requestId);
-                console.log("event contract addr: ", events['wasm.contract_address'][0])
-                if (events['wasm.contract_address'][0] === env.CONTRACT_ADDRESS) processRequest(parseInt(requestId), mnemonic);
+                console.log("event contract addr: ", events['wasm._contract_address'][0])
+                if (events['execute._contract_address'][0] === env.CONTRACT_ADDRESS) processRequest(parseInt(requestId), mnemonic);
             }
         } catch (error) {
             writeStream.write(writeErrorMessage(error), (err) => {
