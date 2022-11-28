@@ -42,7 +42,6 @@ const getStageInfo = async (contractAddr) => {
     })
 
     const data = await queryWasmRaw(contractAddr, input);
-    console.log("data: ", data)
     if (!data.data) {
         throw "No request to handle";
     }
