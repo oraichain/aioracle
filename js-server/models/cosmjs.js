@@ -5,7 +5,6 @@ const { GasPrice } = require('@cosmjs/stargate');
 const { env } = require("../config");
 
 const network = {
-    rpc: env.RPC_URL || "https://testnet-rpc.orai.io",
     prefix: "orai",
 }
 
@@ -24,7 +23,7 @@ const execute = async ({ mnemonic, msgs, memo, gasData = undefined }) => {
     try {
         const wallet = await collectWallet(mnemonic);
         const [firstAccount] = await wallet.getAccounts();
-        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix });
+        const client = await cosmwasm.SigningCosmWasmClient.connectWithSigner(env.RPC_URL, wallet, { gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined, prefix: network.prefix });
         const result = await client.executeMultiple(firstAccount.address, msgs, 'auto', memo);
         return result;
     } catch (error) {
