@@ -5,7 +5,7 @@ const { GasPrice } = require('@cosmjs/stargate');
 const { env } = require("../config");
 
 const network = {
-    rpc: env.NETWORK_RPC || "https://testnet-rpc.orai.io",
+    rpc: env.RPC_URL || "https://testnet-rpc.orai.io",
     prefix: "orai",
 }
 
