@@ -21,7 +21,7 @@ const env = {
     PING_CONTRACT: process.env.PING_CONTRACT,
     CHAIN_ID: process.env.CHAIN_ID,
     WS_PORT: process.env.WS_PORT || 4999,
-    WS_HOST: process.env.WS_HOST
+    WS_HOST: process.env.WS_HOST || "localhost"
 }
 
 const network = {
