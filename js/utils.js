@@ -6,6 +6,7 @@ const { queryWasmRaw, handleFetchResponse, getFirstWalletAddr } = require('./cos
 
 const bip39 = require('bip39');
 const bip32 = require('bip32');
+const { boradcastExecutorResult } = require('./ws-server');
 
 const backendUrl = env.BACKEND_URL;
 
@@ -109,6 +110,11 @@ const submitReport = async (requestId, leaf, mnemonic) => {
         body: JSON.stringify(message),
         redirect: "follow",
     };
+
+    // before submiting to the backend, we fire the message's data into the websocket so listeners can listen
+    boradcastExecutorResult(message);
+
+    // submit data to the backend for aggregation
     const result = await fetch(`${backendUrl}/report`, requestOptions).then(
         (data) => handleFetchResponse(data)
     );

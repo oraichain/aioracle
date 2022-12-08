@@ -20,6 +20,8 @@ const env = {
     PING_INTERVAL: parseInt(process.env.PING_INTERVAL) || 5000,
     PING_CONTRACT: process.env.PING_CONTRACT,
     CHAIN_ID: process.env.CHAIN_ID,
+    WS_PORT: process.env.WS_PORT || 4999,
+    WS_HOST: process.env.WS_HOST
 }
 
 const network = {

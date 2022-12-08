@@ -3,6 +3,7 @@
     "start": "node index.js",
     "build": "yarn webpack --mode production"
   },
+  "version": "0.4.1",
   "dependencies": {
     "@cosmjs/cosmwasm-stargate": "^0.29.0",
     "@cosmjs/crypto": "^0.29.0",
