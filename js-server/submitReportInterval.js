@@ -34,7 +34,6 @@ const processUnsubmittedRequests = async (msgs, gasPrices, requestsData, mnemoni
         // store the merkle root on-chain
         const executeResult = await execute({
             mnemonic,
-            address: env.CONTRACT_ADDRESS,
             msgs,
             memo: "",
             gasData: { gasAmount: gasPrices, denom: "orai" },

@@ -4,6 +4,7 @@ const fetch = require("isomorphic-fetch");
 const { DirectSecp256k1HdWallet } = require("@cosmjs/proto-signing");
 const cosmwasm = require("@cosmjs/cosmwasm-stargate");
 const { stringToPath } = require("@cosmjs/crypto");
+const { GasPrice } = require("@cosmjs/stargate");
 
 const handleResult = (result) => {
     if (result.code && result.code !== 0) throw result.message;
@@ -73,9 +74,7 @@ const execute = async ({ mnemonic, address, handleMsg, memo, gasData }) => {
             prefix: network.prefix,
             gasLimits: { exec: 20000000 },
         });
-        const input = JSON.parse(handleMsg);
-        const result = await client.execute(firstAccount.address, address, input, memo);
-        console.log("result: ", result);
+        const result = await client.execute(firstAccount.address, address, handleMsg, 'auto', memo);
         return result;
     } catch (error) {
         console.error("error in executing contrac: ", error);
