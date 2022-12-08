@@ -7,7 +7,7 @@
   "scripts": {
     "start": "node index.js",
     "prepackage": "mkdir -p dist && cp package.json -r *.js dist",
-    "package": "pkg dist"
+    "package": "pkg dist --compress Brotli"
   },
   "bin": "index.js",
   "main": "index.js",
