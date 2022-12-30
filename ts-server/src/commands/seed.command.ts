@@ -1,5 +1,4 @@
 import { Command, CommandRunner, Option } from 'nest-commander';
-import AppSeedFactory from 'src/database/seeds/app.fatory';
 
 interface SeedCommandOptions {
   class?: string;
@@ -13,13 +12,7 @@ export class SeedCommand implements CommandRunner {
     passedParam: string[],
     options?: SeedCommandOptions,
   ): Promise<void> {
-    let seedClass = options.class;
-    if (!seedClass) {
-      console.log('Seed class null!');
-      return;
-    }
-    const appSeeder = new AppSeedFactory();
-    appSeeder.run(seedClass);
+    console.log(111);
   }
 
   @Option({

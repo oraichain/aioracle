@@ -1,10 +1,9 @@
 import { Module } from '@nestjs/common';
-import { ReportCrawCommand, SeedCommand, QueueRunCommand } from './commands';
-import { dbProviders } from './provides/db.provide';
+import { SeedCommand } from './commands';
 
 @Module({
   imports: [],
   controllers: [],
-  providers: [...dbProviders, ReportCrawCommand, SeedCommand, QueueRunCommand],
+  providers: [SeedCommand],
 })
 export class AppCommanderModule {}
