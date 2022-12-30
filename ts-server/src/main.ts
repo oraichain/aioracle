@@ -22,9 +22,9 @@ async function bootstrap() {
 }
 
 // cleanup funciton to close connection
-const cleanup = (event) => {
+const cleanup = async (event) => {
   console.log("event to close: ", event);
-  MongoDb.close();
+  await MongoDb.close();
   process.exit();
 }
 

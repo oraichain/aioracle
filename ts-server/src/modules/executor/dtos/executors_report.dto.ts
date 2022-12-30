@@ -4,13 +4,16 @@ import { IsNotEmpty,
   IsString,
   Length,
   IsBase64,
-  IsHexadecimal 
+  IsHexadecimal, 
+  IsArray,
+  ValidateNested
 } from 'class-validator';
-import { ContractOrai } from 'src/utils/validator';
+import { Type } from 'class-transformer';
+import { IsContractOrai, IsClaimObj } from 'src/utils/validator';
 
 export class ExecutorsReport {
   @IsNotEmpty()
-  @Validate(ContractOrai)
+  @Validate(IsContractOrai)
   contract_addr: string;
 
   @IsOptional()
@@ -33,4 +36,21 @@ export class ExecutorsReportHexParam {
   @IsString()
   @IsHexadecimal()
   executor: string;
+}
+
+export class ExecutorsClaimBody {
+  @IsNotEmpty()
+  @Validate(IsContractOrai)
+  contract_addr: string;
+
+  @IsNotEmpty()
+  @ValidateNested({ each: true })
+  @Type(() => ClaimObj)
+  @Validate(IsClaimObj)
+  data: ClaimObj[]
+}
+
+class ClaimObj {
+  request_id: number
+  executor: string
 }

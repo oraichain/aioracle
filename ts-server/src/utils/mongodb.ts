@@ -27,11 +27,15 @@ export default class MongoDb {
     return MongoDb.db[db].collection(coll);
   }
 
-  static async close() {
+  static async close(cb=null) {
     if (MongoDb.client) {
       await MongoDb.client.close();
+      console.log("Mongodb closed!!!");
     }
     MongoDb.client = null;
     MongoDb.db = {};
+    if (cb) {
+      cb();
+    }
   }
 }
