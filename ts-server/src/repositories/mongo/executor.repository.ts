@@ -105,4 +105,26 @@ export class ExecutorRepository extends BaseRepository {
       .toArray();
     return { data, count };
   }
+
+  /**
+   * count so luong executor co request id
+   * 
+   * @param requestId int
+   * @returns 
+   */
+  async countExecutorReports (requestId) {
+    return await this.executorCollection.countDocuments({ requestId });
+  }
+
+  async insertExecutorReport (requestId, executor, report) {
+    // request ID + executor should be unique
+    const insertObj = {
+      _id: `${requestId}-${executor}`, // force the executor report to be unique
+      requestId,
+      executor,
+      report,
+      claimed: false,
+    }
+    return await this.executorCollection.insertOne(insertObj);
+  }
 }

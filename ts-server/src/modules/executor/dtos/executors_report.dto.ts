@@ -7,10 +7,10 @@ import { IsNotEmpty,
   IsHexadecimal,
   ValidateNested,
   IsNumber,
-  IsInt
+  IsObject
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsContractOrai, IsClaimObj } from 'src/utils/validator';
+import { IsContractOrai, IsClaimObj, IsValidRewards } from 'src/utils/validator';
 
 export class ExecutorsReport {
   @IsNotEmpty()
@@ -53,7 +53,7 @@ export class ExecutorsClaimBody {
 
 export class ReportSubmitted {
   @IsNotEmpty()
-  @IsInt()
+  @IsNumber()
   @Type(() => Number)
   request_id: number;
 
@@ -70,7 +70,7 @@ export class ReportSubmitted {
 
 export class ReportReports {
   @IsNotEmpty()
-  @IsInt()
+  @IsNumber()
   @Type(() => Number)
   request_id: number;
 
@@ -86,7 +86,60 @@ export class ReportReports {
   limit_per_page: number;
 }
 
+export class ReportSingle {
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  request_id: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @Validate(IsContractOrai)
+  contract_addr: string;
+}
+
+export class ReportPost {
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  request_id: number;
+
+  @IsNotEmpty()
+  @IsObject()
+  @ValidateNested()
+  @Type(() => ReportBodyData)
+  report: typeof reportBodyData;
+}
+
+
+/**
+ * init private object validation
+ */
+
 class ClaimObj {
   request_id: number
   executor: string
 }
+
+class ReportBodyData {
+  @IsNotEmpty()
+  @IsString()
+  @Length(44, 44)
+  @IsBase64()
+  executor: string;
+
+  @IsNotEmpty()
+  @IsBase64()
+  data: string;
+
+  @IsNotEmpty()
+  @IsBase64()
+  @Length(88, 88)
+  signature: string
+
+  @IsNotEmpty()
+  @Validate(IsValidRewards)
+  rewards: object
+}
+
+const reportBodyData = new ReportBodyData();
