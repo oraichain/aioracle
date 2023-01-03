@@ -6,8 +6,10 @@ import {
   Body,
   ValidationPipe,
   HttpStatus,
-  Post
+  Post,
+  Res
 } from '@nestjs/common';
+import { Response } from 'express';
 import { ExecutorsClaimBody, ExecutorsReport, ExecutorsReportHexParam, ExecutorsReportParam } from '../dtos';
 import { paginatorNumber } from 'src/utils';
 import { ExecutorRepository } from 'src/repositories/mongo';
@@ -53,19 +55,18 @@ export class ExecutorController {
     return res;
   }
 
-  // router.post('/claim', validate([body('data').isArray().custom(value => isValidData(value)), body('contract_addr').notEmpty().isString().custom(value => isOraiAddress(value))]), claimExecutorReports);
   @Post('/claim')
   async claimExecutorReports(
+    @Res() res: Response,
     @Body() body: ExecutorsClaimBody
   ) {
     const repo = new ExecutorRepository();
     await repo.db(body.contract_addr);
-    const res = {
-      code: HttpStatus.OK
+    const data = {
+      code: HttpStatus.OK,
+      'count': await repo.bulkUpdateExecutorReports(body.data)
     };
-    console.log(body);
-    // await mongoDb.bulkUpdateExecutorReports(data);
-    // return res.send({ code: 200 })
-    
+    return res.status(HttpStatus.OK)
+      .json(data);
   }
 }

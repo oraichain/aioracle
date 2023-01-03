@@ -7,8 +7,9 @@ if (process.env.NODE_ENV && process.env.NODE_ENV !== 'production') {
 require('dotenv').config(configDotEnv);
 
 const configDefault = {
-  appdir: __dirname + '/../',
   basedir: baseDir,
+  appdir: baseDir + 'src/',
+  storagedir: baseDir + 'storage/',
   isProd: process.env.APP_ENV === 'PROD' ? true : false,
 
   PORT: parseInt(process.env.PORT) || 7000,

@@ -1,6 +1,14 @@
 import BaseRepository from './base.repository';
 
 export class ExecutorRepository extends BaseRepository {
+
+  /**
+   * danh sach co phan trang tat ca request cua 1 executor
+   *
+   * @param executor int
+   * @param pagerNumber object
+   * @returns 
+   */
   async findExecutorReports (executor, pagerNumber) {
     const query = { executor };
     const count = await this.executorCollection.countDocuments(query);
@@ -13,6 +21,9 @@ export class ExecutorRepository extends BaseRepository {
   }
 
   /**
+   * danh sach co phan trang tat ca request
+   *   da thanh cong cua 1 executor
+   *
    * TODO // phan trang dang khong hop ly
    * phan trang mongo xong moi filter tiep -> ko du so luong
    * dang lay het executor -> chi phan trang cho phan request?
@@ -36,4 +47,27 @@ export class ExecutorRepository extends BaseRepository {
       )
     );
   }
+
+  /**
+   * update cac cap executor - request: ATTR `claimed` -> true
+   *
+   * @param executorsData array obj
+   */
+  async bulkUpdateExecutorReports (executorsData) {
+    // update the requests that have been handled in the database
+    let bulkUpdateOps = [];
+    for (let { executor, request_id: requestId } of executorsData) {
+        bulkUpdateOps.push({
+            "updateOne": {
+                "filter": { executor, requestId },
+                "update": { "$set": { "claimed": true } }
+            }
+        })
+    }
+    if (bulkUpdateOps.length === 0) {
+      return false;
+    }
+    const bulkResult = await this.executorCollection.bulkWrite(bulkUpdateOps);
+    return bulkResult?.result?.nMatched;
+}
 }
