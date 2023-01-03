@@ -11,7 +11,7 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ExecutorsClaimBody, ExecutorsReport, ExecutorsReportHexParam, ExecutorsReportParam } from '../dtos';
-import { paginatorNumber } from 'src/utils';
+import { executorConverB64, paginatorNumber } from 'src/utils';
 import { ExecutorRepository } from 'src/repositories/mongo';
 
 @Controller('/executor')
@@ -49,7 +49,7 @@ export class ExecutorController {
       code: HttpStatus.OK
     };
     res['data'] = await repo.findFinishedExecutorReports(
-      Buffer.from(params.executor, 'hex').toString('base64'),
+      executorConverB64(params.executor),
       pagerNumber
     );
     return res;

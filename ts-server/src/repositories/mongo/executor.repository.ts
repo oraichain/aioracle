@@ -57,17 +57,52 @@ export class ExecutorRepository extends BaseRepository {
     // update the requests that have been handled in the database
     let bulkUpdateOps = [];
     for (let { executor, request_id: requestId } of executorsData) {
-        bulkUpdateOps.push({
-            "updateOne": {
-                "filter": { executor, requestId },
-                "update": { "$set": { "claimed": true } }
-            }
-        })
+      bulkUpdateOps.push({
+        "updateOne": {
+          "filter": { executor, requestId },
+          "update": { "$set": { "claimed": true } }
+        }
+      })
     }
     if (bulkUpdateOps.length === 0) {
       return false;
     }
     const bulkResult = await this.executorCollection.bulkWrite(bulkUpdateOps);
     return bulkResult?.result?.nMatched;
-}
+  }
+
+  /**
+   * Tim cap executor request da co report
+   *
+   * @param requestId int
+   * @param executor string
+   * @returns 
+   */
+  async findReport (requestId: number, executor: string) {
+    const query = { _id: `${requestId}-${executor}` };
+    const result = await this.executorCollection
+      .findOne(query, { projection: { _id: 0 } });
+    if (result && result.report) {
+      return result.report;
+    }
+    return null;
+  }
+
+  /**
+   * Danh sach co phan trang cac request
+   * 
+   * @param requestId 
+   * @param pagerNumber 
+   * @returns 
+   */
+  async findReports (requestId: number, pagerNumber) {
+    const query = { requestId };
+    const count = await this.executorCollection.countDocuments(query);
+    const data = await this.executorCollection
+      .find(query, { projection: { _id: 0 } })
+      .skip(pagerNumber.skip)
+      .limit(pagerNumber.limit)
+      .toArray();
+    return { data, count };
+  }
 }

@@ -9,3 +9,7 @@ export function paginatorNumber (page: number, limit: number) {
     'skip': page > 0 ? (page - 1) * limit : 0
   };
 };
+
+export function executorConverB64 (executor) {
+  return Buffer.from(executor, 'hex').toString('base64');
+};
