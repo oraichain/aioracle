@@ -2,14 +2,18 @@ import { Module } from '@nestjs/common';
 import { ExecutorService } from './services';
 import { HomeController,
   ExecutorController,
-  ReportController
+  ReportController,
+  ProofController,
+  TestnetController
 } from './controllers';
 
 @Module({
   controllers: [
     HomeController,
     ExecutorController,
-    ReportController
+    ReportController,
+    ProofController,
+    TestnetController
   ],
   providers: [
     ExecutorService

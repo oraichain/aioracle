@@ -7,10 +7,16 @@ export default class BaseRepository {
   protected merkleCollection;
   protected executorCollection;
 
-  public async db (contractAddr : string) {
+  public async db (contractAddr : string, isSetDefault=true) {
     this.dbInstance = await MongoDb.instance(contractAddr);
-    this.requestCollections = this.dbInstance.collection(MONGO.REQUESTS_COLLECTION);
-    this.merkleCollection = this.dbInstance.collection(MONGO.MERKLE_ROOTS_COLLECTION);
-    this.executorCollection = this.dbInstance.collection(MONGO.EXECUTORS_COLLECTION);
+    if (isSetDefault) {
+      this.requestCollections = this.dbInstance.collection(MONGO.REQUESTS_COLLECTION);
+      this.merkleCollection = this.dbInstance.collection(MONGO.MERKLE_ROOTS_COLLECTION);
+      this.executorCollection = this.dbInstance.collection(MONGO.EXECUTORS_COLLECTION);
+    }
+  }
+
+  public getDbInstance() {
+    return this.dbInstance;
   }
 }

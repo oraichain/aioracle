@@ -7,7 +7,7 @@ import config from 'src/config';
 @Controller('/')
 export class HomeController {
   @Get('/')
-  index() {
+  homeIndex() {
     return 'Welcome to the AI Oracle server - ' + config.APP_ENV;
   }
 }

@@ -111,6 +111,21 @@ export class ReportPost {
   report: typeof reportBodyData;
 }
 
+export class ProofLeaf {
+  @IsNotEmpty()
+  @IsNumber()
+  @Type(() => Number)
+  request_id: number;
+
+  @IsNotEmpty()
+  @IsString()
+  @Validate(IsContractOrai)
+  contract_addr: string;
+
+  @IsNotEmpty()
+  @IsObject()
+  leaf: object;
+}
 
 /**
  * init private object validation

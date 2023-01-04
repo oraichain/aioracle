@@ -136,7 +136,7 @@ export class ReportController {
     // verify report signature
     const rawMessage = {
       requestId: body.request_id,
-        report: rawReport
+      report: rawReport
     }
     if (!this.executorService.verifySignature(
       Buffer.from(JSON.stringify(rawMessage), 'ascii'),
