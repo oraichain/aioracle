@@ -1,0 +1,26 @@
+version: '3.3'
+services:
+  executor_mongo_stg:
+    image: mongo
+    container_name: executor_mongo_stg
+    env_file:
+      - .env.mongo
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
+      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
+    ports:
+      - 27017:27017
+    volumes:
+      - mongodb_data_container:/data/db
+    networks:
+      - orai-nk-executor-stg
+
+volumes:
+  mongodb_data_container:
+    external: true
+    name: js-server_mongodb_data_container
+
+networks:
+  orai-nk-executor-stg:
+    external: false
+    name: orai-nk-executor-stg

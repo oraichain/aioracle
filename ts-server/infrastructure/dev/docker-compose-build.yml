@@ -1,8 +1,0 @@
-version: '3.3'
-services:
-  aioracle_api:
-    build:
-      dockerfile: infrastructure/dev/Dockerfile
-      context: .
-    image: devorai/ai_oracle:0.0.1
-    restart: always
