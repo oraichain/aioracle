@@ -1,1 +1,1 @@
-export * from './seed.command';
+export * from './interval.command';

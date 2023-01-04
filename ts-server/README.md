@@ -33,6 +33,13 @@
 - `cd infrastructure/staging/ && docker-compose -f mongo.yml up -d`: run mongodb
 - `cd infrastructure/staging/ && docker-compose up --build -d`: run app. Change content image version in docker-compose.yml to build new image
 
+## Run app production
+- Same staging, folder `infrastructure/prod/`
+
+## Run commander interval process
+- Build before run commander: yarn build
+- `node dist/commander interval`
+
 ## Run app developer
 - `yarn start:dev`
 

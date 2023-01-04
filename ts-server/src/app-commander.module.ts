@@ -1,9 +1,9 @@
 import { Module } from '@nestjs/common';
-import { SeedCommand } from './commands';
+import { IntervalCommand } from './commands';
 
 @Module({
   imports: [],
   controllers: [],
-  providers: [SeedCommand],
+  providers: [IntervalCommand],
 })
 export class AppCommanderModule {}

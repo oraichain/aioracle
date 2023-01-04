@@ -19,4 +19,20 @@ export default class BaseRepository {
   public getDbInstance() {
     return this.dbInstance;
   }
+
+  public async indexData () {
+    await this.indexFinishedRequests();
+    await this.indexExecutorReport();
+    console.log('indexing done!');
+  }
+
+  async indexFinishedRequests () {
+    const a = await this.dbInstance.createIndex(MONGO.REQUESTS_COLLECTION, { "submitted": -1 });
+  }
+
+  async indexExecutorReport () {
+    await this.dbInstance.createIndex(MONGO.EXECUTORS_COLLECTION, { "executor": -1, "requestId": -1 })
+    await this.dbInstance.createIndex(MONGO.EXECUTORS_COLLECTION, { "requestId": -1 })
+    await this.dbInstance.createIndex(MONGO.EXECUTORS_COLLECTION, { "executor": -1, "claimed": -1 })
+  }
 }
