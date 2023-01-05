@@ -127,4 +127,30 @@ export class ExecutorRepository extends BaseRepository {
     }
     return await this.executorCollection.insertOne(insertObj);
   }
+
+  async queryExecutorReportsWithThreshold (requestId, threshold) {
+    return await this.executorCollection.find({ requestId })
+      .limit(threshold > this.MAX_LIMIT ? this.MAX_LIMIT : threshold)
+      .toArray();
+  }
+
+  async updateReportsStatus (requestId) {
+    const filter = { _id: requestId, requestId };
+    const updateDoc = {
+        $set: {
+            submitted: true
+        },
+    };
+    return await this.requestCollections.updateOne(filter, updateDoc);
+  }
+
+  async updateReports (requestId, numRedundant) {
+    const reportsResult = await this.queryExecutorReportsWithThreshold(
+      requestId,
+      numRedundant
+    );
+    const ids = reportsResult.map(result => result._id);
+    return await this.executorCollection
+      .deleteMany({ _id: { $in: ids } });
+  }
 }

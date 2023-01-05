@@ -8,8 +8,8 @@ import {
 import { Response } from 'express';
 import { ProofLeaf } from '../dtos';
 import { ExecutorService } from '../services';
-import { ExecutorRepository, MerkleRepository } from 'src/repositories/mongo';
-import { MerkleProofTree, sha256 } from '../utils';
+import { MerkleRepository } from 'src/repositories/mongo';
+import { MerkleProofTree, sha256 } from 'src/utils';
 
 @Controller('/proof')
 export class ProofController {
@@ -27,9 +27,6 @@ export class ProofController {
       body.contract_addr,
       body.request_id
     );
-
-    // TODO remove
-    data.merkle_root = 1;
 
     if (!data.merkle_root) {
       return res.status(HttpStatus.OK).json({

@@ -17,5 +17,19 @@ export class MerkleRepository extends BaseRepository {
     }
     return null;
   }
-}
 
+  async findMerkleRoot (root) {
+    const merkleTreeData = await this.merkleCollection.findOne({
+      merkleRoot: root
+    });
+    return merkleTreeData ? merkleTreeData.merkleRoot : null;
+  }
+
+  async insertMerkleRoot (merkleRoot, leaves) {
+    const insertObj = {
+      merkleRoot,
+      leaves,
+    }
+    return await this.merkleCollection.insertOne(insertObj);
+  }
+}

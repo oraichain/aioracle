@@ -6,6 +6,7 @@ export default class BaseRepository {
   protected requestCollections;
   protected merkleCollection;
   protected executorCollection;
+  protected readonly MAX_LIMIT = 20;
 
   public async db (contractAddr : string, isSetDefault=true) {
     this.dbInstance = await MongoDb.instance(contractAddr);
