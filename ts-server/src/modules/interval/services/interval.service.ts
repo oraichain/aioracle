@@ -157,7 +157,6 @@ export class IntervalService {
   }
 
   async processUnsubmittedRequests (msgs, gasPrices, requestsData) {
-    const mnemonic = config.MNEMONIC;
     try {
       // const latestBlockData = await getLatestBlock();
       // const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;
@@ -167,7 +166,7 @@ export class IntervalService {
 
       // store the merkle root on-chain
       const executeResult = await execute({
-          mnemonic,
+          mnemonic: config.MNEMONIC,
           msgs,
           memo: "",
           gasData: { gasAmount: gasPrices, denom: "orai" },
