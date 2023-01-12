@@ -26,7 +26,9 @@ const start = async () => {
             }
         }
         await processRequestWrapper(mnemonic);
-        ping(mnemonic);
+        if (env.NETWORK_TYPE !== 'testnet') {
+            ping(mnemonic);
+        }
     } catch (error) {
         console.log("error when starting the program: ", error);
         writeStream.write(writeErrorMessage(error), (err) => {
@@ -87,6 +89,7 @@ const ping = async (mnemonic) => {
                 console.log("ping result: ", result);
             }
         } catch (error) {
+            console.log('error ping', error);
             writeStream.write(writeErrorMessage(error), (err) => {
                 if (err) console.log("error when appending error to log file: ", err);
             })

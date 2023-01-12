@@ -2,6 +2,7 @@ import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import config from './config';
+import { CORS_SITE } from './constants';
 import { LogService } from './provides/log.service';
 import MongoDb from './utils/mongodb';
 import { validationError } from './utils/validator';
@@ -17,6 +18,7 @@ async function bootstrap() {
   }));
   // app.useGlobalFilters(new HttpExceptionFilter());
 
+  app.enableCors(CORS_SITE);
   await app.listen(config.PORT);
   console.log(`start app: http://localhost:${config.PORT}`);
   await MongoDb.connect();

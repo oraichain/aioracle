@@ -32,4 +32,10 @@ const network = {
     path: "m/44'/118'/0'/0/0",
 }
 
+if (env.LCD_URL && env.LCD_URL.includes('testnet')) {
+    env.NETWORK_TYPE = 'testnet';
+} else {
+    env.NETWORK_TYPE = 'mainnet';
+}
+
 module.exports = { config, env, network };
