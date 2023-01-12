@@ -60,14 +60,12 @@ const submitReportInterval = async (gasPrices, mnemonic, mongoDb) => {
 
     // query a list of send data
     const queryResult = await mongoDb.findUnsubmittedRequests();
-    console.log("query result: ", queryResult);
 
     // broadcast send tx & update tx hash
     const msgs = []; // msgs to broadcast to blockchain network
     let requestsData = []; // requests data to store into database
     for (let { requestId, threshold } of queryResult) {
         const reportCount = await mongoDb.countExecutorReports(requestId);
-        console.log("request id with report count and threshold: ", { requestId, reportCount, threshold });
         // only submit merkle root for requests that have enough reports
         if (reportCount === threshold) {
             // query a list of reports from the request id
