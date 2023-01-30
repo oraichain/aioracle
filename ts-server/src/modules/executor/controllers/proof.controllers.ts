@@ -28,7 +28,7 @@ export class ProofController {
       body.request_id
     );
 
-    if (!data.merkle_root) {
+    if (!data?.merkle_root) {
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         message: "Waiting for the merkle root" 
@@ -47,7 +47,7 @@ export class ProofController {
         root: tree.getHexRoot()
       });
     }
-    // TODO ko co truyen index?
+
     const proofs = tree.getHexProof(hexLeaf);
     if (proofs.length === 0 && root !== hexLeaf.toString('hex')) {
       return res.status(HttpStatus.NOT_FOUND).json({

@@ -6,7 +6,7 @@ export class MerkleProofTree extends MerkleTree {
     super(leaves, undefined, { sort: true });
   }
 
-  getHexProof(leaf, index=0) {
+  getHexProof(leaf: Buffer | string, index?: number) {
     return super.getHexProof(leaf, index).map((x) => x.substring(2));
   }
 

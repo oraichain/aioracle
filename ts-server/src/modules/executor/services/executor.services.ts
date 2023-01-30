@@ -5,21 +5,16 @@ import axios from 'axios';
 import { sha256 } from 'js-sha256';
 import * as secp256k1 from 'secp256k1';
 import config from 'src/config';
-
+import { RequestStage, ExecutorPubkey, LcdRequestBase } from 'src/dtos';
 
 @Injectable()
 export class ExecutorService {
   constructor() {}
 
-  async getRequest (contractAddr, requestId) {
-    const input = JSON.stringify({
-      request: {
-        stage: requestId
-      }
-    })
+  async requestLcd(contractAddr: string, input: any): Promise<LcdRequestBase> {
     const url = `${config.LCD_URL}/cosmwasm/wasm/v1/contract/${contractAddr}` +
       `/smart/${Buffer.from(input).toString('base64')}`;
-    let resData;
+    let resData: LcdRequestBase;
     await axios.get(url)
       .then(res => {
         resData = res.data;
@@ -27,36 +22,33 @@ export class ExecutorService {
         resData = {
           error: 1,
           status: err.response?.status,
-          data: err.response?.data
-        }
+          data: err.response?.data,
+          message: err.response?.data?.message
+        };
       });
     return resData;
   }
 
-  async isWhiteListed (contractAddr, executor) {
+  async getRequest (contractAddr: string, requestId: number): Promise<RequestStage> {
+    const input = JSON.stringify({
+      request: {
+        stage: requestId
+      }
+    })
+    return await this.requestLcd(contractAddr, input);
+  }
+
+  async isWhiteListed (contractAddr: string, executor: string) {
     const input = JSON.stringify({
       get_executor: {
         pubkey: executor
       }
-    })
-    const url = `${config.LCD_URL}/cosmwasm/wasm/v1/contract/${contractAddr}` +
-      `/smart/${Buffer.from(input).toString('base64')}`;
-    let resData;
-    await axios.get(url)
-      .then(res => {
-        if (res.data?.data?.is_active) {
-          return resData = true;
-        }
-        return resData = {
-          error: 1,
-          status: res.status,
-          data: res.data,
-          message: "Cannot verify executor"
-        }
-      }).catch(err => {
-        return resData = false;
-      });
-    return resData;
+    });
+    const resData = await this.requestLcd(contractAddr, input) as ExecutorPubkey;
+    if (resData.data?.is_active) {
+      return true;
+    }
+    return false;
   }
 
   verifySignature (bufferMessage, signature, pubkey) {

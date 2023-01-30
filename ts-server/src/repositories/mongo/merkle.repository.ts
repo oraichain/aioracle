@@ -2,7 +2,7 @@ import BaseRepository from './base.repository';
 
 export class MerkleRepository extends BaseRepository {
 
-  async findLeaves (merkleRoot) {
+  async findLeaves (merkleRoot: string) {
     const query = { merkleRoot };
     const result = await this.merkleCollection.findOne(
       query,
@@ -18,14 +18,14 @@ export class MerkleRepository extends BaseRepository {
     return null;
   }
 
-  async findMerkleRoot (root) {
+  async findMerkleRoot (root: string) {
     const merkleTreeData = await this.merkleCollection.findOne({
       merkleRoot: root
     });
     return merkleTreeData ? merkleTreeData.merkleRoot : null;
   }
 
-  async insertMerkleRoot (merkleRoot, leaves) {
+  async insertMerkleRoot (merkleRoot: string, leaves: string) {
     const insertObj = {
       merkleRoot,
       leaves,

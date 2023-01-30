@@ -8,7 +8,7 @@ const network = {
     prefix: "orai",
 }
 
-const collectWallet = async (mnemonic) => {
+const collectWallet = async (mnemonic: string) => {
   const wallet = await DirectSecp256k1HdWallet.fromMnemonic(
     mnemonic,
     {

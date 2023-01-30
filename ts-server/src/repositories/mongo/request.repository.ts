@@ -2,7 +2,7 @@ import BaseRepository from './base.repository';
 
 export class RequestRepository extends BaseRepository {
 
-  async insertRequest (requestId, threshold) {
+  async insertRequest (requestId: number, threshold: number) {
     const filter = { _id: requestId, requestId };
     // add unique report to the list of reports
     const updateDoc = {
@@ -26,7 +26,7 @@ export class RequestRepository extends BaseRepository {
       .toArray();
   }
 
-  async findRequest (requestId) {
+  async findRequest (requestId: number) {
     const query = { _id: requestId, requestId, submitted: null };
     return await this.requestCollections.findOne(
       query,
@@ -34,7 +34,7 @@ export class RequestRepository extends BaseRepository {
     );
   }
 
-  async findSubmittedRequest (requestId) {
+  async findSubmittedRequest (requestId: number) {
     const query = { _id: requestId, requestId, submitted: true };
     const request = await this.requestCollections.findOne(
       query,
@@ -46,12 +46,12 @@ export class RequestRepository extends BaseRepository {
     return request;
   }
 
-  async removeRedundantRequests (requestId) {
+  async removeRedundantRequests (requestId: number) {
     const filter = { requestId, submitted: null };
     return await this.requestCollections.deleteMany(filter);
   }
 
-  async bulkUpdateRequests (requestsData, txHash) {
+  async bulkUpdateRequests (requestsData: any, txHash: string) {
     // update the requests that have been handled in the database
     let bulkUpdateOps = [];
     for (let { requestId, root } of requestsData) {

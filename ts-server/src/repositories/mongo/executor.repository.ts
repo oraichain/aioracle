@@ -1,34 +1,36 @@
 import BaseRepository from './base.repository';
+import { Executor } from 'src/entities/mongo';
+import { PagerNumberDto } from 'src/dtos';
 
 export class ExecutorRepository extends BaseRepository {
 
   /**
    * danh sach co phan trang tat ca request cua 1 executor
    *
-   * @param executor int
+   * @param executor string
    * @param pagerNumber object
    * @returns 
    */
-  async findExecutorReports (executor, pagerNumber) {
+  async findExecutorReports (executor: string, pagerNumber: PagerNumberDto) {
     const query = { executor };
     const count = await this.executorCollection.countDocuments(query);
-    const data = this.executorCollection
+    const data = await this.executorCollection
       .find(query)
       .sort({requestId: -1})
       .skip(pagerNumber.skip)
-      .limit(pagerNumber.limit);
-    return { data: await data.toArray(), count };
+      .limit(pagerNumber.limit)
+      .toArray();
+    return { data: data, count };
   }
 
   /**
    * danh sach co phan trang tat ca request
    *   da thanh cong cua 1 executor
    *
-   * TODO // phan trang dang khong hop ly
-   * phan trang mongo xong moi filter tiep -> ko du so luong
-   * dang lay het executor -> chi phan trang cho phan request?
+   * Hien tai dang khong dung, cai claim nay ngay trc lam de claim rewards
+   * ap dung vo cung phuc tap ma chua can thiet
    */
-  async findFinishedExecutorReports (executor, pagerNumber) {
+  async findFinishedExecutorReports (executor: string, pagerNumber: PagerNumberDto) {
     // find a list of reports that has the given executor & request id in the list of submitted request id. Note that the claim field must be false
     let executorResults = await this.executorCollection
       .find({ executor, $or: [{ claimed: null }, { claimed: false }] })
@@ -95,7 +97,7 @@ export class ExecutorRepository extends BaseRepository {
    * @param pagerNumber 
    * @returns 
    */
-  async findReports (requestId: number, pagerNumber) {
+  async findReports (requestId: number, pagerNumber: PagerNumberDto) {
     const query = { requestId };
     const count = await this.executorCollection.countDocuments(query);
     const data = await this.executorCollection
@@ -112,11 +114,11 @@ export class ExecutorRepository extends BaseRepository {
    * @param requestId int
    * @returns 
    */
-  async countExecutorReports (requestId) {
+  async countExecutorReports (requestId: number) {
     return await this.executorCollection.countDocuments({ requestId });
   }
 
-  async insertExecutorReport (requestId, executor, report) {
+  async insertExecutorReport (requestId: number, executor: string, report: any) {
     // request ID + executor should be unique
     const insertObj = {
       _id: `${requestId}-${executor}`, // force the executor report to be unique
@@ -128,13 +130,13 @@ export class ExecutorRepository extends BaseRepository {
     return await this.executorCollection.insertOne(insertObj);
   }
 
-  async queryExecutorReportsWithThreshold (requestId, threshold) {
+  async queryExecutorReportsWithThreshold (requestId: number, threshold: number) {
     return await this.executorCollection.find({ requestId })
       .limit(threshold > this.MAX_LIMIT ? this.MAX_LIMIT : threshold)
       .toArray();
   }
 
-  async updateReportsStatus (requestId) {
+  async updateReportsStatus (requestId: number) {
     const filter = { _id: requestId, requestId };
     const updateDoc = {
         $set: {
@@ -144,7 +146,7 @@ export class ExecutorRepository extends BaseRepository {
     return await this.requestCollections.updateOne(filter, updateDoc);
   }
 
-  async updateReports (requestId, numRedundant) {
+  async updateReports (requestId: number, numRedundant: number) {
     const reportsResult = await this.queryExecutorReportsWithThreshold(
       requestId,
       numRedundant

@@ -1,8 +1,8 @@
 import config from '../config';
-import { MongoClient } from 'mongodb';
+import { Db, MongoClient } from 'mongodb';
 
 export default class MongoDb {
-  static client = null;
+  static client: MongoClient = null;
   static db = {};
 
   static async connect() {
@@ -13,7 +13,7 @@ export default class MongoDb {
     }
   }
 
-  static async instance(db: string) {
+  static async instance(db: string): Promise<Db> {
     if (MongoDb.db[db]) {
       return MongoDb.db[db];
     }

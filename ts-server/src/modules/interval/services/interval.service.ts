@@ -12,6 +12,7 @@ import { formTree } from 'src/utils';
 import { ExecutorService } from 'src/modules/executor/services';
 import WSS from 'src/utils/wss';
 import { execute } from 'src/utils/cosmjs';
+import { MerkleRootMsg, MerkleRootExecuteMsg } from 'src/dtos';
 
 @Injectable()
 export class IntervalService {
@@ -37,7 +38,7 @@ export class IntervalService {
     await this.runInterval(gasPrices);
   }
 
-  async runInterval(gasPrices, indexRunCount=1) {
+  async runInterval(gasPrices: number, indexRunCount=1) {
     try {
       console.log('gas prices:', gasPrices, 
         ' -- run count:', indexRunCount,
@@ -64,7 +65,7 @@ export class IntervalService {
       return true;
     }
     // broadcast send tx & update tx hash
-    const msgs = []; // msgs to broadcast to blockchain network
+    const msgs: MerkleRootExecuteMsg[] = []; // msgs to broadcast to blockchain network
     let requestsData = []; // requests data to store into database
     for (let { requestId, threshold } of queryResult) {
       const reportCount = await this.repoExec.countExecutorReports(requestId);
@@ -93,12 +94,12 @@ export class IntervalService {
           contractAddress: config.CONTRACT_ADDRESS,
           msg: {
             register_merkle_root: {
-              stage: parseInt(requestId),
+              stage: requestId,
               merkle_root: root,
               executors
-            }
+            } as MerkleRootMsg
           }
-        });
+        } as MerkleRootExecuteMsg);
       } else if (reportCount < threshold) {
         // in case report length is smaller than threshold, consider removing it if there exists a finished request in db
         const { submitted } = await this.repoRequ
@@ -111,7 +112,7 @@ export class IntervalService {
       } else if (reportCount > threshold) {
         let numRedundant = reportCount - threshold;
         // update the reports so they have equal threshold
-        const removeResult = await this.repoExec.updateReports(parseInt(requestId), numRedundant);
+        const removeResult = await this.repoExec.updateReports(requestId, numRedundant);
         console.log('remove exec report', removeResult);
       }
     }
@@ -128,10 +129,10 @@ export class IntervalService {
   }
 
   async processSubmittedRequest (
-    requestId,
-    submittedMerkleRoot,
-    localMerkleRoot,
-    leaves
+    requestId: number,
+    submittedMerkleRoot: string,
+    localMerkleRoot: string,
+    leaves: string
   ) {
     console.log("merkle root already exists for this request id")
     if (submittedMerkleRoot !== localMerkleRoot) {
@@ -156,7 +157,11 @@ export class IntervalService {
     }
   }
 
-  async processUnsubmittedRequests (msgs, gasPrices, requestsData) {
+  async processUnsubmittedRequests (
+    msgs: MerkleRootExecuteMsg[],
+    gasPrices: number,
+    requestsData: any
+  ) {
     try {
       // const latestBlockData = await getLatestBlock();
       // const timeoutHeight = parseInt(latestBlockData.block.header.height) + constants.TIMEOUT_HEIGHT;

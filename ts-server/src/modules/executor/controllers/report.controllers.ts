@@ -43,7 +43,7 @@ export class ReportController {
     return {
       code: HttpStatus.OK,
       submitted: true,
-      report: report && typeof report === 'object' ? report[0] : null,
+      report: report && typeof report === 'object' ? report : null,
     }
   }
 
@@ -115,7 +115,7 @@ export class ReportController {
     );
     if (requestData.error === 1) {
       return res.status(requestData.status).json({
-        message: requestData.data?.message
+        message: requestData.message
       });
     }
     const threshold = requestData.data?.threshold;
@@ -124,11 +124,6 @@ export class ReportController {
     if (!verifyContract) {
       return res.status(HttpStatus.UNAUTHORIZED).json({
         message: "not in list"
-      });
-    }
-    if (verifyContract && verifyContract.error === 1) {
-      return res.status(verifyContract.status).json({
-        message: verifyContract.message
       });
     }
 
