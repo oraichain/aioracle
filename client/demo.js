@@ -12,6 +12,7 @@ const demo = async () => {
     const threshold = process.env.THRESHOLD || 1;
     const service = process.env.SERVICE || "price";
     const lcdUrl = process.env.LCD_URL || "https://lcd.orai.io";
+    const gasAmount = process.env.GAS_AMOUNT || '0';
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
     const [feeAmount, boundExecutorFee] = await getServiceFees(contractAddr, lcdUrl, service, threshold);
     // console.log("bound executor fee: ", boundExecutorFee)
@@ -28,7 +29,13 @@ const demo = async () => {
     console.log("input: ", input)
 
     // store the merkle root on-chain
-    const txHash = await execute({ mnemonic: wallet, address: contractAddr, handleMsg: input, gasData: { gasAmount: "0", denom: "orai" }, amount: finalFeeAmount });
+    const txHash = await execute({ 
+        mnemonic: wallet,
+        address: contractAddr,
+        handleMsg: input,
+        gasData: { gasAmount: gasAmount, denom: "orai" },
+        amount: finalFeeAmount 
+    });
     console.log("execute result: ", txHash);
     const requestId = await collectRequestId(lcdUrl, txHash);
     console.log("request id: ", requestId);

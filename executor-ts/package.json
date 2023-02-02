@@ -1,0 +1,52 @@
+{
+  "name": "executor-ts",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "bin": "dist/index.js",
+  "license": "MIT",
+  "scripts": {
+    "build": "npx tsc -p tsconfig.production.json && tscpaths -p tsconfig.json -s ./src -o ./dist",
+    "start": "node dist/index.js",
+    "start:dev": "ts-node -r tsconfig-paths/register src/index.ts",
+    "pkg": "pkg . --compress Brotli --out-path build_bin",
+    "start:test": "ts-node -r tsconfig-paths/register src/test.ts",
+    "start:any": "ts-node -r tsconfig-paths/register"
+  },
+  "devDependencies": {
+    "@types/crypto-js": "^4.1.1",
+    "@types/isomorphic-fetch": "^0.0.36",
+    "@types/lodash": "^4.14.191",
+    "@types/node": "^18.11.18",
+    "@types/secp256k1": "^4.0.3",
+    "@types/ws": "^8.5.4",
+    "pkg": "^5.8.0",
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.1.2",
+    "tscpaths": "^0.0.9",
+    "typescript": "^4.9.5"
+  },
+  "dependencies": {
+    "@cosmjs/cosmwasm-stargate": "^0.29.5",
+    "@cosmjs/crypto": "^0.29.5",
+    "@cosmjs/proto-signing": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5",
+    "@sentry/node": "^7.37.2",
+    "@sentry/tracing": "^7.37.2",
+    "bip32": "^3.1.0",
+    "bip39": "^3.0.4",
+    "crypto-js": "^4.1.1",
+    "dotenv": "^16.0.3",
+    "isomorphic-fetch": "^3.0.0",
+    "js-sha256": "^0.9.0",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.4",
+    "secp256k1": "^5.0.0",
+    "tiny-secp256k1": "^2.2.1",
+    "ws": "^8.12.0"
+  },
+  "pkg": {
+    "assets": [
+      "logs/**"
+    ]
+  }
+}
