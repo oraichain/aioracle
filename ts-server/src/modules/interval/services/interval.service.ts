@@ -13,6 +13,7 @@ import { ExecutorService } from 'src/modules/executor/services';
 import WSS from 'src/utils/wss';
 import { execute } from 'src/utils/cosmjs';
 import { MerkleRootMsg, MerkleRootExecuteMsg } from 'src/dtos';
+import { RequestMerkleRoot } from 'src/modules/executor/dtos';
 
 @Injectable()
 export class IntervalService {
@@ -66,7 +67,7 @@ export class IntervalService {
     }
     // broadcast send tx & update tx hash
     const msgs: MerkleRootExecuteMsg[] = []; // msgs to broadcast to blockchain network
-    let requestsData = []; // requests data to store into database
+    let requestsData: RequestMerkleRoot[] = []; // requests data to store into database
     for (let { requestId, threshold } of queryResult) {
       const reportCount = await this.repoExec.countExecutorReports(requestId);
       console.log("request id with report count and threshold: ", { requestId, reportCount, threshold });
@@ -86,7 +87,7 @@ export class IntervalService {
           await this.processSubmittedRequest(requestId, root, newRoot, leaves);
           continue;
         }
-        requestsData.push({ requestId, root, leaves });
+        requestsData.push({ requestId, root, leaves } as RequestMerkleRoot);
 
         // collect the executor list from report to push to contract
         const executors = reports.map(report => report.executor);
@@ -160,7 +161,7 @@ export class IntervalService {
   async processUnsubmittedRequests (
     msgs: MerkleRootExecuteMsg[],
     gasPrices: number,
-    requestsData: any
+    requestsData: RequestMerkleRoot[]
   ) {
     try {
       // const latestBlockData = await getLatestBlock();
@@ -181,7 +182,7 @@ export class IntervalService {
       if (executeResult.transactionHash) {
         // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
         await Promise.all(
-          requestsData.map(async tree => 
+          requestsData.map(async (tree: RequestMerkleRoot) => 
             this.repoMerk.insertMerkleRoot(tree.root, tree.leaves)
         ));
 
