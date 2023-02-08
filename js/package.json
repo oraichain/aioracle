@@ -16,6 +16,8 @@
     "@cosmjs/math": "^0.29.0",
     "@cosmjs/proto-signing": "^0.29.0",
     "@cosmjs/stargate": "^0.29.0",
+    "@sentry/node": "^7.36.0",
+    "@sentry/tracing": "^7.36.0",
     "bip32": "^2.0.5",
     "bip39": "^3.0.4",
     "cosmjs-types": "^0.5.2",

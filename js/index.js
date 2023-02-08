@@ -10,6 +10,13 @@ const { execute, queryWasm, getFirstWalletPubkey } = require('./cosmjs');
 const writeStream = fs.createWriteStream(process.cwd() + '/debug.log', {
     flags: 'a+'
 });
+const { SentryTrace } = require('./sentry');
+
+SentryTrace.init();
+SentryTrace.transaction({
+    op: "op_executor_js_start",
+    name: "Executor transaction js start",
+});
 
 const start = async () => {
     try {
@@ -26,12 +33,15 @@ const start = async () => {
             }
         }
         await processRequestWrapper(mnemonic);
-        ping(mnemonic);
+        if (env.NETWORK_TYPE !== 'testnet') {
+            ping(mnemonic);
+        }
     } catch (error) {
-        console.log("error when starting the program: ", error);
+        SentryTrace.capture(error, 'error when starting the program: ');
         writeStream.write(writeErrorMessage(error), (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
+        SentryTrace.finish();
         console.log("the program will exit after 10 seconds...");
         await new Promise(resolve => setTimeout(resolve, 10000));
         process.exit(0);
@@ -50,7 +60,8 @@ const processRequestWrapper = async (mnemonic) => {
         console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.4.1\n")
         connect(mnemonic);
     } catch (error) {
-        console.log("Error while trying to run the program: ", error);
+        SentryTrace.capture(error, 'Error while trying to run the program: ');
+        SentryTrace.finish();
         writeStream.write(writeErrorMessage(error), (err) => {
             if (err) console.log("error when appending error to log file: ", err);
         })
@@ -82,11 +93,13 @@ const ping = async (mnemonic) => {
                     mnemonic,
                     address: contract,
                     handleMsg: pingMsg,
-                    gasData: { gasAmount: "0", denom: "orai" },
+                    gasData: { gasAmount: env.GAS_AMOUNT, denom: "orai" },
                 });
                 console.log("ping result: ", result);
             }
         } catch (error) {
+            SentryTrace.capture(error, 'Error ping');
+            SentryTrace.finish();
             writeStream.write(writeErrorMessage(error), (err) => {
                 if (err) console.log("error when appending error to log file: ", err);
             })

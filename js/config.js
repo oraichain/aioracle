@@ -21,7 +21,10 @@ const env = {
     PING_CONTRACT: process.env.PING_CONTRACT,
     CHAIN_ID: process.env.CHAIN_ID,
     WS_PORT: process.env.WS_PORT || 4999,
-    WS_HOST: process.env.WS_HOST || "localhost"
+    WS_HOST: process.env.WS_HOST || "localhost",
+    SENTRY_DNS: process.env.SENTRY_DNS || 'https://cc0864c4cee645a687ce9696dc3da77b@o1323226.ingest.sentry.io/4504630945185792',
+    APP_ENV: process.env.APP_ENV,
+    GAS_AMOUNT: process.env.GAS_AMOUNT || '0',
 }
 
 const network = {
@@ -30,6 +33,12 @@ const network = {
     chainId: env.CHAIN_ID || "Oraichain",
     prefix: "orai",
     path: "m/44'/118'/0'/0/0",
+}
+
+if (env.LCD_URL && env.LCD_URL.includes('testnet')) {
+    env.NETWORK_TYPE = 'testnet';
+} else {
+    env.NETWORK_TYPE = 'mainnet';
 }
 
 module.exports = { config, env, network };
