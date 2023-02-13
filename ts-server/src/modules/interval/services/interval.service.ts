@@ -182,7 +182,7 @@ export class IntervalService {
       if (executeResult.transactionHash) {
         // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
         await Promise.all(
-          requestsData.map(async (tree: RequestMerkleRoot) => 
+          requestsData.map((tree: RequestMerkleRoot) => 
             this.repoMerk.insertMerkleRoot(tree.root, tree.leaves)
         ));
 
