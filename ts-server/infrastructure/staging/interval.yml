@@ -1,0 +1,28 @@
+version: '3.3'
+services:
+  ai_executor_interval_stg:
+    image: oraichain/foundation-aioracle-server:0.0.6
+    container_name: ai_executor_interval_stg
+    restart: on-failure
+    env_file:
+      - ../../.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - 7072:7071
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - aioracleexecutortestnet_default
+    command: node dist/commander interval
+
+networks:
+  aioracleexecutortestnet_default:
+    external: false
+    name: aioracleexecutortestnet_default

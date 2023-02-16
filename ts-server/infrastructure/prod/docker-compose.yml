@@ -1,0 +1,31 @@
+version: '3.3'
+services:
+  ai_executor_prod:
+    image: orai/aioracle-server:0.0.3
+    build:
+      context: ../../
+      dockerfile: ./infrastructure/Dockerfile
+    container_name: ai_executor_prod
+    restart: on-failure
+    env_file:
+      - ../../.env
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "50m"
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+    ports:
+      - 8080:8080
+    cap_add:
+      - SYS_PTRACE
+    networks:
+      - elk
+
+networks:
+  elk:
+    driver: bridge
+    external: true
+    name: elk
