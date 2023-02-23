@@ -2,17 +2,13 @@ version: '3.3'
 services:
   ai_executor:
     container_name: ai_executor
-    image: orai/ai-executor:0.0.3
+    image: orai/ai-executor:0.0.4
     build:
-      context: ../../
-      dockerfile: ./infrastructure/bin/Dockerfile
-    # build:
-    #   context: ./
-    #   dockerfile: ./Dockerfile
+      context: ./
+      dockerfile: ./Dockerfile
     tty: true
     env_file:
-      - ../../.env
-      # - ./.env
+      - ./.env
     environment:
       - PIN=${PIN}
       - DOCKER=true

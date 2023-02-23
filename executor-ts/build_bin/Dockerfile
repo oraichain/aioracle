@@ -8,6 +8,7 @@ RUN apt update && \
 ENV DENO_INSTALL="/root/.deno"
 ENV PATH=$PATH:$DENO_INSTALL/bin
 
-COPY ./build_bin/executor-ts-linux ./executor_run
+COPY ./executor-ts-linux ./executor_run
+RUN chmod +x ./executor_run
 
 CMD ["./executor_run"]

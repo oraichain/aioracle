@@ -8,7 +8,7 @@
     "build": "npx tsc -p tsconfig.production.json && tscpaths -p tsconfig.json -s ./src -o ./dist",
     "start": "node dist/index.js",
     "start:dev": "ts-node -r tsconfig-paths/register src/index.ts",
-    "pkg": "pkg . --compress Brotli --out-path build_bin",
+    "pkg": "yarn run build && pkg . --compress Brotli --out-path build_bin",
     "start:test": "ts-node -r tsconfig-paths/register src/test.ts",
     "start:any": "ts-node -r tsconfig-paths/register"
   },

@@ -6,7 +6,7 @@ import config from '../config';
 const logStdout = process.stdout;
 const folderLogs = `${config.basedir}logs/`;
 
-if (!fs.existsSync(folderLogs)) {
+if (config.LOG_FILE !== '0' && !fs.existsSync(folderLogs)) {
   fs.mkdirSync(folderLogs);
 }
 

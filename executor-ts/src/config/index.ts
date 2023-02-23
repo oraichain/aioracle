@@ -11,8 +11,8 @@ const getPathEnv = () => {
     if (fs.existsSync(path)) {
       return path;
     }
-    if (fs.existsSync(baseDir + '.env')) {
-      return baseDir + '.env';
+    if (fs.existsSync(baseDir + path)) {
+      return baseDir + path;
     }
   }
   return null;

@@ -8,6 +8,7 @@ import config from "./config";
 import { logError } from "./utils/logs";
 import { SentryTrace } from './helpers/sentry';
 import { sleep } from './utils';
+import { QueryPingInfoResponse } from './dtos';
 
 SentryTrace.init();
 SentryTrace.transaction({
@@ -49,18 +50,18 @@ const start = async () => {
 const processRequestWrapper = async (mnemonic: string) => {
   try {
     // query lalest stage
-    let { checkpoint, latest_stage, checkpoint_threshold } = 
+    let { checkpoint, latest_stage } = 
       await getStageInfo(config.CONTRACT_ADDRESS);
     if (config.REPLAY === 'true') {
       for (
-        let i = parseInt(config.START_STAGE) || parseInt(checkpoint);
-        i <= parseInt(latest_stage);
+        let i = parseInt(config.START_STAGE) || checkpoint;
+        i <= latest_stage;
         i++
       ) {
         await processRequest(i, mnemonic, true);
       }
     }
-    console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.4.1\n")
+    console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.4.2\n")
     wsClientConnect(mnemonic);
   } catch (error) {
     SentryTrace.capture(error, 'Error while trying to run the program: ');
@@ -78,7 +79,7 @@ const ping = async (mnemonic: string) => {
     try {
       const walletPubkey = await getFirstWalletPubkey(mnemonic);
       // collect info about ping and ping jump, ok to ping => ping
-      const ping = await queryWasm(contract, JSON.stringify({
+      const ping: QueryPingInfoResponse = await queryWasm(contract, JSON.stringify({
         get_ping_info: walletPubkey
       }));
       // valid case

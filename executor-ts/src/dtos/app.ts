@@ -1,7 +1,9 @@
+import { Reward } from "./contract";
+
 export class Leaf {
   executor: string;
   data: string;
-  rewards: [[string, string, string]];
+  rewards: Reward[];
 };
 
 export class LcdResponse {
@@ -9,3 +11,9 @@ export class LcdResponse {
   message?: string;
   data: any;
 };
+
+export class ReportSubmittedResponse {
+  code: number;
+  submitted: boolean;
+  report?: any;
+}

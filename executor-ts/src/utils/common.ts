@@ -5,22 +5,25 @@ import BIP32Factory from 'bip32';
 import * as ecc from 'tiny-secp256k1';
 import config from 'src/config';
 import { signSignature } from './crypto';
-import { queryWasmRaw, handleFetchResponse, getFirstWalletAddr } from './cosmjs';
+import { queryWasm, queryWasmRaw, handleFetchResponse, getFirstWalletAddr } from './cosmjs';
 import { boradcastExecutorResult } from './ws-server';
-import { Leaf } from 'src/dtos';
+import { GetServiceContractsResponse, Leaf, ReportSubmittedResponse, RequestStageResponse, StageInfoResponse } from 'src/dtos';
 
 const bip32 = BIP32Factory(ecc);
 
-export const getRequest = async (contractAddr: string, requestId: number) => {
+export const getRequest = async (
+  contractAddr: string,
+  requestId: number
+): Promise<RequestStageResponse> => {
   const input = JSON.stringify({
     request: {
-        stage: requestId
+      stage: requestId
     }
   })
-  return queryWasmRaw(contractAddr, input);
+  return queryWasm(contractAddr, input);
 }
 
-export const getStageInfo = async (contractAddr: string) => {
+export const getStageInfo = async (contractAddr: string): Promise<StageInfoResponse> => {
   const input = JSON.stringify({
     stage_info: {}
   })
@@ -30,7 +33,7 @@ export const getStageInfo = async (contractAddr: string) => {
     if (data.message) {
       throw data.message;
     }
-      throw 'No request to handle';
+    throw 'No request to handle';
   }
   return data.data;
 }
@@ -39,30 +42,33 @@ export const checkSubmit = async (
   contractAddr: string,
   requestId: number,
   executor: string
-) => {
+): Promise<ReportSubmittedResponse> => {
   return fetch(
     `${config.BACKEND_URL}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(
-        executor,
-        "base64"
+      executor,
+      "base64"
     ).toString("hex")}`
   ).then((data) => handleFetchResponse(data));
 };
 
-export const getServiceContracts = async (contractAddr: string, requestId: number) => {
+export const getServiceContracts = async (
+  contractAddr: string,
+  requestId: number
+): Promise<GetServiceContractsResponse> => {
   const input = JSON.stringify({
     get_service_contracts: { stage: requestId }
   });
   const data = await queryWasmRaw(contractAddr, input);
   if (!data.data) {
-      throw "No service contracts to execute";
+    throw "No service contracts to execute";
   }
   return data.data;
 }
 
 export const generateWalletFromMnemonic = (
-    mnemonic: string,
-    path = config.path,
-    password = ""
+  mnemonic: string,
+  path = config.path,
+  password = ""
 ) => {
   const seed = mnemonicToSeedSync(mnemonic, password);
   const masterKey = bip32.fromSeed(seed);
