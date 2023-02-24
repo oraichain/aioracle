@@ -1,18 +1,11 @@
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
-import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
+import { CosmWasmClient, SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { stringToPath } from '@cosmjs/crypto';
 import { GasPrice } from '@cosmjs/stargate';
 import * as fetch from 'isomorphic-fetch';
 import config from '../config';
 import { sleep } from "./";
-import { ExecuteRequest, LcdResponse } from "src/dtos";
-
-const handleResult = (result: LcdResponse) => {
-  if (result.code && result.code !== 0) {
-    throw result.message;
-  }
-  return result.data;
-};
+import { ExecuteRequest } from "src/dtos";
 
 export const handleFetchResponse = async (response: Response) => {
   const contentType = response.headers.get("content-type");
@@ -24,10 +17,11 @@ export const handleFetchResponse = async (response: Response) => {
   }
 };
 
-export const queryWasmRetry = async (address: string, input: string, retryCount: number) => {
-  const url = `${config.LCD_URL}/cosmwasm/wasm/v1/contract/${address}/smart/${Buffer.from(input).toString("base64")}`;
+export const queryWasm = async (address: string, input: string, retryCount: number = 0) => {
+  const client = await CosmWasmClient.connect(config.RPC_URL);
   try {
-    return await fetch(url).then((data) => handleFetchResponse(data));
+    const result: Object = await client.queryContractSmart(address, JSON.parse(input));
+    return result;
   } catch (error) {
     console.log("error: ", error);
     console.log("retry count: ", retryCount);
@@ -35,17 +29,8 @@ export const queryWasmRetry = async (address: string, input: string, retryCount:
       throw error
     };
     await sleep(5000);
-    return queryWasmRetry(address, input, retryCount + 1);
+    return queryWasm(address, input, retryCount + 1);
   }
-};
-
-export const queryWasmRaw = async (address: string, input: string) => {
-  return queryWasmRetry(address, input, 0);
-};
-
-export const queryWasm = async (address: string, input: string) => {
-    let result = await queryWasmRetry(address, input, 0);
-    return handleResult(result);
 };
 
 const collectWallet = async (mnemonic: string) => {
@@ -57,9 +42,9 @@ const collectWallet = async (mnemonic: string) => {
 };
 
 export const getFirstWalletAddr = async (mnemonic: string) => {
-    let wallet = await collectWallet(mnemonic);
-    const [address] = await wallet.getAccounts();
-    return address;
+  let wallet = await collectWallet(mnemonic);
+  const [address] = await wallet.getAccounts();
+  return address;
 };
 
 export const getFirstWalletPubkey = async (mnemonic: string) => {
@@ -93,8 +78,8 @@ export const execute = async (executeReq: ExecuteRequest) => {
       executeReq.memo
     );
   } catch (error) {
-      console.error("error in executing contrac: ", error);
-      throw error;
+    console.error("error in executing contrac: ", error);
+    throw error;
   }
 };
 

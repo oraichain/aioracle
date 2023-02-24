@@ -1,18 +1,19 @@
-import { processRequest }  from './utils/process-request';
-import { getStageInfo }  from './utils/common';
+import { processRequest } from './utils/process-request';
+import { getStageInfo } from './utils/common';
 import { wsClientConnect } from './utils/ws';
-import { collectPin }  from './utils/prompt';
-import { evaluatePin }  from './utils/crypto';
-import { execute, queryWasm, getFirstWalletPubkey }  from './utils/cosmjs';
+import { collectPin } from './utils/prompt';
+import { evaluatePin } from './utils/crypto';
+import { execute, queryWasm, getFirstWalletPubkey } from './utils/cosmjs';
 import config from "./config";
 import { logError } from "./utils/logs";
 import { SentryTrace } from './helpers/sentry';
 import { sleep } from './utils';
+import { QueryPingInfoResponse } from './dtos';
 
 SentryTrace.init();
 SentryTrace.transaction({
-    op: "op_executor_js_start",
-    name: "Executor transaction js start",
+  op: "op_executor_js_start",
+  name: "Executor transaction js start",
 });
 
 const start = async () => {
@@ -29,7 +30,7 @@ const start = async () => {
     } else {
       if (!mnemonic) {
         throw 'You need to have either mnemonic or encrypted mnemonic ' +
-          'in your .env file to start the application!';
+        'in your .env file to start the application!';
       }
     }
     await processRequestWrapper(mnemonic);
@@ -49,18 +50,18 @@ const start = async () => {
 const processRequestWrapper = async (mnemonic: string) => {
   try {
     // query lalest stage
-    let { checkpoint, latest_stage, checkpoint_threshold } = 
+    let { checkpoint, latest_stage } =
       await getStageInfo(config.CONTRACT_ADDRESS);
     if (config.REPLAY === 'true') {
       for (
-        let i = parseInt(config.START_STAGE) || parseInt(checkpoint);
-        i <= parseInt(latest_stage);
+        let i = parseInt(config.START_STAGE) || checkpoint;
+        i <= latest_stage;
         i++
       ) {
         await processRequest(i, mnemonic, true);
       }
     }
-    console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.4.1\n")
+    console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.4.2\n")
     wsClientConnect(mnemonic);
   } catch (error) {
     SentryTrace.capture(error, 'Error while trying to run the program: ');
@@ -80,7 +81,7 @@ const ping = async (mnemonic: string) => {
       // collect info about ping and ping jump, ok to ping => ping
       const ping = await queryWasm(contract, JSON.stringify({
         get_ping_info: walletPubkey
-      }));
+      })) as QueryPingInfoResponse;
       // valid case
       if (
         ping.current_height - ping.ping_info.latest_ping_height >= ping.ping_jump ||

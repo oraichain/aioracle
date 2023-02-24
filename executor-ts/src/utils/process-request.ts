@@ -7,9 +7,9 @@ import config from '../config';
 import { getFirstWalletPubkey, queryWasm } from './cosmjs';
 import { getData } from './script-execute';
 import { logError } from './logs';
-import { Leaf } from 'src/dtos';
+import { Coin, Leaf, RequestStageResponse } from 'src/dtos';
 
-const filterRequest = async (pubkey: string, { data: request }): Promise<[boolean, string]> => {
+const filterRequest = async (pubkey: string, request: RequestStageResponse): Promise<[boolean, string]> => {
   if (request && request.merkle_root) {
     return [false, 'request already has merkle root'];
   }
@@ -17,12 +17,11 @@ const filterRequest = async (pubkey: string, { data: request }): Promise<[boolea
     get_participant_fee: {
       pubkey
     }
-  }));
+  })) as Coin;
 
   if (!request.preference_executor_fee) {
     return [false, 'Could not query the preference fee from the request'];
   }
-
   if (request.preference_executor_fee.denom !== executorFee.denom ||
     parseInt(request.preference_executor_fee.amount) < parseInt(executorFee.amount)
   ) {
@@ -31,7 +30,7 @@ const filterRequest = async (pubkey: string, { data: request }): Promise<[boolea
   return [true, 'valid request'];
 }
 
-export const processRequest = async (requestId: number, mnemonic: string, isAwait=false) => {
+export const processRequest = async (requestId: number, mnemonic: string, isAwait = false) => {
   console.log("request id: ", requestId);
   const contractAddr = config.CONTRACT_ADDRESS;
   const executor = await getFirstWalletPubkey(mnemonic);

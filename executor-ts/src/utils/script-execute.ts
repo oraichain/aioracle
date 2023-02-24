@@ -1,7 +1,8 @@
 import { spawn } from 'child_process';
-import { queryWasm, queryWasmRaw } from './cosmjs';
+import { queryWasm } from './cosmjs';
 import { queryTestCases } from './query-testcase';
 import { getServiceContracts } from './common';
+import { AggregateResponse, AssertResponse, GetServiceContractsResponse, GetStateResponse, RequestStageResponse } from 'src/dtos';
 
 export const getData = async (
   contractAddr: string,
@@ -18,7 +19,7 @@ export const getData = async (
     request: {
       stage: requestId
     }
-  }));
+  })) as RequestStageResponse;
   // first index of reward is executor / provider addr. We're filtering the list of eligible addrs
   let validDSourceRewards = rewards.filter(
     reward => validDSources.includes(reward[0])
@@ -41,9 +42,9 @@ export const getData = async (
 const executeTestCases = async (
   dsourceScriptUrl: string,
   tcaseAddrs: string[]
-): Promise<any[]> => {
+): Promise<AssertResponse[]> => {
   // run data source given the parameters of the test cases
-  let assertResults = [];
+  let assertResults = new Array<AssertResponse>();
   for (let tcaseAddr of tcaseAddrs) {
     // get the test case's input parameters
     let testCases = await queryTestCases(tcaseAddr);
@@ -64,13 +65,13 @@ const executeTestCases = async (
     let assertResult = await queryWasm(
       tcaseAddr,
       JSON.stringify({ assert: { assert_inputs: assertInputs } })
-    );
+    ) as AssertResponse;
     assertResults.push(assertResult);
   }
   return assertResults;
 }
 
-export const handleScript = async (contracts: any, requestInput: any) => {
+export const handleScript = async (contracts: GetServiceContractsResponse, requestInput: any) => {
   const { oscript, dsources, tcases } = contracts;
   // execute the data sources
   let results = [];
@@ -80,11 +81,11 @@ export const handleScript = async (contracts: any, requestInput: any) => {
     let input = JSON.stringify({
       get_state: {}
     });
-    let state = await queryWasm(dsource, input);
+    let state = await queryWasm(dsource, input) as GetStateResponse;
     // if any test case status is true & data source status is false => the data source is invalid
     let assertResults = await executeTestCases(state.script_url, tcases)
     let assertResultsDSources = assertResults.filter(
-      assertResult => 
+      assertResult =>
         (!assertResult.dsource_status && assertResult.tcase_status)
     );
     if (assertResultsDSources.length > 0) {
@@ -93,7 +94,7 @@ export const handleScript = async (contracts: any, requestInput: any) => {
 
     // collect all valid test cases
     let assertResultsTcases = assertResults.filter(
-      assertResult => 
+      assertResult =>
         assertResult.tcase_status
     ).map(assertResult => assertResult.contract);
     validTestCases = validTestCases.concat(assertResultsTcases);
@@ -113,9 +114,9 @@ export const handleScript = async (contracts: any, requestInput: any) => {
       results
     }
   });
-  let { data } = await queryWasmRaw(oscript, input);
+  let aggregateResponse = await queryWasm(oscript, input) as AggregateResponse;
   return [
-    JSON.stringify(data),
+    JSON.stringify(aggregateResponse),
     [... new Set(validDSources)],
     [... new Set(validTestCases)]
   ];

@@ -1,7 +1,8 @@
-import { queryWasmRaw } from './cosmjs';
+import { TestCaseResponse, TestCaseMsg } from 'src/dtos';
+import { queryWasm } from './cosmjs';
 
 type ResultTestCases = {
-  testCases?: any[]
+  testCases?: TestCaseMsg[]
 }
 
 export const queryTestCases = async (addr: string) => {
@@ -15,14 +16,14 @@ export const queryTestCases = async (addr: string) => {
 
 const queryTestCasesRecursive = async (
   addr: string,
-  offset: string=null,
-  results: ResultTestCases={}
-) => {
+  offset: string = null,
+  results: ResultTestCases = {}
+): Promise<TestCaseMsg[]> => {
   if (!results.testCases) {
-    results.testCases = []
+    results.testCases = new Array<TestCaseMsg>();
   }
   const limit = 1;
-  const { data } = await queryWasmRaw(
+  const data = await queryWasm(
     addr,
     JSON.stringify({
       get_test_cases: {
@@ -30,7 +31,7 @@ const queryTestCasesRecursive = async (
         offset
       }
     })
-  );
+  ) as TestCaseResponse;
   if (!data || !data.test_cases || data.test_cases.length === 0) {
     return results.testCases;
   }

@@ -1,4 +1,4 @@
-import {config as dotenvLib} from 'dotenv';
+import { config as dotenvLib } from 'dotenv';
 import * as fs from 'fs';
 
 const pathEnv = [
@@ -11,8 +11,8 @@ const getPathEnv = () => {
     if (fs.existsSync(path)) {
       return path;
     }
-    if (fs.existsSync(baseDir + '.env')) {
-      return baseDir + '.env';
+    if (fs.existsSync(baseDir + path)) {
+      return baseDir + path;
     }
   }
   return null;
@@ -29,12 +29,11 @@ const configDefault = {
   basedir: baseDir,
   appdir: baseDir + 'src/',
   storagedir: baseDir + 'storage/',
-  isProd: process.env.APP_ENV && 
+  isProd: process.env.APP_ENV &&
     (process.env.APP_ENV.toLowerCase() === 'prod' ||
       process.env.APP_ENV.toLowerCase() === 'production')
     ? true : false,
   RPC_URL: process.env.NETWORK_RPC || 'https://rpc.orai.io',
-  LCD_URL: 'https://lcd.orai.io',
   CHAIN_ID: 'Oraichain',
   WEBSOCKET_URL: 'ws://rpc.orai.io',
   REPLAY: 'false',
@@ -55,7 +54,7 @@ const config: any = Object.assign(configDefault, process.env);
 config.PING_INTERVAL = parseInt(config.PING_INTERVAL);
 config.WS_PORT = parseInt(config.WS_PORT);
 if (!config.NETWORK_TYPE) {
-  if (config.LCD_URL && config.LCD_URL.includes('testnet')) {
+  if (config.RPC_URL && config.RPC_URL.includes('testnet')) {
     config.NETWORK_TYPE = 'testnet';
   } else {
     config.NETWORK_TYPE = 'mainnet';

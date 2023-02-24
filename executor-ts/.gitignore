@@ -32,4 +32,5 @@ logs
 .scannerwork
 
 build
-build_bin
+
+build_bin/*
