@@ -78,8 +78,8 @@ export class SentryTrace {
    * not use, dung truc tiep trong exception luon
    * @param {*} e 
    */
-  static capture(e: Error, textMore='') {
-    if (textMore) {
+  static capture(e: Error, textMore: any='') {
+    if (textMore && textMore.length > 0) {
       console.error(textMore, e);
     } else {
       console.error(e);

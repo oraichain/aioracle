@@ -88,7 +88,6 @@ const processData = async ({
       await submitReport(resultDataReward.requestId, leaf, mnemonic);
     }
   }).catch((error: Error) => {
-    console.error('error get data request', error);
-    logError(error)
+    logError(error, 'error get data process Data: ');
   });
 }

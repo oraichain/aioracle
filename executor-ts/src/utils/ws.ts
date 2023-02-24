@@ -39,13 +39,12 @@ export const wsClientConnect = (mnemonic: string) => {
         processRequest(parseInt(requestId), mnemonic);
       }
     } catch (error) {
-      logError('socket message', error);
+      logError(error, 'error socket message');
     }
   });
 
   ws.on('error', (error) => {
-    console.error("on error: ", error);
-    logError('socket error', error);
+    logError(error, 'error socket on ');
     ws.close(1005, JSON.stringify(error))
   })
 

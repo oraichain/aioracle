@@ -38,9 +38,7 @@ const start = async () => {
       ping(mnemonic);
     }
   } catch (error) {
-    SentryTrace.capture(error, 'error when starting the program: ');
-    logError('start', error);
-    SentryTrace.finish();
+    logError(error, 'error when starting the program: ');
     console.log("the program will exit after 10 seconds...");
     await sleep(10000);
     process.exit(0);
@@ -64,9 +62,7 @@ const processRequestWrapper = async (mnemonic: string) => {
     console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.4.2\n")
     wsClientConnect(mnemonic);
   } catch (error) {
-    SentryTrace.capture(error, 'Error while trying to run the program: ');
-    logError('processRequestWrapper', error);
-    SentryTrace.finish();
+    logError(error, 'error rocess request program');
     // sleep 5s then start again
     await sleep(5000);
     await processRequestWrapper(mnemonic);
@@ -100,9 +96,7 @@ const ping = async (mnemonic: string) => {
         console.log("ping result: ", result);
       }
     } catch (error) {
-      SentryTrace.capture(error, 'Error ping');
-      SentryTrace.finish();
-      logError('Ping', error);
+      logError(error, 'error ping');
     } finally {
       await sleep(config.PING_INTERVAL);
     }

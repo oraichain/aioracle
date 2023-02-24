@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as util from 'util';
 import * as moment from "moment";
 import config from '../config';
+import { SentryTrace } from 'src/helpers/sentry';
 
 const logStdout = process.stdout;
 const folderLogs = `${config.basedir}logs/`;
@@ -36,8 +37,10 @@ export function logInfo(...d) {
   logFile(d, openFile('info'));
 }
 
-export function logError(...d) {
-  logFile(d, openFile('error'));
+export function logError(errorObj, ...d) {
+  SentryTrace.capture(errorObj, d);
+  SentryTrace.finish();
+  logFile(d.concat(errorObj), openFile('error'));
 }
 
 export function logInfoConsole(...d) {
