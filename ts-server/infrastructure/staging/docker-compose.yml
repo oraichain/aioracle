@@ -1,7 +1,7 @@
 version: '3.3'
 services:
   ai_executor_stg:
-    image: oraichain/foundation-aioracle-server:0.0.6
+    image: oraichain/foundation-aioracle-server:0.1.0
     build:
       context: ../../
       dockerfile: ./infrastructure/Dockerfile
