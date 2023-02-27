@@ -1,0 +1,21 @@
+version: '3.3'
+services:
+  ai_executor:
+    container_name: ai_executor
+    image: orai/ai-executor:0.0.4
+    build:
+      context: ./
+      dockerfile: ./Dockerfile
+    tty: true
+    env_file:
+      - ./.env
+    environment:
+      - PIN=${PIN}
+      - DOCKER=true
+    restart: on-failure
+    logging:
+      driver: "local"
+      options:
+        max-size: "100m"
+        max-file: "3"
+    # command: sleep infinity
