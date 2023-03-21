@@ -1,11 +1,7 @@
 import {
   Injectable,
 } from '@nestjs/common';
-import axios from 'axios';
-import { sha256 } from 'js-sha256';
-import * as secp256k1 from 'secp256k1';
 import config from 'src/config';
-import { COMMON } from 'src/constants';
 import { ExecutorRepository, MerkleRepository, RequestRepository } from 'src/repositories/mongo';
 import * as moment from "moment";
 import { formTree } from 'src/utils';
@@ -26,7 +22,7 @@ export class IntervalService {
 
   public async runMain() {
     this.wss = new WSS();
-    let gasPrices = COMMON.BASE_GAS_PRICES;
+    let gasPrices = parseFloat(config.BASE_GAS_PRICES);
     this.repoExec = new ExecutorRepository();
     this.repoRequ = new RequestRepository();
     this.repoMerk = new MerkleRepository();
