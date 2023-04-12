@@ -1,14 +1,18 @@
-import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
+import {
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+  ValidationArguments,
+} from 'class-validator';
 import { bech32 } from 'bech32';
 
 const isContractOrai = (val) => {
   try {
-    const result = bech32.decode(val, 43);
+    const result = bech32.decode(val, 63);
     return result.prefix === 'orai';
   } catch (err) {
     return false;
   }
-}
+};
 
 @ValidatorConstraint({ name: 'IsContractOrai', async: false })
 export class IsContractOrai implements ValidatorConstraintInterface {
@@ -55,18 +59,18 @@ export class IsValidRewards implements ValidatorConstraintInterface {
         return false;
       }
       // 2nd index is denom of reward. Force it to be orai for now.
-      if (reward[1] !== "orai") {
+      if (reward[1] !== 'orai') {
         return false;
-      };
+      }
       // 3rd index is amount of reward. must be a number
       if (isNaN(reward[2])) {
         return false;
-      };
+      }
     }
     return true;
   }
 
   defaultMessage(args: ValidationArguments) {
-    return 'invalid reward denom [oraiContractAddress, \'orai\', numberAmountReward]';
+    return "invalid reward denom [oraiContractAddress, 'orai', numberAmountReward]";
   }
 }

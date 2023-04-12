@@ -26,7 +26,7 @@ const demo = async () => {
             preference_executor_fee: { denom: 'orai', amount: '10' }
         }
     }
-    console.log("input: ", input)
+    console.log("input: ", input, finalFeeAmount)
 
     // store the merkle root on-chain
     const txHash = await execute({ 
@@ -34,7 +34,7 @@ const demo = async () => {
         address: contractAddr,
         handleMsg: input,
         gasData: { gasAmount: gasAmount, denom: "orai" },
-        amount: finalFeeAmount 
+        amount: finalFeeAmount
     });
     console.log("execute result: ", txHash);
     const requestId = await collectRequestId(lcdUrl, txHash);
@@ -50,13 +50,15 @@ const getServiceFees = async (contractAddr, lcdUrl, service, threshold) => {
         }
     })
     const boundExecutorFeeMsg = JSON.stringify({
-        get_bound_executor_fee: {}
+        get_bound_executor_fee: {
+            service: service
+        }
     })
     let rawData = await fetch(`${lcdUrl}/cosmwasm/wasm/v1/contract/${contractAddr}/smart/${Buffer.from(getServiceFeesMsg).toString('base64')}`).then(data => data.json());
     let data = rawData.data;
     let boundFee = await fetch(`${lcdUrl}/cosmwasm/wasm/v1/contract/${contractAddr}/smart/${Buffer.from(boundExecutorFeeMsg).toString('base64')}`).then(data => data.json());
     let boundExecutorFee = boundFee.data;
-    console.log("data: ", rawData);
+    console.log("data: ", rawData, boundFee);
     data.push(["placeholder", boundExecutorFee.denom, boundExecutorFee.amount]);
     // let data = [
     //     ['orai1y88tlgddntj66sn46qqlvtx3tp7tgl8sxxx6uk', 'orai', '1'],
