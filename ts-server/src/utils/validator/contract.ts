@@ -1,9 +1,9 @@
 import { ValidatorConstraint, ValidatorConstraintInterface, ValidationArguments } from 'class-validator';
 import { bech32 } from 'bech32';
 
-const isContractOrai = (val) => {
+const isContractOrai = (val: string) => {
   try {
-    const result = bech32.decode(val, 43);
+    const result = bech32.decode(val);
     return result.prefix === 'orai';
   } catch (err) {
     return false;
