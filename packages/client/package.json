@@ -1,10 +1,10 @@
 {
   "dependencies": {
-    "@cosmjs/cosmwasm-stargate": "^0.29.0",
-    "@cosmjs/crypto": "^0.29.0",
-    "@cosmjs/math": "^0.29.0",
-    "@cosmjs/proto-signing": "^0.29.0",
-    "@cosmjs/stargate": "^0.29.0",
+    "@cosmjs/cosmwasm-stargate": "^0.29.5",
+    "@cosmjs/crypto": "^0.29.5",
+    "@cosmjs/math": "^0.29.5",
+    "@cosmjs/proto-signing": "^0.29.5",
+    "@cosmjs/stargate": "^0.29.5",
     "@oraichain/oraiwasm-js": "^0.0.4",
     "dotenv": "^10.0.0",
     "isomorphic-fetch": "^3.0.0"
