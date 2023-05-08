@@ -4,9 +4,10 @@
 * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
 */
 
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import {HandleMsg, HumanAddr, Uint128, Binary, Coin, InitMsg} from "./types";
-import {MigrateMsg, QueryMsg} from "./AioracleHealthCheck.types";
+import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
+import { StdFee } from "@cosmjs/amino";
+import {HumanAddr, Uint128, Binary, Coin, PingInfo} from "./types";
+import {ExecuteMsg, GetPingInfoResponse, GetPingInfosResponse, QueryPingInfosResponse, GetReadPingInfoResponse, GetStateResponse, InstantiateMsg, MigrateMsg, QueryMsg} from "./AioracleHealthCheck.types";
 export interface AioracleHealthCheckReadOnlyInterface {
   contractAddress: string;
   getPingInfo: () => Promise<GetPingInfoResponse>;
@@ -66,5 +67,98 @@ export class AioracleHealthCheckQueryClient implements AioracleHealthCheckReadOn
     return this.client.queryContractSmart(this.contractAddress, {
       get_state: {}
     });
+  };
+}
+export interface AioracleHealthCheckInterface extends AioracleHealthCheckReadOnlyInterface {
+  contractAddress: string;
+  sender: string;
+  changeState: ({
+    aioracleAddr,
+    baseReward,
+    maxRewardClaim,
+    owner,
+    pingJump,
+    pingJumpInterval
+  }: {
+    aioracleAddr?: HumanAddr;
+    baseReward?: Coin;
+    maxRewardClaim?: Uint128;
+    owner?: HumanAddr;
+    pingJump?: number;
+    pingJumpInterval?: number;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  ping: ({
+    pubkey
+  }: {
+    pubkey: Binary;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  claimReward: ({
+    pubkey
+  }: {
+    pubkey: Binary;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+}
+export class AioracleHealthCheckClient extends AioracleHealthCheckQueryClient implements AioracleHealthCheckInterface {
+  client: SigningCosmWasmClient;
+  sender: string;
+  contractAddress: string;
+
+  constructor(client: SigningCosmWasmClient, sender: string, contractAddress: string) {
+    super(client, contractAddress);
+    this.client = client;
+    this.sender = sender;
+    this.contractAddress = contractAddress;
+    this.changeState = this.changeState.bind(this);
+    this.ping = this.ping.bind(this);
+    this.claimReward = this.claimReward.bind(this);
+  }
+
+  changeState = async ({
+    aioracleAddr,
+    baseReward,
+    maxRewardClaim,
+    owner,
+    pingJump,
+    pingJumpInterval
+  }: {
+    aioracleAddr?: HumanAddr;
+    baseReward?: Coin;
+    maxRewardClaim?: Uint128;
+    owner?: HumanAddr;
+    pingJump?: number;
+    pingJumpInterval?: number;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      change_state: {
+        aioracle_addr: aioracleAddr,
+        base_reward: baseReward,
+        max_reward_claim: maxRewardClaim,
+        owner,
+        ping_jump: pingJump,
+        ping_jump_interval: pingJumpInterval
+      }
+    }, $fee, $memo, $funds);
+  };
+  ping = async ({
+    pubkey
+  }: {
+    pubkey: Binary;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      ping: {
+        pubkey
+      }
+    }, $fee, $memo, $funds);
+  };
+  claimReward = async ({
+    pubkey
+  }: {
+    pubkey: Binary;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      claim_reward: {
+        pubkey
+      }
+    }, $fee, $memo, $funds);
   };
 }

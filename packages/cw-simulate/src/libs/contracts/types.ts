@@ -1,21 +1,3 @@
-export type HandleMsg = {
-  change_state: {
-    aioracle_addr?: HumanAddr | null;
-    base_reward?: Coin | null;
-    max_reward_claim?: Uint128 | null;
-    owner?: HumanAddr | null;
-    ping_jump?: number | null;
-    ping_jump_interval?: number | null;
-  };
-} | {
-  ping: {
-    pubkey: Binary;
-  };
-} | {
-  claim_reward: {
-    pubkey: Binary;
-  };
-};
 export type HumanAddr = string;
 export type Uint128 = string;
 export type Binary = string;
@@ -23,10 +5,9 @@ export interface Coin {
   amount: Uint128;
   denom: string;
 }
-export interface InitMsg {
-  aioracle_addr: HumanAddr;
-  base_reward: Coin;
-  ping_jump: number;
+export interface PingInfo {
+  latest_ping_height: number;
+  total_ping: number;
 }
 export interface UpdateConfigMsg {
   new_checkpoint?: number | null;
@@ -73,12 +54,12 @@ export interface State {
   parameters: string[];
   script_url: string;
 }
-export interface TestCaseMsg {
-  expected_output: string;
-  parameters: string[];
-}
 export interface Contracts {
   dsources: HumanAddr[];
   oscript: HumanAddr;
   tcases: HumanAddr[];
+}
+export interface TestCaseMsg {
+  expected_output: string;
+  parameters: string[];
 }
