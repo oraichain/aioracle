@@ -1,6 +1,12 @@
 # new-aioracle-demo
 
-Deploy:
+## Generate code and docs
+
+```bash
+typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/cw-simulate/tsconfig.json --exclude "packages/cw-simulate/src/libs/contracts/*Flower*" packages/cw-simulate/src/libs/contracts
+```
+
+## Deploy:
 
 ```bash
 yarn oraicli wasm deploy ../oraiwasm/package/aioracle/aioracle_v2/artifacts/aioracle_v2.wasm --input '{"contract_fee":{"amount":"0","denom":"orai"},"executors":["AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn","AjqcDJ6IlUtYbpuPNRdsOsSGQWxuOmoEMZag29oROhSX"],"service_addr":"orai1q7t6qltupd7jt6wyenggz62xutjlel0etuu5hw"}' --label 'aioracle contract' --gas 3000000
@@ -8,11 +14,11 @@ yarn oraicli wasm deploy ../oraiwasm/package/aioracle/aioracle_v2/artifacts/aior
 # contract: orai1s60a2vntfuv2ps6fs75fcrlrmea9xzr4k65zlg
 ```
 
-Run test:
+## Run test:
 
 ### 1. Run server side
 
-Enter the js-server directory: ```cd js-server```
+Enter the js-server directory: `cd js-server`
 
 Create a new .env.mongo file with the below content:
 
