@@ -4,9 +4,10 @@
 * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
 */
 
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import {HandleMsg, TestCaseMsg, Uint128, InitMsg, Coin, Binary} from "./types";
-import {QueryMsg} from "./TcaseFlowerClassification.types";
+import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
+import { StdFee } from "@cosmjs/amino";
+import {HumanAddr, TestCaseMsg, Uint128, Coin, Binary} from "./types";
+import {AssertResponse, ExecuteMsg, GetOwnerResponse, GetTestCasesResponse, InstantiateMsg, QueryMsg} from "./TcaseFlowerClassification.types";
 export interface TcaseFlowerClassificationReadOnlyInterface {
   contractAddress: string;
   getOwner: () => Promise<GetOwnerResponse>;
@@ -69,5 +70,73 @@ export class TcaseFlowerClassificationQueryClient implements TcaseFlowerClassifi
         assert_inputs: assertInputs
       }
     });
+  };
+}
+export interface TcaseFlowerClassificationInterface extends TcaseFlowerClassificationReadOnlyInterface {
+  contractAddress: string;
+  sender: string;
+  setOwner: ({
+    owner
+  }: {
+    owner: string;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  addTestCase: ({
+    testCase
+  }: {
+    testCase: TestCaseMsg;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  removeTestCase: ({
+    input
+  }: {
+    input: string[];
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+}
+export class TcaseFlowerClassificationClient extends TcaseFlowerClassificationQueryClient implements TcaseFlowerClassificationInterface {
+  client: SigningCosmWasmClient;
+  sender: string;
+  contractAddress: string;
+
+  constructor(client: SigningCosmWasmClient, sender: string, contractAddress: string) {
+    super(client, contractAddress);
+    this.client = client;
+    this.sender = sender;
+    this.contractAddress = contractAddress;
+    this.setOwner = this.setOwner.bind(this);
+    this.addTestCase = this.addTestCase.bind(this);
+    this.removeTestCase = this.removeTestCase.bind(this);
+  }
+
+  setOwner = async ({
+    owner
+  }: {
+    owner: string;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      set_owner: {
+        owner
+      }
+    }, $fee, $memo, $funds);
+  };
+  addTestCase = async ({
+    testCase
+  }: {
+    testCase: TestCaseMsg;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      add_test_case: {
+        test_case: testCase
+      }
+    }, $fee, $memo, $funds);
+  };
+  removeTestCase = async ({
+    input
+  }: {
+    input: string[];
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      remove_test_case: {
+        input
+      }
+    }, $fee, $memo, $funds);
   };
 }

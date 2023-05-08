@@ -4,9 +4,10 @@
 * and run the @cosmwasm/ts-codegen generate command to regenerate this file.
 */
 
-import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import {HandleMsg, HumanAddr, Uint128, StateMsg, Coin, InitMsg, State} from "./types";
-import {QueryMsg} from "./DsourceEmpty.types";
+import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
+import { StdFee } from "@cosmjs/amino";
+import {HumanAddr, Uint128, StateMsg, Coin, State} from "./types";
+import {ExecuteMsg, GetOwnerResponse, GetStateResponse, InstantiateMsg, QueryMsg} from "./DsourceEmpty.types";
 export interface DsourceEmptyReadOnlyInterface {
   contractAddress: string;
   getState: () => Promise<GetStateResponse>;
@@ -32,5 +33,105 @@ export class DsourceEmptyQueryClient implements DsourceEmptyReadOnlyInterface {
     return this.client.queryContractSmart(this.contractAddress, {
       get_owner: {}
     });
+  };
+}
+export interface DsourceEmptyInterface extends DsourceEmptyReadOnlyInterface {
+  contractAddress: string;
+  sender: string;
+  setState: ({
+    language,
+    parameters,
+    scriptUrl
+  }: {
+    language?: string;
+    parameters?: string[];
+    scriptUrl?: string;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  setServiceFees: ({
+    contractAddr,
+    fee
+  }: {
+    contractAddr: HumanAddr;
+    fee: Coin;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  withdrawFees: ({
+    fee
+  }: {
+    fee: Coin;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+  setOwner: ({
+    owner
+  }: {
+    owner: string;
+  }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
+}
+export class DsourceEmptyClient extends DsourceEmptyQueryClient implements DsourceEmptyInterface {
+  client: SigningCosmWasmClient;
+  sender: string;
+  contractAddress: string;
+
+  constructor(client: SigningCosmWasmClient, sender: string, contractAddress: string) {
+    super(client, contractAddress);
+    this.client = client;
+    this.sender = sender;
+    this.contractAddress = contractAddress;
+    this.setState = this.setState.bind(this);
+    this.setServiceFees = this.setServiceFees.bind(this);
+    this.withdrawFees = this.withdrawFees.bind(this);
+    this.setOwner = this.setOwner.bind(this);
+  }
+
+  setState = async ({
+    language,
+    parameters,
+    scriptUrl
+  }: {
+    language?: string;
+    parameters?: string[];
+    scriptUrl?: string;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      set_state: {
+        language,
+        parameters,
+        script_url: scriptUrl
+      }
+    }, $fee, $memo, $funds);
+  };
+  setServiceFees = async ({
+    contractAddr,
+    fee
+  }: {
+    contractAddr: HumanAddr;
+    fee: Coin;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      set_service_fees: {
+        contract_addr: contractAddr,
+        fee
+      }
+    }, $fee, $memo, $funds);
+  };
+  withdrawFees = async ({
+    fee
+  }: {
+    fee: Coin;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      withdraw_fees: {
+        fee
+      }
+    }, $fee, $memo, $funds);
+  };
+  setOwner = async ({
+    owner
+  }: {
+    owner: string;
+  }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
+    return await this.client.execute(this.sender, this.contractAddress, {
+      set_owner: {
+        owner
+      }
+    }, $fee, $memo, $funds);
   };
 }

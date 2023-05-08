@@ -1,10 +1,33 @@
-export type Uint128 = string;
+export type HandleMsg = {
+  change_state: {
+    aioracle_addr?: HumanAddr | null;
+    base_reward?: Coin | null;
+    max_reward_claim?: Uint128 | null;
+    owner?: HumanAddr | null;
+    ping_jump?: number | null;
+    ping_jump_interval?: number | null;
+  };
+} | {
+  ping: {
+    pubkey: Binary;
+  };
+} | {
+  claim_reward: {
+    pubkey: Binary;
+  };
+};
 export type HumanAddr = string;
+export type Uint128 = string;
+export type Binary = string;
 export interface Coin {
   amount: Uint128;
   denom: string;
 }
-export type Binary = string;
+export interface InitMsg {
+  aioracle_addr: HumanAddr;
+  base_reward: Coin;
+  ping_jump: number;
+}
 export interface UpdateConfigMsg {
   new_checkpoint?: number | null;
   new_checkpoint_threshold?: number | null;
@@ -40,39 +63,22 @@ export interface PagingFeesOptions {
   offset?: string | null;
   order?: number | null;
 }
-export type HandleMsg = {
-  set_state: StateMsg;
-} | {
-  set_service_fees: {
-    contract_addr: HumanAddr;
-    fee: Coin;
-  };
-} | {
-  withdraw_fees: {
-    fee: Coin;
-  };
-} | {
-  set_owner: {
-    owner: string;
-  };
-};
 export interface StateMsg {
   language?: string | null;
   parameters?: string[] | null;
   script_url?: string | null;
 }
-export type InitMsg = State;
 export interface State {
   language: string;
   parameters: string[];
   script_url: string;
 }
+export interface TestCaseMsg {
+  expected_output: string;
+  parameters: string[];
+}
 export interface Contracts {
   dsources: HumanAddr[];
   oscript: HumanAddr;
   tcases: HumanAddr[];
-}
-export interface TestCaseMsg {
-  expected_output: string;
-  parameters: string[];
 }

@@ -2,10 +2,16 @@ import { coin, coins } from '@cosmjs/amino';
 import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
 import * as ServiceFeeTypes from '../libs/contracts/AioracleServiceFees.types';
 import * as AiOracleTypes from '../libs/contracts/AioracleV2.types';
+import * as DsourceEmptyTypes from '../libs/contracts/DsourceEmpty.types';
+import * as TcaseEmptyTypes from '../libs/contracts/TcaseEmpty.types';
+import * as OscriptBasicTypes from '../libs/contracts/OscriptBasic.types';
 import * as ProviderBridgeTypes from '../libs/contracts/ProviderBridge.types';
 import { AioracleV2Client } from '../libs/contracts/AioracleV2.client';
 import { AioracleServiceFeesClient } from '../libs/contracts/AioracleServiceFees.client';
 import { ProviderBridgeClient } from '../libs/contracts/ProviderBridge.client';
+import { DsourceEmptyClient } from '../libs/contracts/DsourceEmpty.client';
+import { TcaseEmptyClient } from '../libs/contracts/TcaseEmpty.client';
+import { OscriptBasicQueryClient } from '../libs/contracts/OscriptBasic.client';
 import path from 'path';
 
 const admin = 'admin_aioraclev2';
@@ -66,15 +72,47 @@ export const aioraclev2 = async () => {
 };
 
 const providerBridge = async (serviceFeeContractAddr: string): Promise<ProviderBridgeClient> => {
+  const dsourcesRes = await client.deploy(
+    admin,
+    path.join(testDataDir, 'dsource_empty.wasm'),
+    {
+      language: 'node',
+      script_url: 'https://gist.githubusercontent.com/tubackkhoa/4ab5353a5b44118ccd697f14df65733f/raw/4a27d2ac4255d23463286898b161eda87d1b95bb/datasource_coingecko.js',
+      parameters: ['ethereum']
+    } as DsourceEmptyTypes.InstantiateMsg,
+    'dsource',
+    'auto'
+  );
+  const dsourceContract = new DsourceEmptyClient(client, admin, dsourcesRes.contractAddress);
+
+  const tcaseRes = await client.deploy(
+    admin,
+    path.join(testDataDir, 'tcase_empty.wasm'),
+    {
+      test_cases: [
+        {
+          parameters: ['ethereum 0'],
+          expected_output: 'hello0'
+        }
+      ]
+    } as TcaseEmptyTypes.InstantiateMsg,
+    'tcase',
+    'auto'
+  );
+  const tcaseContract = new TcaseEmptyClient(client, admin, tcaseRes.contractAddress);
+
+  const oscriptRes = await client.deploy(admin, path.join(testDataDir, 'oscript_basic.wasm'), {} as OscriptBasicTypes.InstantiateMsg, 'tcase', 'auto');
+  const oscriptContract = new OscriptBasicQueryClient(client, oscriptRes.contractAddress);
+
   const { contractAddress } = await client.deploy(
     admin,
     path.join(testDataDir, 'provider_bridge.wasm'),
     {
       service: SERVICE_DEFAULT,
       service_contracts: {
-        dsources: ['orai188efpndge9hqayll4cp9gzv0dw6rvj25e4slkp'],
-        tcases: ['orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt'],
-        oscript: 'orai1nc6eqvnczmtqq8keplyrha9z7vnd5v9vvsxxgj'
+        dsources: [dsourceContract.contractAddress],
+        tcases: [tcaseContract.contractAddress],
+        oscript: oscriptContract.contractAddress
       },
       service_fees_contract: serviceFeeContractAddr,
       bound_executor_fee: '1'

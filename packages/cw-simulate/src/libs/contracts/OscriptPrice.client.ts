@@ -5,8 +5,8 @@
 */
 
 import { CosmWasmClient } from "@cosmjs/cosmwasm-stargate";
-import {HandleMsg, InitMsg} from "./types";
-import {QueryMsg} from "./OscriptPrice.types";
+import {} from "./types";
+import {AggregateResponse, ExecuteMsg, InstantiateMsg, QueryMsg} from "./OscriptPrice.types";
 export interface OscriptPriceReadOnlyInterface {
   contractAddress: string;
   aggregate: ({
