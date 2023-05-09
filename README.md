@@ -3,7 +3,7 @@
 ## Generate code and docs
 
 ```bash
-yarn typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/contracts-gen/tsconfig.json --exclude "packages/contracts-gen/src/*Flower*" packages/contracts-gen/src
+yarn typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json --exclude "packages/contracts-sdk/src/*Flower*" packages/contracts-gen/sdk
 ```
 
 ## Deploy:

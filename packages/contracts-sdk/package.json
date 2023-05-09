@@ -2,8 +2,6 @@
   "name": "@aioracle/contracts-sdk",
   "version": "1.0.0",
   "main": "src/index.ts",
-  "license": "MIT",
-  "dependencies": {
-    "@aioracle/contracts-gen": "1.0.0"
-  }
+  "typings": "src",
+  "license": "MIT"
 }

@@ -1,7 +1,0 @@
-{
-  "name": "@aioracle/contracts-gen",
-  "version": "1.0.0",
-  "main": "src/index.ts",
-  "typings": "src",
-  "license": "MIT"
-}
