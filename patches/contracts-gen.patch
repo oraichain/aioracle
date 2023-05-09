@@ -1,7 +1,7 @@
 diff --git a/packages/contracts-gen/src/DsourceEmpty.client.ts b/packages/contracts-gen/src/DsourceEmpty.client.ts
 index bbbd9d5..abbf9df 100644
---- a/packages/contracts-gen/src/DsourceEmpty.client.ts
-+++ b/packages/contracts-gen/src/DsourceEmpty.client.ts
+--- a/packages/contracts-sdk/src/DsourceEmpty.client.ts
++++ b/packages/contracts-sdk/src/DsourceEmpty.client.ts
 @@ -65,6 +65,22 @@ export interface DsourceEmptyInterface extends DsourceEmptyReadOnlyInterface {
      owner: string;
    }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
