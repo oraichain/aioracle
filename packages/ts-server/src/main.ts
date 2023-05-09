@@ -1,5 +1,6 @@
 import { ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
+import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module';
 import config from './config';
 import { CORS_SITE } from './constants';
@@ -13,10 +14,22 @@ async function bootstrap() {
     logger: new LogService(),
   });
 
-  app.useGlobalPipes(new ValidationPipe({
-    exceptionFactory: validationError,
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      exceptionFactory: validationError,
+    }),
+  );
   // app.useGlobalFilters(new HttpExceptionFilter());
+  const document = SwaggerModule.createDocument(
+    app,
+    new DocumentBuilder()
+      .setTitle('Cats example')
+      .setDescription('The cats API description')
+      .setVersion('1.0')
+      .addTag('cats')
+      .build(),
+  );
+  SwaggerModule.setup('api', app, document);
 
   app.enableCors(CORS_SITE);
   await app.listen(config.PORT);
@@ -37,13 +50,12 @@ async function bootstrap() {
 
 // cleanup funciton to close connection
 const cleanup = async (event) => {
-  console.log("event to close: ", event);
+  console.log('event to close: ', event);
   await MongoDb.close();
   process.exit();
-}
+};
 
 process.on('SIGINT', cleanup);
 process.on('SIGTERM', cleanup);
 
 bootstrap();
-
