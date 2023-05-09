@@ -23,10 +23,10 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(
     app,
     new DocumentBuilder()
-      .setTitle('Cats example')
-      .setDescription('The cats API description')
+      .setTitle('AI Oracle server')
+      .setDescription('The AI Oracle server API description')
       .setVersion('1.0')
-      .addTag('cats')
+      .addTag('aioracle')
       .build(),
   );
   SwaggerModule.setup('api', app, document);
