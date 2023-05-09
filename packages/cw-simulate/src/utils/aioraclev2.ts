@@ -1,17 +1,21 @@
 import { coin, coins } from '@cosmjs/amino';
 import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
-import * as ServiceFeeTypes from '../libs/contracts/AioracleServiceFees.types';
-import * as AiOracleTypes from '../libs/contracts/AioracleV2.types';
-import * as DsourceEmptyTypes from '../libs/contracts/DsourceEmpty.types';
-import * as TcaseEmptyTypes from '../libs/contracts/TcaseEmpty.types';
-import * as OscriptBasicTypes from '../libs/contracts/OscriptBasic.types';
-import * as ProviderBridgeTypes from '../libs/contracts/ProviderBridge.types';
-import { AioracleV2Client } from '../libs/contracts/AioracleV2.client';
-import { AioracleServiceFeesClient } from '../libs/contracts/AioracleServiceFees.client';
-import { ProviderBridgeClient } from '../libs/contracts/ProviderBridge.client';
-import { DsourceEmptyClient } from '../libs/contracts/DsourceEmpty.client';
-import { TcaseEmptyClient } from '../libs/contracts/TcaseEmpty.client';
-import { OscriptBasicQueryClient } from '../libs/contracts/OscriptBasic.client';
+
+import {
+  AioracleV2Client,
+  AioracleServiceFeesClient,
+  ProviderBridgeClient,
+  DsourceEmptyClient,
+  OscriptBasicQueryClient,
+  TcaseEmptyClient,
+  ProviderBridgeTypes,
+  OscriptBasicTypes,
+  TcaseEmptyTypes,
+  DsourceEmptyTypes,
+  AioracleV2Types,
+  AioracleServiceFeesTypes
+} from '@aioracle/contracts-sdk';
+
 import path from 'path';
 
 const admin = 'admin_aioraclev2';
@@ -37,7 +41,7 @@ export const aioraclev2 = async () => {
       service_addr: provideBridgeContract.contractAddress,
       contract_fee: coin(1, 'orai'),
       executors: executorsDemo()
-    } as AiOracleTypes.InstantiateMsg,
+    } as AioracleV2Types.InstantiateMsg,
     'aioraclev2 label'
   );
 
@@ -124,7 +128,7 @@ const providerBridge = async (serviceFeeContractAddr: string): Promise<ProviderB
 };
 
 const serviceFees = async (): Promise<AioracleServiceFeesClient> => {
-  const { contractAddress } = await client.deploy(admin, path.join(testDataDir, 'aioracle_service_fees.wasm'), {} as ServiceFeeTypes.InstantiateMsg, 'service fee label');
+  const { contractAddress } = await client.deploy(admin, path.join(testDataDir, 'aioracle_service_fees.wasm'), {} as AioracleServiceFeesTypes.InstantiateMsg, 'service fee label');
   return new AioracleServiceFeesClient(client, admin, contractAddress);
 };
 

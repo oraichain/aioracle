@@ -9,6 +9,25 @@ export interface PingInfo {
   latest_ping_height: number;
   total_ping: number;
 }
+export interface UpdateContractMsg {
+  creator?: HumanAddr | null;
+  governance?: HumanAddr | null;
+}
+export interface PagingFeesOptions {
+  limit?: number | null;
+  offset?: string | null;
+  order?: number | null;
+}
+export interface StateMsg {
+  language?: string | null;
+  parameters?: string[] | null;
+  script_url?: string | null;
+}
+export interface State {
+  language: string;
+  parameters: string[];
+  script_url: string;
+}
 export interface UpdateConfigMsg {
   new_checkpoint?: number | null;
   new_checkpoint_threshold?: number | null;
@@ -35,31 +54,12 @@ export interface TrustingPool {
   withdraw_amount_coin: Coin;
   withdraw_height: number;
 }
-export interface UpdateContractMsg {
-  creator?: HumanAddr | null;
-  governance?: HumanAddr | null;
-}
-export interface PagingFeesOptions {
-  limit?: number | null;
-  offset?: string | null;
-  order?: number | null;
-}
-export interface StateMsg {
-  language?: string | null;
-  parameters?: string[] | null;
-  script_url?: string | null;
-}
-export interface State {
-  language: string;
+export interface TestCaseMsg {
+  expected_output: string;
   parameters: string[];
-  script_url: string;
 }
 export interface Contracts {
   dsources: HumanAddr[];
   oscript: HumanAddr;
   tcases: HumanAddr[];
-}
-export interface TestCaseMsg {
-  expected_output: string;
-  parameters: string[];
 }
