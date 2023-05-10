@@ -19,7 +19,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
-    "@aioracle/contracts-sdk": "1.0.0",
+    "@oraichain/aioracle-contracts-sdk": "1.0.0",
     "@cosmjs/amino": "^0.29.5",
     "@cosmjs/cosmwasm-stargate": "^0.29.5",
     "@cosmjs/encoding": "^0.29.5",

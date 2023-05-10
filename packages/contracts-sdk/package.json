@@ -1,5 +1,5 @@
 {
-  "name": "@aioracle/contracts-sdk",
+  "name": "@oraichain/aioracle-contracts-sdk",
   "version": "1.0.0",
   "main": "src/index.ts",
   "typings": "src",

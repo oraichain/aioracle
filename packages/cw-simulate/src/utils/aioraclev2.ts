@@ -14,7 +14,7 @@ import {
   DsourceEmptyTypes,
   AioracleV2Types,
   AioracleServiceFeesTypes
-} from '@aioracle/contracts-sdk';
+} from '@oraichain/aioracle-contracts-sdk';
 
 import path from 'path';
 
