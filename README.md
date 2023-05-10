@@ -9,11 +9,11 @@ cw-gents ../oraiwasm/package/aioracle/* -o packages/contracts-sdk/src
 yarn typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json --exclude "packages/contracts-sdk/src/*Flower*" packages/contracts-sdk/src
 
 # update comments:
-git apply patches/contracts-gen.patch
-# edit contracts-gen
-git diff packages/contracts-gen > patches/contracts-gen.patch
+git apply patches/contracts-sdk.patch
+# edit contracts-sdk
+git diff packages/contracts-sdk > patches/contracts-sdk.patch
 # rollback
-git checkout packages/contracts-gen/src/DsourceEmpty.client.ts
+git checkout packages/contracts-sdk
 ```
 
 ## Deploy:
