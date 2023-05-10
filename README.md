@@ -6,7 +6,7 @@
 # gen code:
 cw-gents ../oraiwasm/package/aioracle/* -o packages/contracts-sdk/src
 # gen doc:
-yarn typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json --exclude "packages/contracts-sdk/src/*Flower*" packages/contracts-gen/sdk
+yarn typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json --exclude "packages/contracts-sdk/src/*Flower*" packages/contracts-sdk/src
 
 # update comments:
 git apply patches/contracts-gen.patch
