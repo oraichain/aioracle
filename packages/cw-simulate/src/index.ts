@@ -1,3 +1,3 @@
-import { aioraclev2 } from './utils/aioraclev2';
+import { aioracle } from './utils/aioracle';
 
-aioraclev2();
+aioracle();

@@ -12,24 +12,12 @@
     "start:any": "ts-node -r tsconfig-paths/register"
   },
   "devDependencies": {
-    "@types/node": "^18.11.18",
-    "ts-node": "^10.9.1",
     "tsconfig-paths": "^4.1.2",
-    "tscpaths": "^0.0.9",
-    "typescript": "^4.9.5"
+    "tscpaths": "^0.0.9"
   },
   "dependencies": {
     "@oraichain/aioracle-contracts-sdk": "1.0.0",
-    "@cosmjs/amino": "^0.29.5",
-    "@cosmjs/cosmwasm-stargate": "^0.29.5",
-    "@cosmjs/encoding": "^0.29.5",
-    "@cosmjs/proto-signing": "^0.29.5",
-    "@cosmjs/stargate": "^0.29.5",
-    "@terran-one/cw-simulate": "https://github.com/oraichain/cw-simulate",
-    "dotenv": "^16.0.3",
+    "@oraichain/aioracle-contracts-build": "1.0.0",
     "moment": "^2.29.4"
-  },
-  "engines": {
-    "node": ">=18.0.0"
   }
 }
