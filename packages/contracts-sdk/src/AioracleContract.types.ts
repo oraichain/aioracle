@@ -1,6 +1,6 @@
-import {Binary, Addr, Uint128, UpdateConfigMsg, Coin, Config, Executor, Uint64, ArrayOfExecutor, Boolean} from "./types";
+import {Addr, Binary, Uint128, UpdateConfigMsg, Coin, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
 export interface InstantiateMsg {
-  executors?: Binary[] | null;
+  executors?: string[] | null;
   owner?: Addr | null;
 }
 export type ExecuteMsg = {
@@ -20,24 +20,27 @@ export type ExecuteMsg = {
     service: string;
     threshold: number;
   };
+} | {
+  add_service: AddServiceMsg;
+} | {
+  update_service: UpdateServiceMsg;
+} | {
+  delete_service: {
+    service_name: string;
+  };
 };
 export type QueryMsg = {
   config: {};
 } | {
   get_executors: {
+    end?: string | null;
     limit?: number | null;
-    offset?: Binary | null;
     order?: number | null;
+    start?: string | null;
   };
 } | {
-  get_executors_by_index: {
-    limit?: number | null;
-    offset?: number | null;
-    order?: number | null;
-  };
-} | {
-  get_executor: {
-    pubkey: Binary;
+  check_executor_in_list: {
+    address: string;
   };
 } | {
   get_executor_size: {};
@@ -73,6 +76,17 @@ export type QueryMsg = {
     proof?: string[] | null;
     stage: number;
   };
+} | {
+  get_service: {
+    service_name: string;
+  };
+} | {
+  get_services: {
+    end?: string | null;
+    limit?: number | null;
+    order?: number | null;
+    start?: string | null;
+  };
 };
 export interface MigrateMsg {}
 export interface RequestResponse {
@@ -85,6 +99,11 @@ export interface RequestResponse {
   threshold: number;
 }
 export type ArrayOfRequestResponse = RequestResponse[];
+export type ArrayOfServiceInfoResponse = ServiceInfoResponse[];
+export interface ServiceInfoResponse {
+  service_info: ServiceInfo;
+  service_name: string;
+}
 export interface LatestStageResponse {
   latest_stage: number;
 }

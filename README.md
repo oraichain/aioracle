@@ -3,8 +3,17 @@
 ## Generate code and docs
 
 ```bash
-# gen code:
-cw-gents ../aioracle-contract -o packages/contracts-sdk/src
+# build contract
+cw-build ../aioracle-contract -o packages/contracts-build/data/
+
+# build contract schema
+cw-build ../aioracle-contract -o packages/contracts-build/data/ -s
+
+# build sdk typescript code
+cw-gents ../aioracle-contract/ -o packages/contracts-sdk/src/
+
+# gen docs
+yarn docs
 
 # update comments:
 git apply patches/contracts-sdk.patch

@@ -1,27 +1,51 @@
-export type Binary = string;
 export type Addr = string;
+export type Binary = string;
 export type Uint128 = string;
 export interface UpdateConfigMsg {
   new_checkpoint?: number | null;
   new_checkpoint_threshold?: number | null;
-  new_executors?: Binary[] | null;
+  new_executors?: string[] | null;
   new_max_req_threshold?: number | null;
   new_owner?: Addr | null;
-  old_executors?: Binary[] | null;
+  old_executors?: string[] | null;
 }
 export interface Coin {
   amount: Uint128;
   denom: string;
 }
+export interface AddServiceMsg {
+  service: Service;
+  service_name: string;
+}
+export interface Service {
+  dsources: DataSourceState[];
+  oscript_url: string;
+  tcases: TestCaseState[];
+}
+export interface DataSourceState {
+  language: string;
+  parameters: Binary[];
+  script_url: string;
+}
+export interface TestCaseState {
+  expected_output: Binary;
+  input: Binary;
+}
+export interface UpdateServiceMsg {
+  dsources?: DataSourceState[] | null;
+  new_owner?: string | null;
+  oscript_url?: string | null;
+  service_name: string;
+  tcases?: TestCaseState[] | null;
+}
+export type Boolean = boolean;
 export interface Config {
   max_req_threshold: number;
   owner: Addr;
 }
-export interface Executor {
-  is_active: boolean;
-  left_block?: number | null;
-  pubkey: Binary;
-}
 export type Uint64 = number;
-export type ArrayOfExecutor = Executor[];
-export type Boolean = boolean;
+export type ArrayOfString = string[];
+export interface ServiceInfo {
+  owner: Addr;
+  service: Service;
+}

@@ -1,9 +1,9 @@
 import { coin, coins } from '@cosmjs/amino';
 import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
-import { AioracleContractClient, AioracleContractTypes } from '@oraichain/aioracle-contracts-sdk';
+import { AioracleContractClient, AioracleContractTypes, DataSourceState } from '@oraichain/aioracle-contracts-sdk';
 import { getContractDir } from '@oraichain/aioracle-contracts-build';
 
-import path from 'path';
+import { assert } from 'console';
 
 const admin = 'admin_aioraclev2';
 const client = new SimulateCosmWasmClient({
@@ -11,20 +11,16 @@ const client = new SimulateCosmWasmClient({
   bech32Prefix: 'orai'
 });
 const SERVICE_DEFAULT = 'price';
-const EXECUTOR_PUBKEY = 'AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn';
-
-const testDataDir = path.resolve(__dirname, '..', 'testdata');
+const EXECUTOR_ADDRESS = 'orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573';
 
 export const aioracle = async () => {
-  console.log(1111111, executorsDemo());
   client.app.bank.setBalance(admin, [coin('10000000000', 'orai')]);
-
   const { contractAddress } = await client.deploy(
     admin,
     getContractDir(),
     {
-      owner: null,
-      executors: executorsDemo()
+      owner: EXECUTOR_ADDRESS,
+      executors: getExecutors()
     } as AioracleContractTypes.InstantiateMsg,
     'aioraclev2 label'
   );
@@ -33,30 +29,45 @@ export const aioracle = async () => {
   const funds = coins(10, 'orai');
 
   const aioracleContract = new AioracleContractClient(client, admin, contractAddress);
+  await testQueryExecutors(aioracleContract);
+  await testAddService(aioracleContract);
+  await testUpdateService(aioracleContract);
 };
 
-const executorsDemo = (): any[] => {
-  const pubKeys = [
-    'Agq2Xl1IcoOt4IRhaA2pO7xq2SBGBfsQuopQnptmos1q',
-    'Ahc1poKD9thmAX8dMgFCVKhpUjyVYHfB0q/XTwPuD/J/',
-    'Ah11L/hsl9J9mXkH9xFzKQbw9F/wh0n6JaKitTzptYqR',
-    'AiIhSld8auqXnAE2Hzcr5gBrmLaHxbFrIbZcpb3iG0Zz',
-    'A6ENA5I5QhHyy1QIOLkgTcf/x31WE+JLFoISgmcQaI0t',
-    'A3PR7VXxp/lU5cQRctmDRjmyuMi50M+qiy1lKl3GYgeA',
-    'A/2zTPo7IjMyvf41xH2uS38mcjW5wX71CqzO+MwsuKiw',
-    EXECUTOR_PUBKEY
+// test get executor list
+const testQueryExecutors = async (aioracle: AioracleContractClient) => {
+  let executors = await aioracle.getExecutors({ limit: 1 });
+  assert(executors.length === 1, "executor length with limit 1 is not equal to 1");
+
+  executors = await aioracle.getExecutors({ start: null, end: null });
+  assert(executors.length === getExecutors().length, 'executor length with no limit should return length of getExecutors')
+}
+
+const testAddService = async (aioracle: AioracleContractClient) => {
+  const serviceData = { oscript_url: "https://orai.io", tcases: [{ input: Buffer.from("1").toString('base64'), expected_output: Buffer.from("2").toString('base64') }], dsources: [{ language: "node", parameters: [Buffer.from("foobar").toString('base64')], script_url: "https://" } as DataSourceState] };
+  await aioracle.addService({ serviceName: SERVICE_DEFAULT, service: serviceData });
+
+  const service = await aioracle.getService({ serviceName: SERVICE_DEFAULT });
+  console.dir(service.service, { depth: null })
+  console.dir(serviceData, { depth: null })
+  assert(service.service.dsources.length === 1);
+  assert(service.service.tcases.length === 1);
+  assert(service.service.oscript_url.length > 0);
+}
+
+const testUpdateService = async (aioracle: AioracleContractClient) => {
+  // since we are re-using the same client so the add service state is retained. This function should only called after testAddService
+  await aioracle.updateService({ serviceName: SERVICE_DEFAULT, dsources: [] });
+  const service = await aioracle.getService({ serviceName: SERVICE_DEFAULT });
+  assert(service.service.dsources.length === 0);
+  assert(service.service.tcases.length === 1);
+  assert(service.service.oscript_url.length > 0);
+}
+
+const getExecutors = (): any[] => {
+  const executors = [
+    "orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt",
+    EXECUTOR_ADDRESS
   ];
-  return pubKeys;
-};
-
-const executorSingle = (pubkey = EXECUTOR_PUBKEY) => {
-  return Buffer.from(
-    JSON.stringify({
-      pubkey: pubkey,
-      executing_power: 0,
-      index: 1,
-      is_active: true,
-      left_block: null
-    })
-  ).toString('base64');
+  return executors;
 };
