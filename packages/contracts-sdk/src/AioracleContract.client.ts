@@ -6,7 +6,7 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import {Addr, Binary, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
+import {Addr, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Binary, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
 import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, RequestResponse, ArrayOfRequestResponse, ArrayOfServiceInfoResponse, ServiceInfoResponse, LatestStageResponse} from "./AioracleContract.types";
 export interface AioracleContractReadOnlyInterface {
   contractAddress: string;
@@ -297,7 +297,7 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
     service,
     threshold
   }: {
-    input?: Binary;
+    input?: string;
     service: string;
     threshold: number;
   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
@@ -378,7 +378,7 @@ export class AioracleContractClient extends AioracleContractQueryClient implemen
     service,
     threshold
   }: {
-    input?: Binary;
+    input?: string;
     service: string;
     threshold: number;
   }, $fee: number | StdFee | "auto" = "auto", $memo?: string, $funds?: Coin[]): Promise<ExecuteResult> => {
