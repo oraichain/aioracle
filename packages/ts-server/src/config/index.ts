@@ -18,7 +18,7 @@ const configDefault = {
   RPC_URL: process.env.NETWORK_RPC,
   LCD_URL: process.env.NETWORK_LCD || "https://testnet-lcd.orai.io",
   RUN_INTERVAL: '1',
-  BASE_GAS_PRICES: '0',
+  BASE_GAS_PRICES: '0.001',
 };
 
 const config = Object.assign(configDefault, process.env);

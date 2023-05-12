@@ -10,7 +10,7 @@ import {
   Res
 } from '@nestjs/common';
 import { Response } from 'express';
-import { ExecutorsClaimBody, ExecutorsReport, ExecutorsReportHexParam, ExecutorsReportParam } from '../dtos';
+import { ExecutorsReport, ExecutorsReportHexParam, ExecutorsReportParam } from '../dtos';
 import { executorConverB64, paginatorNumber } from 'src/utils';
 import { ExecutorRepository } from 'src/repositories/mongo';
 
@@ -21,7 +21,7 @@ export class ExecutorController {
     @Param() params: ExecutorsReportParam,
     @Query(new ValidationPipe({
       transform: true,
-      transformOptions: {enableImplicitConversion: true},
+      transformOptions: { enableImplicitConversion: true },
       forbidNonWhitelisted: true
     })) query: ExecutorsReport
   ) {
@@ -38,7 +38,7 @@ export class ExecutorController {
     @Param() params: ExecutorsReportHexParam,
     @Query(new ValidationPipe({
       transform: true,
-      transformOptions: {enableImplicitConversion: true},
+      transformOptions: { enableImplicitConversion: true },
       forbidNonWhitelisted: true
     })) query: ExecutorsReport
   ) {
@@ -53,20 +53,5 @@ export class ExecutorController {
       pagerNumber
     );
     return res;
-  }
-
-  @Post('/claim')
-  async claimExecutorReports(
-    @Res() res: Response,
-    @Body() body: ExecutorsClaimBody
-  ) {
-    const repo = new ExecutorRepository();
-    await repo.db(body.contract_addr);
-    const data = {
-      code: HttpStatus.OK,
-      'count': await repo.bulkUpdateExecutorReports(body.data)
-    };
-    return res.status(HttpStatus.OK)
-      .json(data);
   }
 }

@@ -22,7 +22,6 @@ const getFinishedReports = async (executor, contractAddr) => {
 {
   executor: 'AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn',
   data: 'W3sibGFiZWwiOiJzdW5mbG93ZXIiLCJzY29yZSI6OTl9XQ==',
-  rewards: [],
   signature: 'KKkZPjY0CGFcSkk1W9Z1OCqjwi73YsIdu7eIKkElc9J79h+61MUcVZFcqVsFJu2IIPafnYi7ir4RRTPFpisZog=='
 }
 */
@@ -33,7 +32,6 @@ const getFinishedReports = async (executor, contractAddr) => {
 {
   executor: 'AipQCudhlHpWnHjSgVKZ+SoSicvjH7Mp5gCFyDdlnQtn',
   data: '41486ea1f6ca67f23c297746f0193426085a140929dd66d5fc2094c8186e1b8a',
-  rewards: [],
   signature: 'KKkZPjY0CGFcSkk1W9Z1OCqjwi73YsIdu7eIKkElc9J79h+61MUcVZFcqVsFJu2IIPafnYi7ir4RRTPFpisZog=='
 }
 
@@ -61,20 +59,6 @@ const handleFinishedReports = async (executor, contractAddr) => {
     return listProofs;
 }
 
-const updateClaim = async (data, contractAddr) => {
-    const requestOptions = {
-        method: 'POST',
-        headers: {
-            'Accept': 'application/json',
-            'Content-Type': "application/json"
-        },
-        body: JSON.stringify({ data, contract_addr: contractAddr }),
-        redirect: 'follow'
-    };
-    let result = await fetch(`${backendUrl}/executor/claim`, requestOptions).then(data => data.json())
-    return result;
-}
-
 // const start = async () => {
 //     const reports = await handleFinishedReports(process.env.EXECUTOR, process.env.CONTRACT_ADDRESS);
 //     console.log("reports: ", reports)
@@ -82,4 +66,4 @@ const updateClaim = async (data, contractAddr) => {
 
 // start();
 
-module.exports = { handleFinishedReports, updateClaim };
+module.exports = { handleFinishedReports };

@@ -13,7 +13,7 @@ import { RequestMerkleRoot } from 'src/modules/executor/dtos';
 
 @Injectable()
 export class IntervalService {
-  constructor() {}
+  constructor() { }
   private repoExec: ExecutorRepository;
   private repoRequ: RequestRepository;
   private repoMerk: MerkleRepository;
@@ -35,9 +35,10 @@ export class IntervalService {
     await this.runInterval(gasPrices);
   }
 
-  async runInterval(gasPrices: number, indexRunCount=1) {
+  async runInterval(gasPrices: number, indexRunCount = 1) {
+
     try {
-      console.log('gas prices:', gasPrices, 
+      console.log('gas prices:', gasPrices,
         ' -- run count:', indexRunCount,
         ' -- time:', moment().format()
       );
@@ -50,11 +51,11 @@ export class IntervalService {
       }
     } finally {
       await new Promise(r => setTimeout(r, config.PROCESS_INTERVAL));
-      await this.runInterval(gasPrices, indexRunCount+1);
+      await this.runInterval(gasPrices, indexRunCount + 1);
     }
   }
 
-  async submitReportInterval (gasPrices: number) {
+  async submitReportInterval(gasPrices: number) {
     // query a list of send data
     const queryResult = await this.repoRequ.findUnsubmittedRequests();
     console.log("query result: ", queryResult);
@@ -115,17 +116,17 @@ export class IntervalService {
     }
 
     if (msgs.length > 0) {
-        // only broadcast new txs if has unfinished reports
-        // query latest block
-        await this.processUnsubmittedRequests(
-          msgs,
-          gasPrices,
-          requestsData
-        );
+      // only broadcast new txs if has unfinished reports
+      // query latest block
+      await this.processUnsubmittedRequests(
+        msgs,
+        gasPrices,
+        requestsData
+      );
     }
   }
 
-  async processSubmittedRequest (
+  async processSubmittedRequest(
     requestId: number,
     submittedMerkleRoot: string,
     localMerkleRoot: string,
@@ -154,7 +155,7 @@ export class IntervalService {
     }
   }
 
-  async processUnsubmittedRequests (
+  async processUnsubmittedRequests(
     msgs: MerkleRootExecuteMsg[],
     gasPrices: number,
     requestsData: RequestMerkleRoot[]
@@ -168,19 +169,19 @@ export class IntervalService {
 
       // store the merkle root on-chain
       const executeResult = await execute({
-          mnemonic: config.MNEMONIC,
-          msgs,
-          memo: "",
-          gasData: { gasAmount: gasPrices, denom: "orai" },
+        mnemonic: config.MNEMONIC,
+        msgs,
+        memo: "",
+        gasData: { gasAmount: gasPrices, denom: "orai" },
       });
       console.log("execute result: ", executeResult);
       // check error
       if (executeResult.transactionHash) {
         // only store root on backend after successfully store on-chain (can easily recover from blockchain if lose)
         await Promise.all(
-          requestsData.map((tree: RequestMerkleRoot) => 
+          requestsData.map((tree: RequestMerkleRoot) =>
             this.repoMerk.insertMerkleRoot(tree.root, tree.leaves)
-        ));
+          ));
 
         // update the requests that have been handled in the database
         const bulkResult = await this.repoRequ.bulkUpdateRequests(
@@ -193,8 +194,8 @@ export class IntervalService {
         // index('submit-merkle-errors', { error: executeResult.message, ...getCurrentDateInfo() });
       }
     } catch (error) {
-        console.log("error in process unsubmitted requests: ", error);
-        // index('process-unsubmitted-requests-error', { error: JSON.stringify(error), ...getCurrentDateInfo() });
+      console.log("error in process unsubmitted requests: ", error);
+      // index('process-unsubmitted-requests-error', { error: JSON.stringify(error), ...getCurrentDateInfo() });
     }
   }
 }

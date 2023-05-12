@@ -11,12 +11,12 @@ export class ExecutorRepository extends BaseRepository {
    * @param pagerNumber object
    * @returns 
    */
-  async findExecutorReports (executor: string, pagerNumber: PagerNumberDto) {
+  async findExecutorReports(executor: string, pagerNumber: PagerNumberDto) {
     const query = { executor };
     const count = await this.executorCollection.countDocuments(query);
     const data = await this.executorCollection
       .find(query)
-      .sort({requestId: -1})
+      .sort({ requestId: -1 })
       .skip(pagerNumber.skip)
       .limit(pagerNumber.limit)
       .toArray();
@@ -26,14 +26,11 @@ export class ExecutorRepository extends BaseRepository {
   /**
    * danh sach co phan trang tat ca request
    *   da thanh cong cua 1 executor
-   *
-   * Hien tai dang khong dung, cai claim nay ngay trc lam de claim rewards
-   * ap dung vo cung phuc tap ma chua can thiet
    */
-  async findFinishedExecutorReports (executor: string, pagerNumber: PagerNumberDto) {
-    // find a list of reports that has the given executor & request id in the list of submitted request id. Note that the claim field must be false
+  async findFinishedExecutorReports(executor: string, pagerNumber: PagerNumberDto) {
+    // find a list of reports that has the given executor & request id in the list of submitted request id
     let executorResults = await this.executorCollection
-      .find({ executor, $or: [{ claimed: null }, { claimed: false }] })
+      .find({ executor })
       .sort({ requestId: -1 })
       .toArray();
     let requestIds = executorResults.map(res => res.requestId);
@@ -51,36 +48,13 @@ export class ExecutorRepository extends BaseRepository {
   }
 
   /**
-   * update cac cap executor - request: ATTR `claimed` -> true
-   *
-   * @param executorsData array obj
-   */
-  async bulkUpdateExecutorReports (executorsData) {
-    // update the requests that have been handled in the database
-    let bulkUpdateOps = [];
-    for (let { executor, request_id: requestId } of executorsData) {
-      bulkUpdateOps.push({
-        "updateOne": {
-          "filter": { executor, requestId },
-          "update": { "$set": { "claimed": true } }
-        }
-      })
-    }
-    if (bulkUpdateOps.length === 0) {
-      return false;
-    }
-    const bulkResult = await this.executorCollection.bulkWrite(bulkUpdateOps);
-    return bulkResult?.result?.nMatched;
-  }
-
-  /**
    * Tim cap executor request da co report
    *
    * @param requestId int
    * @param executor string
    * @returns 
    */
-  async findReport (requestId: number, executor: string) {
+  async findReport(requestId: number, executor: string) {
     const query = { _id: `${requestId}-${executor}` };
     const result = await this.executorCollection
       .findOne(query, { projection: { _id: 0 } });
@@ -97,7 +71,7 @@ export class ExecutorRepository extends BaseRepository {
    * @param pagerNumber 
    * @returns 
    */
-  async findReports (requestId: number, pagerNumber: PagerNumberDto) {
+  async findReports(requestId: number, pagerNumber: PagerNumberDto) {
     const query = { requestId };
     const count = await this.executorCollection.countDocuments(query);
     const data = await this.executorCollection
@@ -114,39 +88,38 @@ export class ExecutorRepository extends BaseRepository {
    * @param requestId int
    * @returns 
    */
-  async countExecutorReports (requestId: number) {
+  async countExecutorReports(requestId: number) {
     return await this.executorCollection.countDocuments({ requestId });
   }
 
-  async insertExecutorReport (requestId: number, executor: string, report: any) {
+  async insertExecutorReport(requestId: number, executor: string, report: any) {
     // request ID + executor should be unique
     const insertObj = {
       _id: `${requestId}-${executor}`, // force the executor report to be unique
       requestId,
       executor,
       report,
-      claimed: false,
     }
     return await this.executorCollection.insertOne(insertObj);
   }
 
-  async queryExecutorReportsWithThreshold (requestId: number, threshold: number) {
+  async queryExecutorReportsWithThreshold(requestId: number, threshold: number) {
     return await this.executorCollection.find({ requestId })
       .limit(threshold > this.MAX_LIMIT ? this.MAX_LIMIT : threshold)
       .toArray();
   }
 
-  async updateReportsStatus (requestId: number) {
+  async updateReportsStatus(requestId: number) {
     const filter = { _id: requestId, requestId };
     const updateDoc = {
-        $set: {
-            submitted: true
-        },
+      $set: {
+        submitted: true
+      },
     };
     return await this.requestCollections.updateOne(filter, updateDoc);
   }
 
-  async updateReports (requestId: number, numRedundant: number) {
+  async updateReports(requestId: number, numRedundant: number) {
     const reportsResult = await this.queryExecutorReportsWithThreshold(
       requestId,
       numRedundant

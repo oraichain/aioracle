@@ -20,22 +20,3 @@ export class IsContractOrai implements ValidatorConstraintInterface {
     return 'Invalid checksum for ' + args.property;
   }
 }
-
-@ValidatorConstraint({ name: 'IsClaimObj', async: false })
-export class IsClaimObj implements ValidatorConstraintInterface {
-  validate(val, args: ValidationArguments) {
-    for (let obj of val) {
-      if (!obj || typeof obj !== 'object') {
-        return false;
-      }
-      if (!obj.executor || !obj.request_id) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  defaultMessage(args: ValidationArguments) {
-    return 'Invalid claim data. Need to have executor & request id';
-  }
-}

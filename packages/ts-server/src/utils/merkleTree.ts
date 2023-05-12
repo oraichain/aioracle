@@ -19,13 +19,12 @@ export class MerkleProofTree extends MerkleTree {
   }
 }
 
-export function sha256 (data) {
+export function sha256(data) {
   return crypto.createHash('sha256').update(data).digest();
 }
 
-export async function formTree (reports) {
-  // hash data to reduce tx fee when claiming rewards
-  const values = reports.map(({ report }) => 
+export async function formTree(reports) {
+  const values = reports.map(({ report }) =>
     JSON.stringify({
       ...report,
       data: sha256(report.data).toString('hex')

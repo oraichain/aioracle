@@ -11,7 +11,7 @@ import {
   IsObject
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsContractOrai, IsClaimObj } from 'src/utils/validator';
+import { IsContractOrai } from 'src/utils/validator';
 
 export class ExecutorsReport {
   @IsNotEmpty()
@@ -38,18 +38,6 @@ export class ExecutorsReportHexParam {
   @IsString()
   @IsHexadecimal()
   executor: string;
-}
-
-export class ExecutorsClaimBody {
-  @IsNotEmpty()
-  @Validate(IsContractOrai)
-  contract_addr: string;
-
-  @IsNotEmpty()
-  @ValidateNested({ each: true })
-  @Type(() => ClaimObj)
-  @Validate(IsClaimObj)
-  data: ClaimObj[]
 }
 
 export class ReportSubmitted {
@@ -126,15 +114,6 @@ export class ProofLeaf {
   @IsNotEmpty()
   @IsObject()
   leaf: object;
-}
-
-/**
- * init private object validation
- */
-
-class ClaimObj {
-  request_id: number
-  executor: string
 }
 
 class ReportBodyData {
