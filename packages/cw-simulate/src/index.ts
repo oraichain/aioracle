@@ -1,3 +1,4 @@
-import { aioracle } from './utils/aioracle';
+import { aioracleDemo, basicProviderFlow } from './utils/aioracle';
 
-aioracle();
+aioracleDemo();
+basicProviderFlow();

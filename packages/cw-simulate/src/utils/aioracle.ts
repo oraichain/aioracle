@@ -14,7 +14,23 @@ const client = new SimulateCosmWasmClient({
 const SERVICE_DEFAULT = 'price';
 const EXECUTOR_ADDRESS = 'orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573';
 
-export const aioracle = async () => {
+export const basicProviderFlow = async () => {
+  const { contractAddress } = await client.deploy(
+    admin,
+    getContractDir(),
+    {
+      owner: EXECUTOR_ADDRESS,
+      executors: getExecutors()
+    } as AioracleContractTypes.InstantiateMsg,
+    'aioraclev2 label'
+  );
+  const aioracleContract = new AioracleContractClient(client, admin, contractAddress);
+  await addService(aioracleContract);
+  const result = await aioracleContract.request({ input: undefined, service: SERVICE_DEFAULT, threshold: 1 });
+  console.log("request result: ", result);
+}
+
+export const aioracleDemo = async () => {
   client.app.bank.setBalance(admin, [coin('10000000000', 'orai')]);
   const { contractAddress } = await client.deploy(
     admin,
