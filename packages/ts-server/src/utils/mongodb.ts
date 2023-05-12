@@ -22,12 +22,12 @@ export default class MongoDb {
     return MongoDb.db[db];
   }
 
-  static async collection(db:string, coll: string) {
+  static async collection(db: string, coll: string) {
     await MongoDb.instance(db);
     return MongoDb.db[db].collection(coll);
   }
 
-  static async close(cb=null) {
+  static async close(cb = null) {
     if (MongoDb.client) {
       await MongoDb.client.close();
       console.log("Mongodb closed!!!");

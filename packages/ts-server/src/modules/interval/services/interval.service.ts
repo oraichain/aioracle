@@ -58,7 +58,7 @@ export class IntervalService {
   async submitReportInterval(gasPrices: number) {
     // query a list of send data
     const queryResult = await this.repoRequ.findUnsubmittedRequests();
-    console.log("query result: ", queryResult);
+    console.log("unsubmitted requests: ", queryResult);
     if (queryResult.length === 0) {
       return true;
     }
