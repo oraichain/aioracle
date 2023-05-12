@@ -328,60 +328,6 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
 }
 
-/**
- * ///////////////////////////////////// Basic AI Oracle contract interaction
- * ```ts
- * import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
-import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
-import { getContractDir } from '@oraichain/aioracle-contracts-build';
-
-import { assert } from 'console';
-
-const admin = 'admin_aioraclev2';
-const client = new SimulateCosmWasmClient({
-  chainId: 'Oraichain-testnet',
-  bech32Prefix: 'orai'
-});
-const SERVICE_DEFAULT = 'price';
-
-export const basicProviderFlow = async () => {
-  const { contractAddress } = await client.deploy(
-    admin,
-    getContractDir(),
-    {
-      executors: getExecutors()
-    } as AioracleContractTypes.InstantiateMsg,
-    'aioraclev2 label'
-  );
-  const aioracleContract = new AioracleContractClient(client, admin, contractAddress);
-  await addService(aioracleContract);
-  const result = await aioracleContract.request({ input: undefined, service: SERVICE_DEFAULT, threshold: 1 });
-  console.log("request result: ", result);
-}
-
-const addService = async (aioracle: AioracleContractClient) => {
-  const serviceData: Service = { oscript_url: "https://raw.githubusercontent.com/oraichain/deno-scripts/bf3fbc3265f9698a1a0a85c5e7724ed91f4e562f/src/pricefeed/emptyOscript.js", tcases: [], dsources: [{ language: "node", parameters: ["BTC", "ETH", "BNB", "XRP", "DOGE", "USDT", "LINK", "UNI", "USDC", "BUSD", "ORAI", "DAI", "SOL", "MATIC", "SUSHI", "DOT", "LUNA", "ICP", "XLM", "ATOM", "AAVE", "THETA", "EOS", "CAKE", "AXS", "ALGO", "MKR", "KSM", "XTZ", "FIL", "AMP", "RUNE", "COMP"], script_url: "https://raw.githubusercontent.com/oraichain/deno-scripts/ea584de4397312b9cc88e518e9e5ae68678e8a8c/src/pricefeed/coinbase.js" } as DataSourceState] };
-  await aioracle.addService({ serviceName: SERVICE_DEFAULT, service: serviceData });
-
-  const service = await aioracle.getService({ serviceName: SERVICE_DEFAULT });
-  assert(service.service.dsources.length === 1);
-  assert(service.service.tcases.length === 0);
-  assert(service.service.oscript_url.length > 0);
-}
-
-const getExecutors = (): any[] => {
-  const executors = [
-    "orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt",
-    "orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573"
-  ];
-  return executors;
-};
- * ```
- * ///////////////////////////////////////////// Basic AI Oracle backend interaction to retrieve service reports
- * ```ts
- * 
- * ```
- */
 export class AioracleContractClient extends AioracleContractQueryClient implements AioracleContractInterface {
   client: SigningCosmWasmClient;
   sender: string;
