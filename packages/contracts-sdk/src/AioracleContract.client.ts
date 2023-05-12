@@ -6,8 +6,8 @@
 
 import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
 import { Coin, StdFee } from "@cosmjs/amino";
-import { Addr, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Binary, Boolean, Config, Uint64, ArrayOfString, ServiceInfo } from "./types";
-import { InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, RequestResponse, ArrayOfRequestResponse, ArrayOfServiceInfoResponse, ServiceInfoResponse, LatestStageResponse } from "./AioracleContract.types";
+import {Addr, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Binary, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
+import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, RequestResponse, ArrayOfRequestResponse, ArrayOfServiceInfoResponse, ServiceInfoResponse, LatestStageResponse} from "./AioracleContract.types";
 export interface AioracleContractReadOnlyInterface {
   contractAddress: string;
   config: () => Promise<Config>;
@@ -327,7 +327,6 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
     serviceName: string;
   }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
 }
-
 export class AioracleContractClient extends AioracleContractQueryClient implements AioracleContractInterface {
   client: SigningCosmWasmClient;
   sender: string;
