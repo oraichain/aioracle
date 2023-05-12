@@ -1,6 +1,6 @@
 import { coin, coins } from '@cosmjs/amino';
 import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
-import { AioracleContractClient, AioracleContractTypes, DataSourceState } from '@oraichain/aioracle-contracts-sdk';
+import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
 import { getContractDir } from '@oraichain/aioracle-contracts-build';
 
 import { assert } from 'console';
@@ -44,7 +44,7 @@ const testQueryExecutors = async (aioracle: AioracleContractClient) => {
 }
 
 const testAddService = async (aioracle: AioracleContractClient) => {
-  const serviceData = { oscript_url: "https://orai.io", tcases: [{ input: Buffer.from("1").toString('base64'), expected_output: Buffer.from("2").toString('base64') }], dsources: [{ language: "node", parameters: [Buffer.from("foobar").toString('base64')], script_url: "https://" } as DataSourceState] };
+  const serviceData: Service = { oscript_url: "https://orai.io", tcases: [{ inputs: [Buffer.from("1").toString('base64')], expected_output: Buffer.from("2").toString('base64') }], dsources: [{ language: "node", parameters: [Buffer.from("foobar").toString('base64')], script_url: "https://" } as DataSourceState] };
   await aioracle.addService({ serviceName: SERVICE_DEFAULT, service: serviceData });
 
   const service = await aioracle.getService({ serviceName: SERVICE_DEFAULT });
