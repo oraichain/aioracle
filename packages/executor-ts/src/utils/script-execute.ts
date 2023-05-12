@@ -1,6 +1,20 @@
 import { spawn } from 'child_process';
-import { AssertResponse, HandleScriptResponse } from 'src/dtos';
 import { AioracleContractClient, Service, TestCaseState } from '@oraichain/aioracle-contracts-sdk/src';
+
+type AssertResponse = {
+  dsource: string;
+  dSourceResult: string;
+}
+
+type HandleScriptResponse = {
+  aggregateResponse: string;
+  assertResults: AssertResponse[];
+  dsourceResults: string[];
+}
+
+function convertToDenoScriptInput(params: string[]): string {
+  return Buffer.from(JSON.stringify(params)).toString('base64');
+}
 
 export const executeService = async (
   requestId: number,
@@ -36,7 +50,7 @@ const executeTestCases = async (
     // handle deno script. By default, the user's input is the last element of the parameter list
     let result = await processDenoScript(
       dsourceScriptUrl,
-      testCase.inputs
+      convertToDenoScriptInput(testCase.inputs)
     );
     assertResults.push({ dsource: dsourceScriptUrl, dSourceResult: result });
   }
@@ -57,21 +71,22 @@ export const handleScript = async (service: Service, requestInput: string): Prom
     // By default, the user's input is the last element of the parameter list
     let result = await processDenoScript(
       dsource.script_url,
-      [...dsource.parameters, requestInput]
+      convertToDenoScriptInput([...dsource.parameters, requestInput])
     );
     dsourceResults.push(result.trim()); // trim to remove trailing space & newline char
     // validDSources.push(dsource);
   }
 
   // aggregate results
-  let aggregateResponse = await processDenoScript(oscript_url, dsourceResults);
+  let aggregateResponse = await processDenoScript(oscript_url, convertToDenoScriptInput(dsourceResults));
   return {
-    aggregateResponse,
+    aggregateResponse: aggregateResponse.trim(),
     assertResults,
+    dsourceResults,
   };
 }
 
-const processDenoScript = (scriptUrl: string, params: string[]): Promise<string> => {
+const processDenoScript = (scriptUrl: string, params: string): Promise<string> => {
   return new Promise((resolve, reject) => {
     const ls = spawn(
       'deno',
@@ -80,7 +95,7 @@ const processDenoScript = (scriptUrl: string, params: string[]): Promise<string>
         '--allow-net',
         '--unstable',
         scriptUrl,
-        JSON.stringify(params)
+        params
       ]
     );
 

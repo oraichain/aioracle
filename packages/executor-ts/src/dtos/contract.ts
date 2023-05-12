@@ -33,16 +33,6 @@ export class QueryPingInfoResponse {
   current_height: Uint64;
 }
 
-export class AssertResponse {
-  dsource: string;
-  dSourceResult: string;
-}
-
-export class HandleScriptResponse {
-  aggregateResponse: string;
-  assertResults: AssertResponse[];
-}
-
 export class TestCaseMsg {
   parameters: String[];
   expected_output: String;

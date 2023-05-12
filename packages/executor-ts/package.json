@@ -1,5 +1,5 @@
 {
-  "name": "executor-ts",
+  "name": "@oraichain/executor-ts",
   "version": "1.0.0",
   "main": "dist/index.js",
   "bin": "dist/index.js",
