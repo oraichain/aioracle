@@ -1,18 +1,7 @@
 diff --git a/packages/contracts-sdk/src/AioracleContract.client.ts b/packages/contracts-sdk/src/AioracleContract.client.ts
-index 4fb350f..44d1064 100644
+index 4fb350f..d934b5c 100644
 --- a/packages/contracts-sdk/src/AioracleContract.client.ts
 +++ b/packages/contracts-sdk/src/AioracleContract.client.ts
-@@ -6,8 +6,8 @@
- 
- import { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
- import { Coin, StdFee } from "@cosmjs/amino";
--import {Addr, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Binary, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
--import {InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, RequestResponse, ArrayOfRequestResponse, ArrayOfServiceInfoResponse, ServiceInfoResponse, LatestStageResponse} from "./AioracleContract.types";
-+import { Addr, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Binary, Boolean, Config, Uint64, ArrayOfString, ServiceInfo } from "./types";
-+import { InstantiateMsg, ExecuteMsg, QueryMsg, MigrateMsg, RequestResponse, ArrayOfRequestResponse, ArrayOfServiceInfoResponse, ServiceInfoResponse, LatestStageResponse } from "./AioracleContract.types";
- export interface AioracleContractReadOnlyInterface {
-   contractAddress: string;
-   config: () => Promise<Config>;
 @@ -327,6 +327,77 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
      serviceName: string;
    }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
