@@ -39,10 +39,11 @@ export class IntervalService {
 
     try {
       console.log('gas prices:', gasPrices,
-        ' -- run count:', indexRunCount,
         ' -- time:', moment().format()
       );
       await this.submitReportInterval(gasPrices);
+      // if submit report successfully then we reset the gas prices back to the normal config to avoid using too high fee
+      gasPrices = parseFloat(config.BASE_GAS_PRICES);
     } catch (error) {
       console.log("error in interval process: ", error);
       if (error.status === 400) {
