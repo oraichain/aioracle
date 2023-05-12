@@ -50,7 +50,7 @@ export async function getWallet(mnemonic: string): Promise<{ account: AccountDat
 export async function getCosmWasmClient(mnemonic: string) {
   const { account, wallet } = await getWallet(mnemonic);
   const client = await SigningCosmWasmClient.connectWithSigner(config.RPC_URL as string, wallet, {
-    gasPrice: GasPrice.fromString(`${config.prefix}${config.GAS_AMOUNT}` as string)
+    gasPrice: GasPrice.fromString(`${config.GAS_AMOUNT}${config.prefix}` as string)
   });
   return { client, account, wallet };
 }

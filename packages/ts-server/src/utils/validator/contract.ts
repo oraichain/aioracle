@@ -3,7 +3,7 @@ import { bech32 } from 'bech32';
 
 const isContractOrai = (val: string) => {
   try {
-    const result = bech32.decode(val);
+    const result = bech32.decode(val, 63);
     return result.prefix === 'orai';
   } catch (err) {
     return false;

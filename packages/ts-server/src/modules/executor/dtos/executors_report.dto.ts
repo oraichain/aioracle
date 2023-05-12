@@ -28,15 +28,7 @@ export class ExecutorsReport {
 export class ExecutorsReportParam {
   @IsNotEmpty()
   @IsString()
-  @Length(44, 44)
-  @IsBase64()
-  executor: string;
-}
-
-export class ExecutorsReportHexParam {
-  @IsNotEmpty()
-  @IsString()
-  @IsHexadecimal()
+  @Length(43, 63)
   executor: string;
 }
 
@@ -53,7 +45,6 @@ export class ReportSubmitted {
 
   @IsNotEmpty()
   @IsString()
-  @IsHexadecimal()
   executor: string;
 }
 
@@ -119,9 +110,13 @@ export class ProofLeaf {
 class ReportBodyData {
   @IsNotEmpty()
   @IsString()
-  @Length(44, 44)
-  @IsBase64()
+  @Length(43, 63)
   executor: string;
+
+  @IsNotEmpty()
+  @IsString()
+  @IsBase64()
+  executorPubkey: string;
 
   @IsNotEmpty()
   @IsBase64()

@@ -1,8 +1,10 @@
 import { AioracleContractClient } from "@oraichain/aioracle-contracts-sdk/src";
 import { DirectSecp256k1HdWallet } from "@cosmjs/proto-signing";
+import { AccountData } from "@cosmjs/amino";
 
 export class Leaf {
   executor: string;
+  executorPubkey: string;
   data: string;
 };
 
@@ -12,11 +14,11 @@ export class ReportSubmittedResponse {
   report?: any;
 }
 
-export class ProcessDataParams {
+export type ProcessDataParams = {
   serviceName: string;
   aioracleClient: AioracleContractClient;
   requestId: number;
-  executor: string;
+  executor: AccountData;
   wallet: DirectSecp256k1HdWallet;
   input?: string;
 }

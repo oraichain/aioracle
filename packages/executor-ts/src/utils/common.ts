@@ -18,10 +18,7 @@ export const checkSubmit = async (
   executor: string
 ): Promise<ReportSubmittedResponse> => {
   return fetch(
-    `${config.BACKEND_URL}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${Buffer.from(
-      executor,
-      "base64"
-    ).toString("hex")}`
+    `${config.BACKEND_URL}/report/submitted?contract_addr=${contractAddr}&request_id=${requestId}&executor=${executor}`
   ).then((data) => handleFetchResponse(data));
 };
 

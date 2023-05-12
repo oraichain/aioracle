@@ -9,9 +9,8 @@ import {
   Post,
   Res
 } from '@nestjs/common';
-import { Response } from 'express';
-import { ExecutorsReport, ExecutorsReportHexParam, ExecutorsReportParam } from '../dtos';
-import { executorConverB64, paginatorNumber } from 'src/utils';
+import { ExecutorsReport, ExecutorsReportParam } from '../dtos';
+import { paginatorNumber } from 'src/utils';
 import { ExecutorRepository } from 'src/repositories/mongo';
 
 @Controller('/executor')
@@ -35,7 +34,7 @@ export class ExecutorController {
 
   @Get('/finished/:executor')
   async getFinishedExecutorReports(
-    @Param() params: ExecutorsReportHexParam,
+    @Param() params: ExecutorsReportParam,
     @Query(new ValidationPipe({
       transform: true,
       transformOptions: { enableImplicitConversion: true },
@@ -49,7 +48,7 @@ export class ExecutorController {
       code: HttpStatus.OK
     };
     res['data'] = await repo.findFinishedExecutorReports(
-      executorConverB64(params.executor),
+      params.executor,
       pagerNumber
     );
     return res;

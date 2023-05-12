@@ -11,20 +11,20 @@ import {
 } from '@nestjs/common';
 import { Response } from 'express';
 import { ReportSubmitted, ReportReports, ExecutorsReportParam, ReportSingle, ReportPost } from '../dtos';
-import { executorConverB64, paginatorNumber } from 'src/utils';
+import { paginatorNumber } from 'src/utils';
 import { ExecutorRepository, RequestRepository } from 'src/repositories/mongo';
 import config from 'src/config';
 import { ExecutorService } from '../services';
 
 @Controller('/report')
 export class ReportController {
-  constructor(private executorService: ExecutorService) {}
+  constructor(private executorService: ExecutorService) { }
 
   @Get('/submitted')
   async checkSubmit(
     @Query(new ValidationPipe({
       transform: true,
-      transformOptions: {enableImplicitConversion: true},
+      transformOptions: { enableImplicitConversion: true },
       forbidNonWhitelisted: true
     })) query: ReportSubmitted
   ) {
@@ -32,7 +32,7 @@ export class ReportController {
     await repo.db(query.contract_addr);
     const report = await repo.findReport(
       query.request_id,
-      executorConverB64(query.executor)
+      query.executor
     );
     if (!report) {
       return {
@@ -52,7 +52,7 @@ export class ReportController {
     @Res() res: Response,
     @Query(new ValidationPipe({
       transform: true,
-      transformOptions: {enableImplicitConversion: true},
+      transformOptions: { enableImplicitConversion: true },
       forbidNonWhitelisted: true
     })) query: ReportReports
   ) {
@@ -81,7 +81,7 @@ export class ReportController {
     @Param() params: ExecutorsReportParam,
     @Query(new ValidationPipe({
       transform: true,
-      transformOptions: {enableImplicitConversion: true},
+      transformOptions: { enableImplicitConversion: true },
       forbidNonWhitelisted: true
     })) query: ReportSingle
   ) {
@@ -136,11 +136,11 @@ export class ReportController {
     if (!this.executorService.verifySignature(
       Buffer.from(JSON.stringify(rawMessage), 'ascii'),
       Buffer.from(signature, 'base64'),
-      Buffer.from(body.report.executor, 'base64'))
+      Buffer.from(body.report.executorPubkey, 'base64'))
     ) {
-        return res.status(HttpStatus.FORBIDDEN).json({
-          message: "Invalid report signature"
-        });
+      return res.status(HttpStatus.FORBIDDEN).json({
+        message: "Invalid report signature"
+      });
     }
     const executorReport = await repo.findReport(body.request_id, body.report.executor);
     // if we cant find the request id, we init new

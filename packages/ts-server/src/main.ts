@@ -11,7 +11,7 @@ import { IntervalService } from 'src/modules/interval/services';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule, {
-    logger: new LogService(),
+    // logger: new LogService(),
   });
 
   app.useGlobalPipes(
