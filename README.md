@@ -15,6 +15,9 @@ cw-gents ../aioracle-contract/ -o packages/contracts-sdk/src/
 # gen docs
 yarn docs
 
+# update @oraichain/aioracle-contracts-sdk
+yarn upgrade @oraichain/aioracle-contracts-sdk
+
 # update comments:
 git apply patches/contracts-sdk.patch
 # edit contracts-sdk

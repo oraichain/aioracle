@@ -1,9 +1,7 @@
-import { processRequest } from './utils/process-request';
-import { getStageInfo } from './utils/common';
 import { wsClientConnect } from './utils/ws';
 import { collectPin } from './utils/prompt';
 import { evaluatePin } from './utils/crypto';
-import { execute, queryWasm, getFirstWalletPubkey } from './utils/cosmjs';
+import { execute, getWallet, queryWasm } from './utils/cosmjs';
 import config from "./config";
 import { logError } from "./utils/logs";
 import { SentryTrace } from './helpers/sentry';
@@ -47,18 +45,6 @@ const start = async () => {
 
 const processRequestWrapper = async (mnemonic: string) => {
   try {
-    // query lalest stage
-    let { checkpoint, latest_stage } =
-      await getStageInfo(config.CONTRACT_ADDRESS);
-    if (config.REPLAY === 'true') {
-      for (
-        let i = parseInt(config.START_STAGE) || checkpoint;
-        i <= latest_stage;
-        i++
-      ) {
-        await processRequest(i, mnemonic, true);
-      }
-    }
     console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v0.5.0\n")
     wsClientConnect(mnemonic);
   } catch (error) {
@@ -73,7 +59,7 @@ const ping = async (mnemonic: string) => {
   const contract = config.PING_CONTRACT;
   while (true) {
     try {
-      const walletPubkey = await getFirstWalletPubkey(mnemonic);
+      const walletPubkey = (await getWallet(mnemonic)).account.pubkey;
       // collect info about ping and ping jump, ok to ping => ping
       const ping = await queryWasm(contract, JSON.stringify({
         get_ping_info: walletPubkey

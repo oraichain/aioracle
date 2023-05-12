@@ -5,34 +5,12 @@ import BIP32Factory from 'bip32';
 import * as ecc from 'tiny-secp256k1';
 import config from 'src/config';
 import { signSignature } from './crypto';
-import { queryWasm, handleFetchResponse, getFirstWalletAddr } from './cosmjs';
-import { boradcastExecutorResult } from './ws-server';
-import { GetServiceContractsResponse, Leaf, ReportSubmittedResponse, RequestStageResponse, StageInfoResponse } from 'src/dtos';
+import { handleFetchResponse } from './cosmjs';
+import { broadcastExecutorResult } from './ws-server';
+import { Leaf, MessageSign, PostMessage, ReportSubmittedResponse } from 'src/dtos';
+import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 
 const bip32 = BIP32Factory(ecc);
-
-export const getRequest = async (
-  contractAddr: string,
-  requestId: number
-): Promise<RequestStageResponse> => {
-  const input = JSON.stringify({
-    request: {
-      stage: requestId
-    }
-  })
-  const request = await queryWasm(contractAddr, input) as RequestStageResponse;
-  return request;
-}
-
-export const getStageInfo = async (contractAddr: string): Promise<StageInfoResponse> => {
-  const input = JSON.stringify({
-    stage_info: {}
-  })
-
-  const data = await queryWasm(contractAddr, input);
-  console.log("stage info: ", data);
-  return data as StageInfoResponse;
-}
 
 export const checkSubmit = async (
   contractAddr: string,
@@ -46,20 +24,6 @@ export const checkSubmit = async (
     ).toString("hex")}`
   ).then((data) => handleFetchResponse(data));
 };
-
-export const getServiceContracts = async (
-  contractAddr: string,
-  requestId: number
-): Promise<GetServiceContractsResponse> => {
-  const input = JSON.stringify({
-    get_service_contracts: { stage: requestId }
-  });
-  const data = await queryWasm(contractAddr, input);
-  // if (!data.data) {
-  // throw "No service contracts to execute";
-  // }
-  return data as GetServiceContractsResponse;
-}
 
 export const generateWalletFromMnemonic = (
   mnemonic: string,
@@ -80,12 +44,12 @@ export const generateWalletFromMnemonic = (
 export const submitReport = async (
   requestId: number,
   leaf: Leaf,
-  mnemonic: string
+  wallet: DirectSecp256k1HdWallet
 ) => {
-  const walletAddress = await getFirstWalletAddr(mnemonic)
-  const pubKey = walletAddress.pubkey
-  const privateKey = generateWalletFromMnemonic(mnemonic, config.path)
-  const messageSign = { requestId, report: leaf };
+  const account = (await wallet.getAccounts())[0];
+  const pubKey = account.pubkey;
+  const privateKey = generateWalletFromMnemonic(wallet.mnemonic, config.path)
+  const messageSign: MessageSign = { requestId, report: leaf };
   const signature = Buffer.from(
     signSignature(
       Buffer.from(JSON.stringify(messageSign), "ascii"),
@@ -94,7 +58,7 @@ export const submitReport = async (
     )
   ).toString("base64");
 
-  const message = {
+  const message: PostMessage = {
     request_id: requestId,
     report: { ...leaf, signature }
   };
@@ -109,7 +73,7 @@ export const submitReport = async (
   };
 
   // before submiting to the backend, we fire the message's data into the websocket so listeners can listen
-  boradcastExecutorResult(message);
+  broadcastExecutorResult(message);
 
   // submit data to the backend for aggregation
   const result = await fetch(

@@ -29,7 +29,7 @@ export interface DataSourceState {
 }
 export interface TestCaseState {
   expected_output: Binary;
-  input: Binary;
+  inputs: Binary[];
 }
 export interface UpdateServiceMsg {
   dsources?: DataSourceState[] | null;

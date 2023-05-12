@@ -90,6 +90,7 @@ export type QueryMsg = {
 };
 export interface MigrateMsg {}
 export interface RequestResponse {
+  input?: Binary | null;
   merkle_root: string;
   request_height: number;
   requester: Addr;

@@ -33,33 +33,14 @@ export class QueryPingInfoResponse {
   current_height: Uint64;
 }
 
-export class RequestStageResponse {
-  requester: HumanAddr;
-  preference_executor_fee: Coin;
-  request_height: Uint64;
-  submit_merkle_height: Uint64;
-  merkle_root: String;
-  threshold: Uint64;
-  service: String;
-  input?: string;
-  rewards: Reward[];
-}
-
 export class AssertResponse {
-  contract: HumanAddr;
-  dsource_status: boolean;
-  tcase_status: boolean;
+  dsource: string;
+  dSourceResult: string;
 }
 
-export class GetStateResponse {
-  language: string;
-  parameters: string[];
-  script_url: string;
-}
-
-export class AggregateResponse {
-  name: string;
-  price: string;
+export class HandleScriptResponse {
+  aggregateResponse: string;
+  assertResults: AssertResponse[];
 }
 
 export class TestCaseMsg {
@@ -70,16 +51,4 @@ export class TestCaseMsg {
 export class TestCaseResponse {
   total: Uint64;
   test_cases: TestCaseMsg[];
-}
-
-export class StageInfoResponse {
-  latest_stage: Uint64;
-  checkpoint: Uint64;
-  checkpoint_threshold: Uint64;
-}
-
-export class GetServiceContractsResponse {
-  dsources: HumanAddr[];
-  tcases: HumanAddr[];
-  oscript: HumanAddr;
 }
