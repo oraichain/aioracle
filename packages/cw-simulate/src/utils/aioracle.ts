@@ -26,8 +26,12 @@ export const basicProviderFlow = async () => {
   );
   const aioracleContract = new AioracleContractClient(client, admin, contractAddress);
   await addService(aioracleContract);
-  const result = await aioracleContract.request({ input: undefined, service: SERVICE_DEFAULT, threshold: 1 });
-  console.log("request result: ", result);
+  const threshold = 1;
+  const result = await aioracleContract.request({ input: undefined, service: SERVICE_DEFAULT, threshold });
+  console.dir(result, { depth: null });
+  const requestId = result.events.find(event => event.type === 'wasm').attributes.find(attr => attr.key === 'stage').value;
+  console.log("request id: ", result.events.find(event => event.type === 'wasm').attributes.find(attr => attr.key === 'stage').value);
+  await collectReports(process.env.AIORACLE_BACKEND_URL, aioracleContract.contractAddress, parseInt(requestId), threshold);
 }
 
 export const aioracleDemo = async () => {
@@ -61,10 +65,29 @@ const addService = async (aioracle: AioracleContractClient) => {
   assert(service.service.oscript_url.length > 0);
 }
 
-const getExecutors = (): any[] => {
+function getExecutors(): any[] {
   const executors = [
     "orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt",
     EXECUTOR_ADDRESS
   ];
   return executors;
 };
+
+async function collectReports(url: string, contractAddr: string, requestId: number, threshold: number) {
+  let count = 0;
+  let reports: any;
+  do {
+    try {
+      reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
+      console.log("reports: ", reports)
+      if (!reports.data || reports.data.data.length < threshold) throw "error";
+    } catch (error) {
+      count++;
+      if (count > 100) break; // break the loop and return the request id.
+      // sleep for a few seconds then repeat
+      await new Promise(r => setTimeout(r, 5000));
+    }
+
+  } while (!reports.data || reports.data.data.length < threshold);
+  return reports.data;
+}

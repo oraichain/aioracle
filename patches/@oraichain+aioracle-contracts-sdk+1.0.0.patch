@@ -1,5 +1,5 @@
 diff --git a/packages/contracts-sdk/src/AioracleContract.client.ts b/packages/contracts-sdk/src/AioracleContract.client.ts
-index 4fb350f..25fb4a4 100644
+index 4fb350f..44d1064 100644
 --- a/packages/contracts-sdk/src/AioracleContract.client.ts
 +++ b/packages/contracts-sdk/src/AioracleContract.client.ts
 @@ -6,8 +6,8 @@
@@ -13,12 +13,12 @@ index 4fb350f..25fb4a4 100644
  export interface AioracleContractReadOnlyInterface {
    contractAddress: string;
    config: () => Promise<Config>;
-@@ -327,6 +327,57 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
+@@ -327,6 +327,77 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
      serviceName: string;
    }, $fee?: number | StdFee | "auto", $memo?: string, $funds?: Coin[]) => Promise<ExecuteResult>;
  }
-+
 +/**
++ * Basic AI Oracle contract interaction
 + * ```ts
 + * import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
 +import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
@@ -65,7 +65,27 @@ index 4fb350f..25fb4a4 100644
 +  ];
 +  return executors;
 +};
++ * ```
++ * Basic AI Oracle backend interaction to retrieve service reports
++ * ```ts
++ * async function collectReports(url: string, contractAddr: string, requestId: number, threshold: number) {
++  let count = 0;
++  let reports: any;
++  do {
++    try {
++      reports = await fetch(`${url}/report/reports?contract_addr=${contractAddr}&request_id=${requestId}`).then(data => data.json());
++      console.log("reports: ", reports)
++      if (!reports.data || reports.data.data.length < threshold) throw "error";
++    } catch (error) {
++      count++;
++      if (count > 100) break; // break the loop and return the request id.
++      // sleep for a few seconds then repeat
++      await new Promise(r => setTimeout(r, 5000));
++    }
 +
++  } while (!reports.data || reports.data.data.length < threshold);
++  return reports.data;
++}
 + * ```
 + */
  export class AioracleContractClient extends AioracleContractQueryClient implements AioracleContractInterface {
