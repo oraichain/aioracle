@@ -8,17 +8,12 @@ export class LcdRequestBase {
 export class RequestStage extends LcdRequestBase {
   data?: {
     requester?: string;
-    preference_executor_fee?: {
-      denom: string, // "orai"
-      amount: string | number
-    };
     request_height?: number;
     submit_merkle_height?: number;
     merkle_root?: string;
     threshold?: number;
     service?: string;
-    input?: any;
-    rewards?: [ [string, string, string | number] ];
+    input?: string;
   };
 }
 

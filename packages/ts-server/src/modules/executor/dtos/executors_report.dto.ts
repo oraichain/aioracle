@@ -1,4 +1,5 @@
-import { IsNotEmpty,
+import {
+  IsNotEmpty,
   IsOptional,
   Validate,
   IsString,
@@ -10,7 +11,7 @@ import { IsNotEmpty,
   IsObject
 } from 'class-validator';
 import { Type } from 'class-transformer';
-import { IsContractOrai, IsClaimObj, IsValidRewards } from 'src/utils/validator';
+import { IsContractOrai, IsClaimObj } from 'src/utils/validator';
 
 export class ExecutorsReport {
   @IsNotEmpty()
@@ -151,10 +152,6 @@ class ReportBodyData {
   @IsBase64()
   @Length(88, 88)
   signature: string
-
-  @IsNotEmpty()
-  @Validate(IsValidRewards)
-  rewards: object
 }
 
 const reportBodyData = new ReportBodyData();

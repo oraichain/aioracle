@@ -1,6 +1,5 @@
 export type Addr = string;
 export type Binary = string;
-export type Uint128 = string;
 export interface UpdateConfigMsg {
   new_checkpoint?: number | null;
   new_checkpoint_threshold?: number | null;
@@ -8,10 +7,6 @@ export interface UpdateConfigMsg {
   new_max_req_threshold?: number | null;
   new_owner?: Addr | null;
   old_executors?: string[] | null;
-}
-export interface Coin {
-  amount: Uint128;
-  denom: string;
 }
 export interface AddServiceMsg {
   service: Service;

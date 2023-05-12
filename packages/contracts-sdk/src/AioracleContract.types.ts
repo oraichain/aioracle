@@ -1,4 +1,4 @@
-import {Addr, Binary, Uint128, UpdateConfigMsg, Coin, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
+import {Addr, Binary, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
 export interface InstantiateMsg {
   executors?: string[] | null;
   owner?: Addr | null;
@@ -16,7 +16,6 @@ export type ExecuteMsg = {
 } | {
   request: {
     input?: Binary | null;
-    preference_executor_fee: Coin;
     service: string;
     threshold: number;
   };

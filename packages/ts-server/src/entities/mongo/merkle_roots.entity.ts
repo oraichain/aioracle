@@ -1,5 +1,5 @@
 export class MerkleRoot {
-  _id?: any; // ObjectId mongodb
+  _id?: number; // ObjectId mongodb
   merkleRoot: string;
   leaves: string;
 }
