@@ -329,6 +329,7 @@ export interface AioracleContractInterface extends AioracleContractReadOnlyInter
 }
 
 /**
+ * ///////////////////////////////////// Basic AI Oracle contract interaction
  * ```ts
  * import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
 import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
@@ -375,7 +376,10 @@ const getExecutors = (): any[] => {
   ];
   return executors;
 };
-
+ * ```
+ * ///////////////////////////////////////////// Basic AI Oracle backend interaction to retrieve service reports
+ * ```ts
+ * 
  * ```
  */
 export class AioracleContractClient extends AioracleContractQueryClient implements AioracleContractInterface {
