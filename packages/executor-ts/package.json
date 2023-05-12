@@ -26,6 +26,7 @@
     "typescript": "^4.9.5"
   },
   "dependencies": {
+    "@oraichain/aioracle-contracts-sdk": "1.0.0",
     "@cosmjs/cosmwasm-stargate": "^0.29.5",
     "@cosmjs/crypto": "^0.29.5",
     "@cosmjs/proto-signing": "^0.29.5",
