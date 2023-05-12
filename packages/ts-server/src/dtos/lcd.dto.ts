@@ -16,12 +16,3 @@ export class RequestStage extends LcdRequestBase {
     input?: string;
   };
 }
-
-export class ExecutorPubkey extends LcdRequestBase {
-  data?: {
-    pubkey?: string;
-    is_active?: boolean;
-    executing_power?: number;
-    index?: number;
-  }
-}
