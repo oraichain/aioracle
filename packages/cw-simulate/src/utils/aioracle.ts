@@ -4,6 +4,7 @@ import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service
 import { getContractDir } from '@oraichain/aioracle-contracts-build';
 
 import { assert } from 'console';
+import { toBinary } from '@cosmjs/cosmwasm-stargate';
 
 const admin = 'admin_aioraclev2';
 const client = new SimulateCosmWasmClient({
@@ -37,23 +38,27 @@ export const aioracle = async () => {
 // test get executor list
 const testQueryExecutors = async (aioracle: AioracleContractClient) => {
   let executors = await aioracle.getExecutors({ limit: 1 });
-  assert(executors.length === 1, "executor length with limit 1 is not equal to 1");
+  assert(executors.length === 1, 'executor length with limit 1 is not equal to 1');
 
   executors = await aioracle.getExecutors({ start: null, end: null });
-  assert(executors.length === getExecutors().length, 'executor length with no limit should return length of getExecutors')
-}
+  assert(executors.length === getExecutors().length, 'executor length with no limit should return length of getExecutors');
+};
 
 const testAddService = async (aioracle: AioracleContractClient) => {
-  const serviceData: Service = { oscript_url: "https://orai.io", tcases: [{ inputs: [Buffer.from("1").toString('base64')], expected_output: Buffer.from("2").toString('base64') }], dsources: [{ language: "node", parameters: [Buffer.from("foobar").toString('base64')], script_url: "https://" } as DataSourceState] };
+  const serviceData: Service = {
+    oscript_url: 'https://orai.io',
+    tcases: [{ inputs: [toBinary('1')], expected_output: toBinary('2') }],
+    dsources: [{ language: 'node', parameters: [toBinary('foobar')], script_url: 'https://' } as DataSourceState]
+  };
   await aioracle.addService({ serviceName: SERVICE_DEFAULT, service: serviceData });
 
   const service = await aioracle.getService({ serviceName: SERVICE_DEFAULT });
-  console.dir(service.service, { depth: null })
-  console.dir(serviceData, { depth: null })
+  console.dir(service.service, { depth: null });
+  console.dir(serviceData, { depth: null });
   assert(service.service.dsources.length === 1);
   assert(service.service.tcases.length === 1);
   assert(service.service.oscript_url.length > 0);
-}
+};
 
 const testUpdateService = async (aioracle: AioracleContractClient) => {
   // since we are re-using the same client so the add service state is retained. This function should only called after testAddService
@@ -62,12 +67,9 @@ const testUpdateService = async (aioracle: AioracleContractClient) => {
   assert(service.service.dsources.length === 0);
   assert(service.service.tcases.length === 1);
   assert(service.service.oscript_url.length > 0);
-}
+};
 
 const getExecutors = (): any[] => {
-  const executors = [
-    "orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt",
-    EXECUTOR_ADDRESS
-  ];
+  const executors = ['orai18hr8jggl3xnrutfujy2jwpeu0l76azprlvgrwt', EXECUTOR_ADDRESS];
   return executors;
 };
