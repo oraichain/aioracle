@@ -10,9 +10,9 @@ const configDefault = {
   basedir: baseDir,
   appdir: baseDir + 'src/',
   storagedir: baseDir + 'storage/',
-  isProd: process.env.APP_ENV === 'PROD' ? true : false,
 
   PORT: parseInt(process.env.PORT) || 7000,
+  HOST: process.env.HOST || "localhost",
   WS_PORT: parseInt(process.env.WS_PORT) || 7071,
   PROCESS_INTERVAL: parseInt(process.env.PROCESS_INTERVAL) || 10000,
   RPC_URL: process.env.NETWORK_RPC,

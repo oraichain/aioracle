@@ -32,8 +32,8 @@ async function bootstrap() {
   SwaggerModule.setup('api', app, document);
 
   app.enableCors(CORS_SITE);
-  await app.listen(config.PORT);
-  console.log(`start app: http://localhost:${config.PORT}`);
+  await app.listen(config.PORT, config.HOST, null);
+  console.log(`start app: http://${config.HOST}:${config.PORT}`);
   await MongoDb.connect();
 
   // RUN interval process service

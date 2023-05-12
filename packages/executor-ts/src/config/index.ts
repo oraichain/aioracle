@@ -29,10 +29,6 @@ const configDefault = {
   basedir: baseDir,
   appdir: baseDir + 'src/',
   storagedir: baseDir + 'storage/',
-  isProd: process.env.APP_ENV &&
-    (process.env.APP_ENV.toLowerCase() === 'prod' ||
-      process.env.APP_ENV.toLowerCase() === 'production')
-    ? true : false,
   RPC_URL: process.env.NETWORK_RPC || 'https://rpc.orai.io',
   CHAIN_ID: 'Oraichain',
   WEBSOCKET_URL: 'ws://rpc.orai.io',

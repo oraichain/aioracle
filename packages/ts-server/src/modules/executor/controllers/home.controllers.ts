@@ -8,8 +8,7 @@ import config from 'src/config';
 export class HomeController {
   @Get('/')
   homeIndex() {
-    return 'Welcome to the AI Oracle server - ' + 
-      'env: ' + config.APP_ENV + ' - ' +
+    return 'Welcome to the AI Oracle server - ' +
       'network: ' + config.NETWORK_TYPE + ' - ' +
       'chain: ' + config.CHAIN_ID + ' - ';
   }

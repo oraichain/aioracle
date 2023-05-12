@@ -25,12 +25,6 @@ if (configDotenv.path) {
 const configDefault = {
   basedir: baseDir,
   appdir: baseDir + "src/",
-  isProd:
-    process.env.APP_ENV &&
-    (process.env.APP_ENV.toLowerCase() === "prod" ||
-      process.env.APP_ENV.toLowerCase() === "production")
-      ? true
-      : false,
 };
 
 const config: any = Object.assign(configDefault, process.env);
