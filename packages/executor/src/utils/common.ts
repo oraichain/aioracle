@@ -59,8 +59,8 @@ export const submitReport = async (requestId: number, leaf: Leaf, wallet: Direct
   console.log('Successful submission time: ', new Date().toUTCString());
 };
 
-export const spawnPromise = async (cmd: string, args: readonly string[], currentDir?: string, env?: NodeJS.ProcessEnv) => {
-  const proc = spawn(cmd, args, { env: { ...process.env, ...env }, cwd: currentDir });
+export const spawnPromise = async (cmd: string, args: readonly string[], cwd?: string, env?: NodeJS.ProcessEnv) => {
+  const proc = spawn(cmd, args, { env, cwd });
   return await new Promise((resolve, reject) => {
     const data = [];
     const errData = [];
