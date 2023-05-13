@@ -3,12 +3,12 @@ import { AioracleContractClient, Service, TestCaseState } from '@oraichain/aiora
 
 type AssertResponse = {
   dsource: string;
-  dSourceResult: string;
+  testCaseResult: string;
 }
 
 type HandleScriptResponse = {
   aggregateResponse: string;
-  assertResults: AssertResponse[];
+  assertResults: AssertResponse[][];
   dsourceResults: string[];
 }
 
@@ -24,17 +24,14 @@ export const executeService = async (
 ) => {
   const serviceInfo = await aioracleClient.getService({ serviceName });
   console.log("request input is: ", requestInput);
-  let { aggregateResponse, assertResults } = await handleScript(
+  let { aggregateResponse, assertResults, dsourceResults } = await handleScript(
     serviceInfo.service,
     requestInput
   );
-  let result = {
-    data: Buffer.from(aggregateResponse).toString('base64'),
-    assertResults
-  }
+  let serviceResult: string = Buffer.from(JSON.stringify({ aggregateResponse, assertResults, dsourceResults })).toString('base64');
   // return request id so that in the callback we can collect it
   return {
-    result,
+    serviceResult,
     requestId
   };
 }
@@ -52,7 +49,7 @@ const executeTestCases = async (
       dsourceScriptUrl,
       convertToDenoScriptInput(testCase.inputs)
     );
-    assertResults.push({ dsource: dsourceScriptUrl, dSourceResult: result });
+    assertResults.push({ dsource: dsourceScriptUrl, testCaseResult: result });
   }
   return assertResults;
 }
@@ -61,12 +58,12 @@ export const handleScript = async (service: Service, requestInput: string): Prom
   const { oscript_url, dsources, tcases } = service;
   // execute the data sources
   const dsourceResults: string[] = [];
-  let assertResults: AssertResponse[];
+  let assertResults: AssertResponse[][];
   // let validDSources = [];
   for (let dsource of dsources) {
     // if any test case status is true & data source status is false => the data source is invalid
-    let assertResults = await executeTestCases(dsource.script_url, tcases)
-    // TODO: add test case result filtering here
+    let testCaseResults = await executeTestCases(dsource.script_url, tcases)
+    assertResults.push(testCaseResults)
 
     // By default, the user's input is the last element of the parameter list
     let result = await processDenoScript(

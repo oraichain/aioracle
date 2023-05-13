@@ -55,7 +55,7 @@ const processData = async ({
     const leaf: Leaf = {
       executor: executor.address,
       executorPubkey: Buffer.from(executor.pubkey).toString('base64'),
-      data: executeResult.result.data,
+      data: executeResult.serviceResult,
     }
     console.log("request id after getting new leaf data: ", executeResult.requestId);
     // use req id returned from the getData to preserve the id when getting data
