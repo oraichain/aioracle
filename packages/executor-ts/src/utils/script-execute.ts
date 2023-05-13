@@ -58,7 +58,7 @@ export const handleScript = async (service: Service, requestInput: string): Prom
   const { oscript_url, dsources, tcases } = service;
   // execute the data sources
   const dsourceResults: string[] = [];
-  let assertResults: AssertResponse[][];
+  let assertResults: AssertResponse[][] = [[]];
   // let validDSources = [];
   for (let dsource of dsources) {
     // if any test case status is true & data source status is false => the data source is invalid
