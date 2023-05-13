@@ -1,5 +1,6 @@
 {
   "dependencies": {
+    "@oraichain/aioracle-contracts-sdk": "1.0.0",
     "@cosmjs/cosmwasm-stargate": "^0.29.5",
     "@cosmjs/crypto": "^0.29.5",
     "@cosmjs/math": "^0.29.5",

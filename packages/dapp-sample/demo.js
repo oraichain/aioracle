@@ -3,7 +3,6 @@ const fetch = require('isomorphic-fetch');
 require('dotenv').config({ path: path.resolve(__dirname, process.env.NODE_ENV ? `.env.${process.env.NODE_ENV}` : ".env") })
 
 const { execute } = require('./cosmjs');
-const { report } = require('process');
 
 const demo = async () => {
     const contractAddr = process.env.CONTRACT_ADDRESS;
@@ -11,50 +10,24 @@ const demo = async () => {
     const wallet = process.env.MNEMONIC;
     const threshold = process.env.THRESHOLD || 1;
     const service = process.env.SERVICE || "price";
-    const lcdUrl = process.env.LCD_URL || "https://lcd.orai.io";
-    const gasAmount = process.env.GAS_AMOUNT || '0';
     const backendUrl = process.env.BACKEND_URL || "http://localhost:3000";
-    const input = {
-        request: {
-            threshold: parseInt(threshold),
-            service,
-        }
-    }
-    console.log("input: ", input)
-
     // store the merkle root on-chain
-    const txHash = await execute({
+    const result = await execute({
         mnemonic: wallet,
         address: contractAddr,
-        handleMsg: input,
-        gasData: { gasAmount: gasAmount, denom: "orai" },
+        handleMsg: {
+            request: {
+                threshold: parseInt(threshold),
+                service,
+            }
+        },
     });
-    console.log("execute result: ", txHash);
-    const requestId = await collectRequestId(lcdUrl, txHash);
-    console.log("request id: ", requestId);
+    console.log("Request tx result: ", result);
+    console.dir(result, { depth: null });
+    const requestId = result.events.find(event => event.type === 'wasm').attributes.find(attr => attr.key === 'stage').value;
     const reports = await collectReports(backendUrl, contractAddr, requestId, threshold);
-    console.log("reports: ", JSON.stringify(reports));
-}
-
-const collectRequestId = async (lcdUrl, txHash) => {
-    let requestId = -1;
-    let count = 0; // break the loop flag
-    let hasRequestId = true;
-    do {
-        hasRequestId = true;
-        try {
-            const result = await fetch(`${lcdUrl}/cosmos/tx/v1beta1/txs/${txHash}`).then(data => data.json());
-            const wasmEvent = result.tx_response.events.filter(event => event.type === "wasm")[0].attributes.filter(attr => attr.key === Buffer.from('stage').toString('base64'))[0].value;
-            requestId = Buffer.from(wasmEvent, 'base64').toString('ascii');
-        } catch (error) {
-            hasRequestId = false;
-            count++;
-            if (count > 10) break; // break the loop and return the request id.
-            // sleep for a few seconds then repeat
-            await new Promise(r => setTimeout(r, 3000));
-        }
-    } while (!hasRequestId);
-    return requestId;
+    console.log("reports: ");
+    console.dir(reports, { depth: null });
 }
 
 const collectReports = async (url, contractAddr, requestId, threshold) => {
