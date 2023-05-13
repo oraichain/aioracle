@@ -16,11 +16,11 @@ const collectWallet = async (mnemonic) => {
   return wallet;
 };
 
-const getClientAndSender = async (mnemonic) => {
+const getClientAndSender = async (mnemonic, gasData) => {
   const wallet = await collectWallet(mnemonic);
   const [sender] = await wallet.getAccounts();
   const client = await SigningCosmWasmClient.connectWithSigner(network.rpc, wallet, {
-    gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : undefined,
+    gasPrice: gasData ? GasPrice.fromString(`${gasData.gasAmount}${gasData.denom}`) : '0orai',
     prefix: network.prefix,
     gasLimits: { exec: 20000000 }
   });
