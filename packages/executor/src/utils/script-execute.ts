@@ -1,5 +1,6 @@
 import { spawn } from 'child_process';
 import { AioracleContractClient, Service, TestCaseState } from '@oraichain/aioracle-contracts-sdk/src';
+import { spawnPromise } from './common';
 
 type AssertResponse = {
   dsource: string;
@@ -10,6 +11,12 @@ type HandleScriptResponse = {
   aggregateResponse: string;
   assertResults: AssertResponse[][];
   dsourceResults: string[];
+}
+
+type DenoScriptResponse = {
+  code: number;
+  data: string;
+  error: string
 }
 
 function convertToDenoScriptInput(params: string[]): string {
@@ -70,6 +77,7 @@ export const handleScript = async (service: Service, requestInput: string): Prom
       dsource.script_url,
       convertToDenoScriptInput([...dsource.parameters, requestInput])
     );
+    console.log("dsource result: ", result);
     dsourceResults.push(result.trim()); // trim to remove trailing space & newline char
     // validDSources.push(dsource);
   }
@@ -83,31 +91,15 @@ export const handleScript = async (service: Service, requestInput: string): Prom
   };
 }
 
-const processDenoScript = (scriptUrl: string, params: string): Promise<string> => {
-  return new Promise((resolve, reject) => {
-    const ls = spawn(
-      'deno',
-      [
-        'run',
-        '--allow-net',
-        '--unstable',
-        scriptUrl,
-        params
-      ]
-    );
-
-    ls.stdout.on('data', (data) => {
-      resolve(`${data}`);
-    });
-    ls.stderr.on('data', (data) => {
-      const dataStr = data.toString();
-      // Deno will push its log to err stream.
-      // Most common logs include download & check module imports.
-      // Otherwise, we reject err
-      if (!dataStr.includes("Download") && !dataStr.includes("Check")) {
-        console.log("data in error process deno: ", dataStr);
-        reject(dataStr);
-      }
-    });
-  })
+const processDenoScript = async (scriptUrl: string, params: string): Promise<string> => {
+  const result = await spawnPromise('deno', [
+    'run',
+    '--allow-net',
+    '--unstable',
+    scriptUrl,
+    params
+  ]) as DenoScriptResponse;
+  if (result.error.length > 0 || result.code !== 0)
+    return result.error;
+  return result.data;
 }
