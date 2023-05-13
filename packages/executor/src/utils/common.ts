@@ -60,7 +60,7 @@ export const submitReport = async (requestId: number, leaf: Leaf, wallet: Direct
 };
 
 export const spawnPromise = async (cmd: string, args: readonly string[], currentDir?: string, env?: NodeJS.ProcessEnv) => {
-  const proc = spawn(cmd, args, { env: { ...process.env, ...env }, stdio: 'inherit', cwd: currentDir });
+  const proc = spawn(cmd, args, { env: { ...process.env, ...env }, cwd: currentDir });
   return await new Promise((resolve, reject) => {
     const data = [];
     const errData = [];
