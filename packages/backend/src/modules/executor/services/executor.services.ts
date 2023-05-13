@@ -17,7 +17,7 @@ export class ExecutorService {
     contractAddr: string,
     requestId: number,
   ): Promise<AioracleContractTypes.RequestResponse> {
-    const client = await CosmWasmClient.connect(config.LCD_URL);
+    const client = await CosmWasmClient.connect(config.RPC_URL);
     const queryContract = new AioracleContractQueryClient(client, contractAddr);
     const res = await queryContract.getRequest({ stage: requestId });
     return res;
@@ -33,7 +33,7 @@ export class ExecutorService {
       },
     } as AioracleContractTypes.QueryMsg);
 
-    const client = await CosmWasmClient.connect(config.LCD_URL);
+    const client = await CosmWasmClient.connect(config.RPC_URL);
     const queryContract = new AioracleContractQueryClient(client, contractAddr);
     const res = await queryContract.checkExecutorInList({ address: executor });
     return res;

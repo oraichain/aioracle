@@ -1,10 +1,7 @@
 import { config as dotenvLib } from 'dotenv';
 import * as fs from 'fs';
 
-const pathEnv = [
-  `.env.${process.env.NODE_ENV}`,
-  '.env',
-];
+const pathEnv = [`.env.${process.env.NODE_ENV}`, '.env'];
 const baseDir = __dirname + '/../../';
 const getPathEnv = () => {
   for (const path of pathEnv) {
@@ -16,9 +13,9 @@ const getPathEnv = () => {
     }
   }
   return null;
-}
+};
 const configDotenv: any = {
-  path: getPathEnv(),
+  path: getPathEnv()
 };
 dotenvLib(configDotenv);
 if (configDotenv.path) {
@@ -34,21 +31,21 @@ const configDefault = {
   WEBSOCKET_URL: 'ws://rpc.orai.io',
   REPLAY: 'false',
   DOCKER: 'false',
-  PING_INTERVAL: '1209600000', // mssecond = 14 day //
+  PING_INTERVAL: 1209600000, // mssecond = 14 day //
   WS_HOST: 'localhost',
-  WS_PORT: '4999',
+  WS_PORT: 4999,
   SENTRY_DNS: 'https://cc0864c4cee645a687ce9696dc3da77b@o1323226.ingest.sentry.io/4504630945185792',
   GAS_AMOUNT: '0',
   LOG_FILE: '0',
-
-  prefix: "orai",
-  path: "m/44'/118'/0'/0/0",
+  CONTRACT_ADDRESS: '',
+  prefix: 'orai',
+  path: "m/44'/118'/0'/0/0"
 };
 
-const config: any = Object.assign(configDefault, process.env);
+const config = Object.assign(configDefault, process.env);
 
-config.PING_INTERVAL = parseInt(config.PING_INTERVAL);
-config.WS_PORT = parseInt(config.WS_PORT);
+config.PING_INTERVAL = Number(config.PING_INTERVAL);
+config.WS_PORT = Number(config.WS_PORT);
 if (!config.NETWORK_TYPE) {
   if (config.RPC_URL && config.RPC_URL.includes('testnet')) {
     config.NETWORK_TYPE = 'testnet';
