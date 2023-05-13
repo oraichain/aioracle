@@ -2,7 +2,7 @@ import { coin } from '@cosmjs/amino';
 import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
 import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
 import { getContractDir } from '@oraichain/aioracle-contracts-build';
-import { handleScript } from '@oraichain/executor-ts/src/utils/script-execute';
+import { handleScript } from '@oraichain/executor/src/utils/script-execute';
 
 import { assert } from 'console';
 

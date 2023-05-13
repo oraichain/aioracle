@@ -18,7 +18,7 @@
   "dependencies": {
     "@oraichain/aioracle-contracts-build": "1.0.0",
     "@oraichain/aioracle-contracts-sdk": "1.0.0",
-    "@oraichain/executor-ts": "1.0.0",
+    "@oraichain/executor": "1.0.0",
     "@terran-one/cw-simulate": "https://github.com/oraichain/cw-simulate.git",
     "moment": "^2.29.4"
   }
