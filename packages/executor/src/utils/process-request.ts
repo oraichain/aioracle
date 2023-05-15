@@ -3,7 +3,7 @@ import config from '../config';
 import { getCosmWasmClient } from './cosmjs';
 import { executeService } from './script-execute';
 import { logError } from './logs';
-import { Leaf, ProcessDataParams } from 'src/dtos';
+import { Leaf, ProcessDataParams } from '../dtos';
 import { AioracleContractClient } from '@oraichain/aioracle-contracts-sdk/src';
 
 export const processRequest = async (requestId: number, mnemonic: string) => {

@@ -3,8 +3,6 @@ import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { stringToPath } from '@cosmjs/crypto';
 import { GasPrice } from '@cosmjs/stargate';
 import config from '../config';
-// import { sleep } from './';
-// import { ExecuteRequest } from 'src/dtos';
 import { AccountData } from '@cosmjs/amino';
 
 export const handleFetchResponse = async (response: Response) => {

@@ -1,9 +1,7 @@
 import * as WebSocket from 'ws';
-import * as fs from 'fs';
-import config from 'src/config';
+import config from '../config';
 import { logError } from './logs';
 import { processRequest } from './process-request';
-import { AioracleContractClient } from '@oraichain/aioracle-contracts-sdk/src';
 
 export const wsClientConnect = (mnemonic: string) => {
   const ws = new WebSocket(`${config.WEBSOCKET_URL}/websocket`, { handshakeTimeout: 10000 });

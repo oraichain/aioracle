@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as util from 'util';
 import moment from 'moment';
 import config from '../config';
-import { SentryTrace } from 'src/helpers/sentry';
+import { SentryTrace } from '../helpers/sentry';
 
 const logStdout = process.stdout;
 const folderLogs = `${config.basedir}logs/`;

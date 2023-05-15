@@ -1,13 +1,12 @@
-import * as fetch from 'isomorphic-fetch';
 import * as _ from 'lodash';
 import { mnemonicToSeedSync } from 'bip39';
 import BIP32Factory from 'bip32';
 import * as ecc from 'tiny-secp256k1';
-import config from 'src/config';
+import config from '../config';
 import { signSignature } from './crypto';
 import { handleFetchResponse } from './cosmjs';
 import { broadcastExecutorResult } from './ws-server';
-import { Leaf, MessageSign, PostMessage, ReportSubmittedResponse } from 'src/dtos';
+import { Leaf, MessageSign, PostMessage, ReportSubmittedResponse } from '../dtos';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { spawn } from 'child_process';
 
