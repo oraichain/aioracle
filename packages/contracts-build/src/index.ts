@@ -2,7 +2,7 @@ import { SigningCosmWasmClient } from '@cosmjs/cosmwasm-stargate';
 import { readFileSync } from 'fs';
 import path from 'path';
 
-const contractDir = path.join(path.dirname(module.filename), 'data');
+const contractDir = path.join(path.dirname(module.filename), '..', 'data');
 
 export type ContractName = 'aioracle-contract';
 

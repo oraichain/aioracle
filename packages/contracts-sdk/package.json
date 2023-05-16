@@ -1,7 +1,7 @@
 {
   "name": "@oraichain/aioracle-contracts-sdk",
   "version": "1.0.0",
-  "main": "src/index.ts",
+  "main": "build/index.js",
   "typings": "src",
   "license": "MIT"
 }
