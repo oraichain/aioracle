@@ -1,4 +1,4 @@
-import {Addr, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Binary, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
+import {Addr, Binary, UpdateConfigMsg, AddServiceMsg, Service, DataSourceState, TestCaseState, UpdateServiceMsg, Boolean, Config, Uint64, ArrayOfString, ServiceInfo} from "./types";
 export interface InstantiateMsg {
   executors?: string[] | null;
   owner?: Addr | null;
@@ -15,7 +15,7 @@ export type ExecuteMsg = {
   };
 } | {
   request: {
-    input?: string | null;
+    input?: Binary | null;
     service: string;
     threshold: number;
   };
@@ -89,7 +89,7 @@ export type QueryMsg = {
 };
 export interface MigrateMsg {}
 export interface RequestResponse {
-  input?: string | null;
+  input?: Binary | null;
   merkle_root: string;
   request_height: number;
   requester: Addr;

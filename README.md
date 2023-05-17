@@ -3,14 +3,15 @@
 ## Generate code and docs
 
 ```bash
-# build contract
-cw-build ../aioracle-contract -o packages/contracts-build/data/
 
 # build contract schema
-cw-build ../aioracle-contract -o packages/contracts-build/data/ -s
+cwtools build ../aioracle-contract -s
+
+# build contract
+cwtools build ../aioracle-contract -o packages/contracts-build/data/
 
 # build sdk typescript code
-cw-gents ../aioracle-contract/ -o packages/contracts-sdk/src/
+cwtools gents ../aioracle-contract/ -o packages/contracts-sdk/src/
 
 # gen docs
 yarn docs

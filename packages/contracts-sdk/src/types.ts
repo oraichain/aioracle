@@ -1,4 +1,5 @@
 export type Addr = string;
+export type Binary = string;
 export interface UpdateConfigMsg {
   new_checkpoint?: number | null;
   new_checkpoint_threshold?: number | null;
@@ -18,12 +19,12 @@ export interface Service {
 }
 export interface DataSourceState {
   language: string;
-  parameters: string[];
+  parameters: Binary[];
   script_url: string;
 }
 export interface TestCaseState {
-  expected_output: string;
-  inputs: string[];
+  expected_output: Binary;
+  inputs: Binary[];
 }
 export interface UpdateServiceMsg {
   dsources?: DataSourceState[] | null;
@@ -32,7 +33,6 @@ export interface UpdateServiceMsg {
   service_name: string;
   tcases?: TestCaseState[] | null;
 }
-export type Binary = string;
 export type Boolean = boolean;
 export interface Config {
   max_req_threshold: number;
