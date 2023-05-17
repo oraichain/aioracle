@@ -30,7 +30,7 @@ git checkout packages/contracts-sdk
 ## Deploy:
 
 ```bash
-yarn oraicli wasm deploy ../oraiwasm/package/aioracle/aioracle_v2/artifacts/aioracle_v2.wasm --input '{"contract_fee":{"amount":"0","denom":"orai"}' --label 'aioracle contract' --gas 3000000
+cwtools wasm deploy ../oraiwasm/package/aioracle/aioracle_v2/artifacts/aioracle_v2.wasm --input '{"contract_fee":{"amount":"0","denom":"orai"}' --label 'aioracle contract' --gas 3000000
 
 # contract: orai1s60a2vntfuv2ps6fs75fcrlrmea9xzr4k65zlg
 ```
