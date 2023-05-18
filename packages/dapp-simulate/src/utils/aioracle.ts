@@ -1,8 +1,8 @@
 import { coin } from '@cosmjs/amino';
-import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
-import { AioracleContractClient, AioracleContractTypes, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
 import { deployContract } from '@oraichain/aioracle-contracts-build';
+import { AioracleContractClient, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
 import { handleScript } from '@oraichain/executor/src/utils/script-execute';
+import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
 
 import { assert } from 'console';
 
@@ -15,7 +15,7 @@ const SERVICE_DEFAULT = 'price';
 const EXECUTOR_ADDRESS = 'orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573';
 
 export const basicProviderFlow = async () => {
-  const { contractAddress } = await deployContract<AioracleContractTypes.InstantiateMsg>(
+  const { contractAddress } = await deployContract(
     client,
     admin,
     {
@@ -36,7 +36,7 @@ export const basicProviderFlow = async () => {
 
 export const aioracleDemo = async () => {
   client.app.bank.setBalance(admin, [coin('10000000000', 'orai')]);
-  const { contractAddress } = await deployContract<AioracleContractTypes.InstantiateMsg>(
+  const { contractAddress } = await deployContract(
     client,
     admin,
     {
