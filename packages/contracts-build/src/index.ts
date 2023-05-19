@@ -16,6 +16,7 @@ export const deployContract = async (client: SigningCosmWasmClient, senderAddres
   // upload and instantiate the contract
   const wasmBytecode = readFileSync(getContractDir(contractName));
   const uploadRes = await client.upload(senderAddress, wasmBytecode, 'auto');
+  console.log(uploadRes);
   const initRes = await client.instantiate(senderAddress, uploadRes.codeId, msg ?? {}, label ?? contractName, 'auto');
   return { ...uploadRes, ...initRes };
 };

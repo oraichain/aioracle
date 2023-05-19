@@ -1,5 +1,5 @@
 import { coin } from '@cosmjs/amino';
-import { deployContract } from '@oraichain/aioracle-contracts-build';
+import * as aioracleArtifacts from '@oraichain/aioracle-contracts-build';
 import { AioracleContractClient, DataSourceState, Service } from '@oraichain/aioracle-contracts-sdk';
 import { handleScript } from '@oraichain/executor/src/utils/script-execute';
 import { SimulateCosmWasmClient } from '@terran-one/cw-simulate';
@@ -15,15 +15,10 @@ const SERVICE_DEFAULT = 'price';
 const EXECUTOR_ADDRESS = 'orai14n3tx8s5ftzhlxvq0w5962v60vd82h30rha573';
 
 export const basicProviderFlow = async () => {
-  const { contractAddress } = await deployContract(
-    client,
-    admin,
-    {
-      owner: EXECUTOR_ADDRESS,
-      executors: getExecutors()
-    },
-    'aioraclev2 label'
-  );
+  const { contractAddress } = await aioracleArtifacts.deployContract(client, admin, 'aioracle-contract', {
+    owner: EXECUTOR_ADDRESS,
+    executors: getExecutors()
+  });
   const aioracleContract = new AioracleContractClient(client, admin, contractAddress);
   await addService(aioracleContract);
   const threshold = 1;
@@ -36,15 +31,11 @@ export const basicProviderFlow = async () => {
 
 export const aioracleDemo = async () => {
   client.app.bank.setBalance(admin, [coin('10000000000', 'orai')]);
-  const { contractAddress } = await deployContract(
-    client,
-    admin,
-    {
-      owner: EXECUTOR_ADDRESS,
-      executors: getExecutors()
-    },
-    'aioraclev2 label'
-  );
+
+  const { contractAddress } = await aioracleArtifacts.deployContract(client, admin, 'aioracle-contract', {
+    owner: EXECUTOR_ADDRESS,
+    executors: getExecutors()
+  });
 
   const aioracleContract = new AioracleContractClient(client, admin, contractAddress);
   await addService(aioracleContract);
