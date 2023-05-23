@@ -3,6 +3,10 @@
   "version": "1.0.7",
   "main": "build/index.js",
   "license": "MIT",
+  "files": [
+    "build/",
+    "data/"
+  ],
   "dependencies": {
     "@oraichain/aioracle-contracts-sdk": "^1.0.0"
   }
