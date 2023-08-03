@@ -1,23 +1,13 @@
 version: '3.3'
 services:
-  aioracle_backend_mongo_prod:
+  aioracle_mongodb_container:
     image: mongo
-    container_name: aioracle_backend_mongo_prod
     env_file:
       - .env.mongo
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: $ROOT_USERNAME
-      MONGO_INITDB_ROOT_PASSWORD: $ROOT_PASSWORD
     ports:
       - 27017:27017
     volumes:
       - mongodb_data_container:/data/db
-    # networks:
-    # - elk
 
 volumes:
   mongodb_data_container:
-# networks:
-#   elk:
-#     external: false
-#     name: elk

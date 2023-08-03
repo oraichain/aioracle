@@ -9,7 +9,7 @@ export default class MongoDb {
     if (!MongoDb.client) {
       MongoDb.client = new MongoClient(config.MONGO_URL);
       await MongoDb.client.connect();
-      console.log("Mongodb connected!!!");
+      console.log('Mongodb connected!!!');
     }
   }
 
@@ -30,7 +30,7 @@ export default class MongoDb {
   static async close(cb = null) {
     if (MongoDb.client) {
       await MongoDb.client.close();
-      console.log("Mongodb closed!!!");
+      console.log('Mongodb closed!!!');
     }
     MongoDb.client = null;
     MongoDb.db = {};
