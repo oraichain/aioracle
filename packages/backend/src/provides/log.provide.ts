@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as util from 'util';
-import * as moment from "moment";
+import * as moment from 'moment';
 import config from '../config';
 
 const logStdout = process.stdout;
@@ -14,7 +14,10 @@ function logFile(d, file) {
   for (const i in d) {
     logText += util.format(d[i]) + ' -- ';
   }
-  fs.appendFileSync(file, moment().format('YYYY-MM-DD HH:mm:ss') + ': ' + logText.slice(0, -4) + '\n');
+  fs.appendFileSync(
+    file,
+    moment().format('YYYY-MM-DD HH:mm:ss') + ': ' + logText.slice(0, -4) + '\n',
+  );
 }
 
 function openFile(fileName) {

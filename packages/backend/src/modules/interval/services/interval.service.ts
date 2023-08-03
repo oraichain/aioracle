@@ -5,7 +5,6 @@ import {
   MerkleRepository,
   RequestRepository,
 } from 'src/repositories/mongo';
-import moment from 'moment';
 import { formTree } from 'src/utils';
 import { ExecutorService } from 'src/modules/executor/services';
 import WSS from 'src/utils/wss';
@@ -39,7 +38,7 @@ export class IntervalService {
 
   async runInterval(gasPrices: number, indexRunCount = 1) {
     try {
-      console.log('gas prices:', gasPrices, ' -- time:', moment().format());
+      console.log('gas prices:', gasPrices);
       await this.submitReportInterval(gasPrices);
       // if submit report successfully then we reset the gas prices back to the normal config to avoid using too high fee
       gasPrices = parseFloat(config.BASE_GAS_PRICES);
