@@ -14,10 +14,9 @@ services:
       - mongodb_data_container:/data/db
     # networks:
     # - elk
-# volumes:
-#   mongodb_data_container:
-#     external: true
-#     name: js-server_mongodb_data_container
+
+volumes:
+  mongodb_data_container:
 # networks:
 #   elk:
 #     external: false
