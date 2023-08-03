@@ -1,12 +1,10 @@
-import { wsClientConnect } from './utils/ws';
-import { collectPin } from './utils/prompt';
-import { evaluatePin } from './utils/crypto';
-import { execute, getWallet, queryWasm } from './utils/cosmjs';
+import { wsClientConnect } from "./utils/ws";
+import { collectPin } from "./utils/prompt";
+import { evaluatePin } from "./utils/crypto";
 import config from "./config";
 import { logError } from "./utils/logs";
-import { SentryTrace } from './helpers/sentry';
-import { sleep } from './utils';
-import { QueryPingInfoResponse } from './dtos';
+import { SentryTrace } from "./helpers/sentry";
+import { sleep } from "./utils";
 
 SentryTrace.init();
 SentryTrace.transaction({
@@ -27,66 +25,71 @@ const start = async () => {
       mnemonic = evaluatePin(pin, config.ENCRYPTED_MNEMONIC);
     } else {
       if (!mnemonic) {
-        throw 'You need to have either mnemonic or encrypted mnemonic ' +
-        'in your .env file to start the application!';
+        throw (
+          "You need to have either mnemonic or encrypted mnemonic " +
+          "in your .env file to start the application!"
+        );
       }
     }
     await processRequestWrapper(mnemonic);
-    if (config.NETWORK_TYPE !== 'testnet') {
-      ping(mnemonic);
-    }
+    // if (config.NETWORK_TYPE !== 'testnet') {
+    //   ping(mnemonic);
+    // }
   } catch (error) {
-    logError(error, 'error when starting the program: ');
+    logError(error, "error when starting the program: ");
     console.log("the program will exit after 10 seconds...");
     await sleep(10000);
     process.exit(0);
   }
-}
+};
 
 const processRequestWrapper = async (mnemonic: string) => {
   try {
-    console.log('\x1b[36m%s\x1b[0m', "\nOraichain AI Executor program, v1.0.0\n")
+    console.log(
+      "\x1b[36m%s\x1b[0m",
+      "\nOraichain AI Executor program, v1.0.1\n"
+    );
     wsClientConnect(mnemonic);
   } catch (error) {
-    logError(error, 'error rocess request program');
+    logError(error, "error rocess request program");
     // sleep 5s then start again
     await sleep(5000);
     await processRequestWrapper(mnemonic);
   }
-}
+};
 
-const ping = async (mnemonic: string) => {
-  const contract = config.PING_CONTRACT;
-  while (true) {
-    try {
-      const walletPubkey = (await getWallet(mnemonic)).account.pubkey;
-      // collect info about ping and ping jump, ok to ping => ping
-      const ping = await queryWasm(contract, JSON.stringify({
-        get_ping_info: walletPubkey
-      })) as QueryPingInfoResponse;
-      // valid case
-      if (
-        ping.current_height - ping.ping_info.latest_ping_height >= ping.ping_jump ||
-        ping.ping_info.latest_ping_height === 0
-      ) {
-        console.log('ready to ping');
-        const pingMsg = {
-          ping: { pubkey: walletPubkey }
-        }
-        const result = await execute({
-          mnemonic,
-          address: contract,
-          handleMsg: pingMsg,
-          gasData: { gasAmount: config.GAS_AMOUNT, denom: 'orai' },
-        });
-        console.log("ping result: ", result);
-      }
-    } catch (error) {
-      logError(error, 'error ping');
-    } finally {
-      await sleep(config.PING_INTERVAL);
-    }
-  }
-}
+// const ping = async (mnemonic: string) => {
+//   const contract = config.PING_CONTRACT;
+//   while (true) {
+//     try {
+//       const walletPubkey = (await getWallet(mnemonic)).account.pubkey;
+//       // collect info about ping and ping jump, ok to ping => ping
+//       const ping = await queryWasm(contract, JSON.stringify({
+//         get_ping_info: walletPubkey
+//       })) as QueryPingInfoResponse;
+//       // valid case
+//       if (
+//         ping.current_height - ping.ping_info.latest_ping_height >= ping.ping_jump ||
+//         ping.ping_info.latest_ping_height === 0
+//       ) {
+//         console.log('ready to ping');
+//         const pingMsg = {
+//           ping: { pubkey: walletPubkey }
+//         }
+//         const result = await execute({
+//           mnemonic,
+//           address: contract,
+//           handleMsg: pingMsg,
+//           gasData: { gasAmount: config.GAS_AMOUNT, denom: 'orai' },
+//         });
+//         console.log("ping result: ", result);
+//       }
+//     } catch (error) {
+//       logError(error, 'error ping');
+//     } finally {
+//       await sleep(config.PING_INTERVAL);
+//     }
+//   }
+// }
 
 start();
