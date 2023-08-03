@@ -1,8 +1,8 @@
 version: '3.3'
 services:
-  executor_mongo_prod:
+  aioracle_backend_mongo_prod:
     image: mongo
-    container_name: executor_mongo_prod
+    container_name: aioracle_backend_mongo_prod
     env_file:
       - .env.mongo
     environment:
