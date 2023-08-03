@@ -44,7 +44,7 @@ const processRequestWrapper = async (mnemonic: string) => {
   try {
     console.log(
       "\x1b[36m%s\x1b[0m",
-      "\nOraichain AI Executor program, v1.0.0\n"
+      "\nOraichain AI Executor program, v1.0.1\n"
     );
     wsClientConnect(mnemonic);
   } catch (error) {
