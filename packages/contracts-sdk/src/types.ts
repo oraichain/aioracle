@@ -1,8 +1,5 @@
 export type Addr = string;
-export type Binary = string;
 export interface UpdateConfigMsg {
-  new_checkpoint?: number | null;
-  new_checkpoint_threshold?: number | null;
   new_executors?: string[] | null;
   new_max_req_threshold?: number | null;
   new_owner?: Addr | null;
@@ -19,12 +16,12 @@ export interface Service {
 }
 export interface DataSourceState {
   language: string;
-  parameters: Binary[];
+  parameters: string[];
   script_url: string;
 }
 export interface TestCaseState {
-  expected_output: Binary;
-  inputs: Binary[];
+  expected_output: string;
+  inputs: string[];
 }
 export interface UpdateServiceMsg {
   dsources?: DataSourceState[] | null;
@@ -33,6 +30,7 @@ export interface UpdateServiceMsg {
   service_name: string;
   tcases?: TestCaseState[] | null;
 }
+export type Binary = string;
 export type Boolean = boolean;
 export interface Config {
   max_req_threshold: number;
@@ -44,3 +42,4 @@ export interface ServiceInfo {
   owner: Addr;
   service: Service;
 }
+export { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
