@@ -16,7 +16,6 @@ const configDefault = {
   WS_PORT: parseInt(process.env.WS_PORT) || 7071,
   PROCESS_INTERVAL: parseInt(process.env.PROCESS_INTERVAL) || 10000,
   RPC_URL: process.env.NETWORK_RPC,
-  LCD_URL: process.env.NETWORK_LCD || 'https://testnet-lcd.orai.io',
   RUN_INTERVAL: '1',
   BASE_GAS_PRICES: '0.001',
 };
