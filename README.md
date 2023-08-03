@@ -1,5 +1,7 @@
 # new-aioracle-demo
 
+Contract: https://github.com/oraichain/aioracle-contract
+
 ## Generate code and docs
 
 ```bash
