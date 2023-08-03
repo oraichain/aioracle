@@ -1,10 +1,4 @@
-import {
-  Controller,
-  Body,
-  HttpStatus,
-  Post,
-  Res
-} from '@nestjs/common';
+import { Controller, Body, HttpStatus, Post, Res } from '@nestjs/common';
 import { Response } from 'express';
 import { ProofLeaf } from '../dtos';
 import { ExecutorService } from '../services';
@@ -16,22 +10,19 @@ export class ProofController {
   constructor(private executorService: ExecutorService) {}
 
   @Post('/')
-  async getProof(
-    @Res() res: Response,
-    @Body() body: ProofLeaf
-  ) {
+  async getProof(@Res() res: Response, @Body() body: ProofLeaf) {
     const repo = new MerkleRepository();
     await repo.db(body.contract_addr);
 
-    let { data } = await this.executorService.getRequest(
+    let data = await this.executorService.getRequest(
       body.contract_addr,
-      body.request_id
+      body.request_id,
     );
 
     if (!data?.merkle_root) {
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
-        message: "Waiting for the merkle root" 
+        message: 'Waiting for the merkle root',
       });
     }
     const leaves = await repo.findLeaves(data.merkle_root);
@@ -44,20 +35,20 @@ export class ProofController {
       return res.status(HttpStatus.OK).json({
         code: HttpStatus.OK,
         proofs: [],
-        root: tree.getHexRoot()
+        root: tree.getHexRoot(),
       });
     }
 
     const proofs = tree.getHexProof(hexLeaf);
     if (proofs.length === 0 && root !== hexLeaf.toString('hex')) {
       return res.status(HttpStatus.NOT_FOUND).json({
-        code: HttpStatus.NOT_FOUND
+        code: HttpStatus.NOT_FOUND,
       });
     }
     return res.status(HttpStatus.OK).json({
       code: HttpStatus.OK,
       proofs,
-      root: root
+      root: root,
     });
   }
 }

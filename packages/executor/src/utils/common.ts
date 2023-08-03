@@ -1,13 +1,12 @@
-import * as fetch from 'isomorphic-fetch';
 import * as _ from 'lodash';
 import { mnemonicToSeedSync } from 'bip39';
 import BIP32Factory from 'bip32';
 import * as ecc from 'tiny-secp256k1';
-import config from 'src/config';
+import config from '../config';
 import { signSignature } from './crypto';
 import { handleFetchResponse } from './cosmjs';
 import { broadcastExecutorResult } from './ws-server';
-import { Leaf, MessageSign, PostMessage, ReportSubmittedResponse } from 'src/dtos';
+import { Leaf, MessageSign, PostMessage, ReportSubmittedResponse } from '../dtos';
 import { DirectSecp256k1HdWallet } from '@cosmjs/proto-signing';
 import { spawn } from 'child_process';
 
@@ -59,9 +58,15 @@ export const submitReport = async (requestId: number, leaf: Leaf, wallet: Direct
   console.log('Successful submission time: ', new Date().toUTCString());
 };
 
-export const spawnPromise = async (cmd: string, args: readonly string[], cwd?: string, env?: NodeJS.ProcessEnv) => {
+type SpawnResult = {
+  code: number;
+  data: string;
+  error: string;
+};
+
+export const spawnPromise = (cmd: string, args: readonly string[], cwd?: string, env?: NodeJS.ProcessEnv): Promise<SpawnResult> => {
   const proc = spawn(cmd, args, { env, cwd });
-  return await new Promise((resolve, reject) => {
+  return new Promise((resolve, reject) => {
     const data = [];
     const errData = [];
     proc.stdout.on('data', (buf) => {

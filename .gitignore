@@ -49,6 +49,7 @@ typings/
 
 # Optional npm cache directory
 .npm
+.npmrc
 
 # Optional eslint cache
 .eslintcache
@@ -115,4 +116,4 @@ js-server/config/default.json
 
 js/*.zip
 
-*/build
+build

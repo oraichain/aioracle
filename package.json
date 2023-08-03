@@ -3,6 +3,8 @@
   "private": true,
   "scripts": {
     "postinstall": "patch-package",
+    "build": "tsc -p",
+    "deploy": "yarn publish --access public",
     "docs": "typedoc --entryPointStrategy expand --name 'AI Oracle SDK' --readme none --tsconfig packages/contracts-sdk/tsconfig.json packages/contracts-sdk/src"
   },
   "workspaces": [

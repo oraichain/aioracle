@@ -32,9 +32,6 @@ const start = async () => {
       }
     }
     await processRequestWrapper(mnemonic);
-    // if (config.NETWORK_TYPE !== 'testnet') {
-    //   ping(mnemonic);
-    // }
   } catch (error) {
     logError(error, "error when starting the program: ");
     console.log("the program will exit after 10 seconds...");
@@ -47,7 +44,7 @@ const processRequestWrapper = async (mnemonic: string) => {
   try {
     console.log(
       "\x1b[36m%s\x1b[0m",
-      "\nOraichain AI Executor program, v1.0.1\n"
+      "\nOraichain AI Executor program, v1.0.0\n"
     );
     wsClientConnect(mnemonic);
   } catch (error) {
@@ -57,39 +54,5 @@ const processRequestWrapper = async (mnemonic: string) => {
     await processRequestWrapper(mnemonic);
   }
 };
-
-// const ping = async (mnemonic: string) => {
-//   const contract = config.PING_CONTRACT;
-//   while (true) {
-//     try {
-//       const walletPubkey = (await getWallet(mnemonic)).account.pubkey;
-//       // collect info about ping and ping jump, ok to ping => ping
-//       const ping = await queryWasm(contract, JSON.stringify({
-//         get_ping_info: walletPubkey
-//       })) as QueryPingInfoResponse;
-//       // valid case
-//       if (
-//         ping.current_height - ping.ping_info.latest_ping_height >= ping.ping_jump ||
-//         ping.ping_info.latest_ping_height === 0
-//       ) {
-//         console.log('ready to ping');
-//         const pingMsg = {
-//           ping: { pubkey: walletPubkey }
-//         }
-//         const result = await execute({
-//           mnemonic,
-//           address: contract,
-//           handleMsg: pingMsg,
-//           gasData: { gasAmount: config.GAS_AMOUNT, denom: 'orai' },
-//         });
-//         console.log("ping result: ", result);
-//       }
-//     } catch (error) {
-//       logError(error, 'error ping');
-//     } finally {
-//       await sleep(config.PING_INTERVAL);
-//     }
-//   }
-// }
 
 start();

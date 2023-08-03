@@ -14,7 +14,6 @@
   },
   "devDependencies": {
     "@types/crypto-js": "^4.1.1",
-    "@types/isomorphic-fetch": "^0.0.36",
     "@types/lodash": "^4.14.191",
     "@types/node": "^18.11.18",
     "@types/secp256k1": "^4.0.3",
@@ -37,7 +36,6 @@
     "bip39": "^3.0.4",
     "crypto-js": "^4.1.1",
     "dotenv": "^16.0.3",
-    "isomorphic-fetch": "^3.0.0",
     "js-sha256": "^0.9.0",
     "lodash": "^4.17.21",
     "moment": "^2.29.4",
