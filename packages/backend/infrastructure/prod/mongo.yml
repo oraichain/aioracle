@@ -19,8 +19,7 @@ volumes:
   mongodb_data_container:
     external: true
     name: js-server_mongodb_data_container
-
-networks:
-  elk:
-    external: false
-    name: elk
+# networks:
+#   elk:
+#     external: false
+#     name: elk
