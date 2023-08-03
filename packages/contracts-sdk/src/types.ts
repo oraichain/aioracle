@@ -42,4 +42,3 @@ export interface ServiceInfo {
   owner: Addr;
   service: Service;
 }
-export { CosmWasmClient, SigningCosmWasmClient, ExecuteResult } from "@cosmjs/cosmwasm-stargate";
