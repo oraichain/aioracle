@@ -2,17 +2,13 @@ version: '3.3'
 services:
   ai_executor:
     container_name: ai_executor
-    image: orai/ai-executor:0.0.1
+    image: orai/ai-executor:0.5.0
     tty: true
-    environment:
-      - PIN=${PIN}
-      - DOCKER=true
     restart: on-failure
     logging:
       driver: "local"
       options:
         max-size: "100m"
         max-file: "3"
-    volumes:
-      - ./:/workspace
-    command: ./aioracle-executor-process
+    # volumes:
+    #   - ./:/workspace

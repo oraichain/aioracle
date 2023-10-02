@@ -24,27 +24,26 @@ version: '3.3'
 services:
   ai_executor:
     container_name: ai_executor
-    image: orai/ai-executor:0.0.1
+    image: orai/ai-executor:0.5.0
     tty: true
     environment:
       - PIN=${PIN}
       - DOCKER=true
     restart: on-failure
-    volumes:
-      - ./:/workspace
-    command: ./aioracle-executor-process
 ```
 
 ### 2. Download the executor zip file
 
+Current binary id is: `180aYBeOlakKorDpHsaHImR1pFlHEGZ26`
+
 ***Shell (Mac, Linux):***
 ```bash
-wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R" -O executor.zip && rm /tmp/cookies.txt && unzip executor.zip
+wget --load-cookies /tmp/cookies.txt "https://docs.google.com/uc?export=download&confirm=$(wget --quiet --save-cookies /tmp/cookies.txt --keep-session-cookies --no-check-certificate 'https://docs.google.com/uc?export=download&id=180aYBeOlakKorDpHsaHImR1pFlHEGZ26' -O- | sed -rn 's/.*confirm=([0-9A-Za-z_]+).*/\1\n/p')&id=180aYBeOlakKorDpHsaHImR1pFlHEGZ26" -O executor.zip && rm /tmp/cookies.txt && unzip executor.zip
 ```
 
 ***Windows:***
 
-With windows, you can download using the following link: ```https://drive.google.com/file/d/1q67XmqO-MCNjwfjyc2OW6Zl8ZvZHBE8R/view?usp=sharing```
+With windows, you can download using the following link: ```https://drive.google.com/file/d/180aYBeOlakKorDpHsaHImR1pFlHEGZ26/view?usp=sharing```
 
 ### 3. Configure the .env file
 
